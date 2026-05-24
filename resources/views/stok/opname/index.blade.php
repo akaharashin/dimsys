@@ -5,10 +5,12 @@
 
     <div class="flex items-center justify-between mb-6">
         <h2 class="text-2xl font-bold text-gray-700">Stok Opname</h2>
+        @if(!auth()->user()->hasRole('owner'))
         <a href="{{ route('stok.opname.create') }}"
             class="bg-orange-500 hover:bg-orange-600 text-white text-sm px-4 py-2 rounded-lg">
             + Tambah STO
         </a>
+        @endif
     </div>
 
     <div class="bg-white rounded-xl shadow-sm p-4 mb-4">
@@ -112,12 +114,14 @@
                         <td class="px-4 py-3 flex gap-2">
                             <a href="{{ route('stok.opname.show', $so) }}"
                                 class="text-xs px-3 py-1 bg-blue-50 hover:bg-blue-100 rounded-lg text-blue-600">Detail</a>
+                            @if(!auth()->user()->hasRole('owner'))
                             <form method="POST" action="{{ route('stok.opname.destroy', $so) }}"
                                 data-confirm="Yakin ingin membatalkan stok opname ini?">
                                 @csrf @method('DELETE')
                                 <button
                                     class="text-xs px-3 py-1 bg-red-50 hover:bg-red-100 rounded-lg text-red-500">Batalkan</button>
                             </form>
+                            @endif
                         </td>
                     </tr>
                 @empty

@@ -5,10 +5,12 @@
 
     <div class="flex items-center justify-between mb-6">
         <h2 class="text-2xl font-bold text-gray-700">Master Produk</h2>
+        @if(!auth()->user()->hasRole('owner'))
         <button onclick="document.getElementById('modal-tambah').style.display='flex'"
             class="bg-orange-500 hover:bg-orange-600 text-white text-sm px-4 py-2 rounded-lg">
             + Tambah Produk
         </button>
+        @endif
     </div>
 
     {{-- Filter & Search --}}
@@ -112,22 +114,24 @@
                             </span>
                         </td>
                         <td class="px-4 py-3 flex gap-2">
-                            <button onclick="openEdit({{ $p->toJson() }})"
-                                class="text-xs px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded-lg text-gray-600">Edit</button>
-                            @if($p->aktif)
-                                <form method="POST" action="{{ route('master.produk.destroy', $p) }}"
-                                    data-confirm="Yakin ingin menonaktifkan produk {{ $p->nama }}?">
-                                    @csrf @method('DELETE')
-                                    <button
-                                        class="text-xs px-3 py-1 bg-red-50 hover:bg-red-100 rounded-lg text-red-500">Nonaktifkan</button>
-                                </form>
-                            @else
-                                <form method="POST" action="{{ route('master.produk.update', $p) }}">
-                                    @csrf @method('PUT')
-                                    <input type="hidden" name="aktif" value="1">
-                                    <button
-                                        class="text-xs px-3 py-1 bg-green-50 hover:bg-green-100 rounded-lg text-green-600">Aktifkan</button>
-                                </form>
+                            @if(!auth()->user()->hasRole('owner'))
+                                <button onclick="openEdit({{ $p->toJson() }})"
+                                    class="text-xs px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded-lg text-gray-600">Edit</button>
+                                @if($p->aktif)
+                                    <form method="POST" action="{{ route('master.produk.destroy', $p) }}"
+                                        data-confirm="Yakin ingin menonaktifkan produk {{ $p->nama }}?">
+                                        @csrf @method('DELETE')
+                                        <button
+                                            class="text-xs px-3 py-1 bg-red-50 hover:bg-red-100 rounded-lg text-red-500">Nonaktifkan</button>
+                                    </form>
+                                @else
+                                    <form method="POST" action="{{ route('master.produk.update', $p) }}">
+                                        @csrf @method('PUT')
+                                        <input type="hidden" name="aktif" value="1">
+                                        <button
+                                            class="text-xs px-3 py-1 bg-green-50 hover:bg-green-100 rounded-lg text-green-600">Aktifkan</button>
+                                    </form>
+                                @endif
                             @endif
                         </td>
                     </tr>
@@ -156,6 +160,7 @@
         </div>
     @endif
 
+    @if(!auth()->user()->hasRole('owner'))
     {{-- Modal Tambah --}}
     <div id="modal-tambah"
         style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);align-items:center;justify-content:center;z-index:9999;">
@@ -230,5 +235,6 @@
             document.getElementById('modal-edit').style.display = 'flex';
         }
     </script>
+    @endif
 
 @endsection

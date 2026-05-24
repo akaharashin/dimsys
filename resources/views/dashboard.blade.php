@@ -74,52 +74,75 @@
     {{-- Shortcut --}}
     <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Akses Cepat</p>
     <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+
         @if(auth()->user()->hasRole(['admin_pusat']))
             <a href="{{ route('stok.masuk.create') }}"
                 class="bg-white rounded-xl p-4 shadow-sm hover:shadow-md hover:border-orange-200 border border-transparent transition flex items-center gap-3">
-                <div class="w-9 h-9 bg-orange-100 rounded-lg flex items-center justify-center text-orange-500">
-                    <i class="fa-solid fa-boxes-stacked text-sm"></i>
-                </div>
+                <div
+                    class="w-9 h-9 bg-orange-100 rounded-lg flex items-center justify-center text-orange-500 font-bold text-sm">
+                    SM</div>
                 <div>
                     <p class="text-sm font-medium text-gray-700">Stok Masuk</p>
                     <p class="text-xs text-gray-400">Tambah stok</p>
                 </div>
             </a>
         @endif
-        <a href="{{ route('stok.distribusi.create') }}"
-            class="bg-white rounded-xl p-4 shadow-sm hover:shadow-md hover:border-orange-200 border border-transparent transition flex items-center gap-3">
-            <div class="w-9 h-9 bg-blue-100 rounded-lg flex items-center justify-center text-blue-500">
-                <i class="fa-solid fa-truck-fast text-sm"></i>
-            </div>
 
-            <div>
-                <p class="text-sm font-medium text-gray-700">Distribusi</p>
-                <p class="text-xs text-gray-400">OUT ke gerobak</p>
-            </div>
-        </a>
-        <a href="{{ route('transaksi.laporan-harian.create') }}"
-            class="bg-white rounded-xl p-4 shadow-sm hover:shadow-md hover:border-orange-200 border border-transparent transition flex items-center gap-3">
-            <div class="w-9 h-9 bg-green-100 rounded-lg flex items-center justify-center text-green-500">
-                <i class="fa-solid fa-file-lines text-sm"></i>
-            </div>
+        @if(auth()->user()->hasRole(['admin_pusat', 'koordinator']))
+            <a href="{{ route('stok.distribusi.create') }}"
+                class="bg-white rounded-xl p-4 shadow-sm hover:shadow-md hover:border-orange-200 border border-transparent transition flex items-center gap-3">
+                <div class="w-9 h-9 bg-blue-100 rounded-lg flex items-center justify-center text-blue-500 font-bold text-sm">DS
+                </div>
+                <div>
+                    <p class="text-sm font-medium text-gray-700">Distribusi</p>
+                    <p class="text-xs text-gray-400">OUT ke gerobak</p>
+                </div>
+            </a>
+            <a href="{{ route('transaksi.laporan-harian.create') }}"
+                class="bg-white rounded-xl p-4 shadow-sm hover:shadow-md hover:border-orange-200 border border-transparent transition flex items-center gap-3">
+                <div class="w-9 h-9 bg-green-100 rounded-lg flex items-center justify-center text-green-500 font-bold text-sm">
+                    LH</div>
+                <div>
+                    <p class="text-sm font-medium text-gray-700">Laporan Harian</p>
+                    <p class="text-xs text-gray-400">Input laporan</p>
+                </div>
+            </a>
+        @endif
 
-            <div>
-                <p class="text-sm font-medium text-gray-700">Laporan Harian</p>
-                <p class="text-xs text-gray-400">Input laporan</p>
-            </div>
-        </a>
         <a href="{{ route('stok.rekap') }}"
             class="bg-white rounded-xl p-4 shadow-sm hover:shadow-md hover:border-orange-200 border border-transparent transition flex items-center gap-3">
             <div
-                class="w-9 h-9 bg-purple-100 rounded-lg flex items-center justify-center text-purple-500">
-                <i class="fa-solid fa-chart-pie text-sm"></i>
-            </div>
-
+                class="w-9 h-9 bg-purple-100 rounded-lg flex items-center justify-center text-purple-500 font-bold text-sm">
+                RS</div>
             <div>
                 <p class="text-sm font-medium text-gray-700">Rekap Stok</p>
                 <p class="text-xs text-gray-400">Cek stok freezer</p>
             </div>
         </a>
+
+        {{-- Owner hanya lihat laporan --}}
+        @if(auth()->user()->hasRole('owner'))
+            <a href="{{ route('laporan.omset') }}"
+                class="bg-white rounded-xl p-4 shadow-sm hover:shadow-md hover:border-orange-200 border border-transparent transition flex items-center gap-3">
+                <div
+                    class="w-9 h-9 bg-orange-100 rounded-lg flex items-center justify-center text-orange-500 font-bold text-sm">
+                    RO</div>
+                <div>
+                    <p class="text-sm font-medium text-gray-700">Rekap Omset</p>
+                    <p class="text-xs text-gray-400">Lihat laporan</p>
+                </div>
+            </a>
+            <a href="{{ route('laporan.kontrol') }}"
+                class="bg-white rounded-xl p-4 shadow-sm hover:shadow-md hover:border-orange-200 border border-transparent transition flex items-center gap-3">
+                <div class="w-9 h-9 bg-blue-100 rounded-lg flex items-center justify-center text-blue-500 font-bold text-sm">KP
+                </div>
+                <div>
+                    <p class="text-sm font-medium text-gray-700">Kontrol Penjualan</p>
+                    <p class="text-xs text-gray-400">Monitor outlet</p>
+                </div>
+            </a>
+        @endif
+
     </div>
 
     {{-- Laporan Terbaru --}}

@@ -5,10 +5,12 @@
 
     <div class="flex items-center justify-between mb-6">
         <h2 class="text-2xl font-bold text-gray-700">Stok Masuk</h2>
+        @if(!auth()->user()->hasRole('owner'))
         <a href="{{ route('stok.masuk.create') }}"
             class="bg-orange-500 hover:bg-orange-600 text-white text-sm px-4 py-2 rounded-lg">
             + Tambah Stok
         </a>
+        @endif
     </div>
 
     {{-- Filter --}}
@@ -169,6 +171,7 @@
                                 class="text-xs px-3 py-1 bg-blue-50 hover:bg-blue-100 rounded-lg text-blue-600">
                                 Detail
                             </a>
+                            @if(!auth()->user()->hasRole('owner'))
                             <form method="POST" action="{{ route('stok.masuk.destroy', $s) }}"
                                 data-confirm="Yakin ingin membatalkan stok masuk ini?">
                                 @csrf @method('DELETE')
@@ -176,6 +179,7 @@
                                     Batalkan
                                 </button>
                             </form>
+                            @endif
                         </td>
                     </tr>
                 @empty

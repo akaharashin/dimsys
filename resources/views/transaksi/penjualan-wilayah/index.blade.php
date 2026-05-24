@@ -5,10 +5,12 @@
 
     <div class="flex items-center justify-between mb-6">
         <h2 class="text-2xl font-bold text-gray-700">Penjualan Wilayah</h2>
+        @if(!auth()->user()->hasRole('owner'))
         <a href="{{ route('transaksi.penjualan-wilayah.create') }}"
             class="bg-orange-500 hover:bg-orange-600 text-white text-sm px-4 py-2 rounded-lg">
             + Tambah Penjualan
         </a>
+        @endif
     </div>
 
     {{-- Filter --}}
@@ -137,16 +139,18 @@
                             <td class="px-4 py-3 flex gap-2">
                                 <a href="{{ route('transaksi.penjualan-wilayah.show', $p) }}"
                                     class="text-xs px-3 py-1 bg-blue-50 hover:bg-blue-100 rounded-lg text-blue-600">Detail</a>
-                                @if($p->status_bayar !== 'lunas')
-                                    <button onclick="openUpdateStatus('{{ $p->id }}','{{ $p->status_bayar }}')"
-                                        class="text-xs px-3 py-1 bg-yellow-50 hover:bg-yellow-100 rounded-lg text-yellow-600">Update</button>
+                                @if(!auth()->user()->hasRole('owner'))
+                                    @if($p->status_bayar !== 'lunas')
+                                        <button onclick="openUpdateStatus('{{ $p->id }}','{{ $p->status_bayar }}')"
+                                            class="text-xs px-3 py-1 bg-yellow-50 hover:bg-yellow-100 rounded-lg text-yellow-600">Update</button>
+                                    @endif
+                                    <form method="POST" action="{{ route('transaksi.penjualan-wilayah.destroy', $p) }}"
+                                        data-confirm="Yakin ingin membatalkan penjualan wilayah ini?">
+                                        @csrf @method('DELETE')
+                                        <button
+                                            class="text-xs px-3 py-1 bg-red-50 hover:bg-red-100 rounded-lg text-red-500">Batalkan</button>
+                                    </form>
                                 @endif
-                                <form method="POST" action="{{ route('transaksi.penjualan-wilayah.destroy', $p) }}"
-                                    data-confirm="Yakin ingin membatalkan penjualan wilayah ini?">
-                                    @csrf @method('DELETE')
-                                    <button
-                                        class="text-xs px-3 py-1 bg-red-50 hover:bg-red-100 rounded-lg text-red-500">Batalkan</button>
-                                </form>
                             </td>
                         </tr>
                 @empty
