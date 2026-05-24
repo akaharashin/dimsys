@@ -6,9 +6,10 @@ use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithTitle;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use Maatwebsite\Excel\Concerns\WithColumnFormatting;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class LaporanHarianExport implements FromCollection, WithHeadings, WithTitle, WithStyles, ShouldAutoSize
+class LaporanHarianExport implements FromCollection, WithHeadings, WithTitle, WithStyles, ShouldAutoSize, WithColumnFormatting
 {
     protected $data;
 
@@ -51,6 +52,19 @@ class LaporanHarianExport implements FromCollection, WithHeadings, WithTitle, Wi
             'Total Setor',
             'Total Pengeluaran',
             'Status'
+        ];
+    }
+
+    public function columnFormats(): array
+    {
+        return [
+            'E' => '#,##0',
+            'F' => '#,##0',
+            'G' => '#,##0',
+            'H' => '#,##0',
+            'I' => '#,##0',
+            'J' => '#,##0',
+            'K' => '#,##0',
         ];
     }
 

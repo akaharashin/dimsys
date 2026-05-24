@@ -8,9 +8,10 @@ use Maatwebsite\Excel\Concerns\WithTitle;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use Maatwebsite\Excel\Concerns\WithColumnFormatting;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class OmsetSheet implements FromCollection, WithTitle, WithHeadings, WithStyles, ShouldAutoSize
+class OmsetSheet implements FromCollection, WithTitle, WithHeadings, WithStyles, ShouldAutoSize, WithColumnFormatting
 {
     protected $bulan;
     protected $wilayahId;
@@ -76,6 +77,19 @@ class OmsetSheet implements FromCollection, WithTitle, WithHeadings, WithStyles,
     public function title(): string
     {
         return 'REKAP OMSET';
+    }
+
+    public function columnFormats(): array
+    {
+        return [
+            'E' => '#,##0',
+            'F' => '#,##0',
+            'G' => '#,##0',
+            'H' => '#,##0',
+            'I' => '#,##0',
+            'J' => '#,##0',
+            'K' => '#,##0',
+        ];
     }
 
     public function styles(Worksheet $sheet)

@@ -7,9 +7,10 @@ use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithTitle;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use Maatwebsite\Excel\Concerns\WithColumnFormatting;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class StokMasukExport implements FromCollection, WithHeadings, WithTitle, WithStyles, ShouldAutoSize
+class StokMasukExport implements FromCollection, WithHeadings, WithTitle, WithStyles, ShouldAutoSize, WithColumnFormatting
 {
     protected $filters;
 
@@ -71,6 +72,15 @@ class StokMasukExport implements FromCollection, WithHeadings, WithTitle, WithSt
             'HPP/pcs',
             'Total HPP',
             'Keterangan',
+        ];
+    }
+
+    public function columnFormats(): array
+    {
+        return [
+            'F' => '#,##0',
+            'G' => '#,##0',
+            'H' => '#,##0',
         ];
     }
 

@@ -7,9 +7,10 @@ use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithTitle;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use Maatwebsite\Excel\Concerns\WithColumnFormatting;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class DistribusiExport implements FromCollection, WithHeadings, WithTitle, WithStyles, ShouldAutoSize
+class DistribusiExport implements FromCollection, WithHeadings, WithTitle, WithStyles, ShouldAutoSize, WithColumnFormatting
 {
     protected $filters;
 
@@ -60,6 +61,13 @@ class DistribusiExport implements FromCollection, WithHeadings, WithTitle, WithS
     public function headings(): array
     {
         return ['Tanggal', 'Outlet', 'Wilayah', 'Produk', 'Jumlah OUT (pcs)', 'Keterangan'];
+    }
+
+    public function columnFormats(): array
+    {
+        return [
+            'E' => '#,##0',
+        ];
     }
 
     public function title(): string

@@ -23,6 +23,7 @@ class RekapBulananExport implements WithMultipleSheets
             new Sheets\PenjualanSheet($this->bulan, $this->wilayahId),
             new Sheets\KasHarianSheet($this->bulan, $this->wilayahId),
             new Sheets\OmsetSheet($this->bulan, $this->wilayahId),
+            new Sheets\RataRataOutSheet($this->bulan, $this->wilayahId),
         ];
     }
 }

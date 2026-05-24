@@ -9,9 +9,10 @@ use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithTitle;
 use Maatwebsite\Excel\Concerns\WithStyles;
+use Maatwebsite\Excel\Concerns\WithColumnFormatting;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class StokExport implements FromCollection, WithHeadings, WithTitle, WithStyles
+class StokExport implements FromCollection, WithHeadings, WithTitle, WithStyles, WithColumnFormatting
 {
     protected $bulan;
     protected $wilayahId;
@@ -50,6 +51,17 @@ class StokExport implements FromCollection, WithHeadings, WithTitle, WithStyles
     public function headings(): array
     {
         return ['Produk', 'Stok Masuk', 'OUT Gerobak', 'Keluar Wilayah', 'Total Keluar', 'Sisa Estimasi'];
+    }
+
+    public function columnFormats(): array
+    {
+        return [
+            'B' => '#,##0',
+            'C' => '#,##0',
+            'D' => '#,##0',
+            'E' => '#,##0',
+            'F' => '#,##0',
+        ];
     }
 
     public function title(): string { return 'Rekap Stok'; }

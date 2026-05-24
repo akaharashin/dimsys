@@ -6,9 +6,10 @@ use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithTitle;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use Maatwebsite\Excel\Concerns\WithColumnFormatting;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class PenjualanWilayahExport implements FromCollection, WithHeadings, WithTitle, WithStyles, ShouldAutoSize
+class PenjualanWilayahExport implements FromCollection, WithHeadings, WithTitle, WithStyles, ShouldAutoSize, WithColumnFormatting
 {
     protected $data;
 
@@ -34,6 +35,13 @@ class PenjualanWilayahExport implements FromCollection, WithHeadings, WithTitle,
     public function headings(): array
     {
         return ['No', 'Tanggal', 'Dari', 'Ke', 'Total', 'Status Bayar', 'Keterangan'];
+    }
+
+    public function columnFormats(): array
+    {
+        return [
+            'E' => '#,##0',
+        ];
     }
 
     public function title(): string

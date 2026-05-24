@@ -7,9 +7,10 @@ use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithTitle;
 use Maatwebsite\Excel\Concerns\WithStyles;
+use Maatwebsite\Excel\Concerns\WithColumnFormatting;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class KontrolExport implements FromArray, WithHeadings, WithTitle, WithStyles
+class KontrolExport implements FromArray, WithHeadings, WithTitle, WithStyles, WithColumnFormatting
 {
     protected $bulan;
     protected $wilayahId;
@@ -84,6 +85,22 @@ class KontrolExport implements FromArray, WithHeadings, WithTitle, WithStyles
             ->map(fn($t) => \Carbon\Carbon::parse($t)->format('d'))->toArray();
 
         return array_merge(['Outlet', 'Wilayah', 'Tipe'], $tanggalList, ['Total']);
+    }
+
+    public function columnFormats(): array
+    {
+        [$tahun, $bln] = explode('-', $this->bulan);
+        $count = LaporanHarian::whereYear('tanggal', $tahun)
+            ->whereMonth('tanggal', $bln)
+            ->pluck('tanggal')->unique()->count();
+
+        $formats = [];
+        $col = 'D';
+        for ($i = 0; $i <= $count; $i++) {
+            $formats[$col] = '#,##0';
+            $col++;
+        }
+        return $formats;
     }
 
     public function title(): string { return 'Kontrol Penjualan'; }

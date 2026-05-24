@@ -7,9 +7,10 @@ use Maatwebsite\Excel\Concerns\WithTitle;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use Maatwebsite\Excel\Concerns\WithColumnFormatting;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class StokMasukSheet implements FromCollection, WithTitle, WithHeadings, WithStyles, ShouldAutoSize
+class StokMasukSheet implements FromCollection, WithTitle, WithHeadings, WithStyles, ShouldAutoSize, WithColumnFormatting
 {
     protected $bulan;
     protected $wilayahId;
@@ -58,6 +59,15 @@ class StokMasukSheet implements FromCollection, WithTitle, WithHeadings, WithSty
     public function title(): string
     {
         return 'STOK MASUK';
+    }
+
+    public function columnFormats(): array
+    {
+        return [
+            'F' => '#,##0',
+            'G' => '#,##0',
+            'H' => '#,##0',
+        ];
     }
 
     public function styles(Worksheet $sheet)

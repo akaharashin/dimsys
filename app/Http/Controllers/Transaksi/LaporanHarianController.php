@@ -101,8 +101,8 @@ class LaporanHarianController extends Controller
             ->where('outlet_id', $request->outlet_id)
             ->where('tanggal', $request->tanggal)
             ->first();
-        // Cek apakah ada data produk
-        if (!$request->has('produk_id') || empty($request->produk_id)) {
+        // Sesudah - BENAR
+        if (!$distribusi) {
             return back()->with('error', 'Tidak ada data distribusi untuk outlet dan tanggal ini. Pastikan distribusi sudah diinput terlebih dahulu.')->withInput();
         }
         // Hitung total pengeluaran dari detail
@@ -131,9 +131,12 @@ class LaporanHarianController extends Controller
         }
 
         $totalSetor = $totalOmset - $totalKomisi - $totalPengeluaran;
+        // Cek apakah ada produk yang terjual dari distribusi
         $adaTerjual = false;
-        foreach ($request->produk_id as $i => $pid) {
-            if (($request->sisa[$i] ?? 0) != ($request->jumlah_out[$i] ?? 0)) {
+        foreach ($distribusi->details as $d) {
+            $sisa = $request->input('sisa_' . $d->produk_id, 0);
+            $terjual = max(0, $d->jumlah_out - $sisa);
+            if ($terjual > 0) {
                 $adaTerjual = true;
                 break;
             }

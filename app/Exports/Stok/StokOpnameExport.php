@@ -6,9 +6,10 @@ use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithTitle;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use Maatwebsite\Excel\Concerns\WithColumnFormatting;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class StokOpnameExport implements FromCollection, WithHeadings, WithTitle, WithStyles, ShouldAutoSize
+class StokOpnameExport implements FromCollection, WithHeadings, WithTitle, WithStyles, ShouldAutoSize, WithColumnFormatting
 {
     protected $data;
 
@@ -55,6 +56,17 @@ class StokOpnameExport implements FromCollection, WithHeadings, WithTitle, WithS
             'Nilai Selisih',
             'Status',
             'Keterangan'
+        ];
+    }
+
+    public function columnFormats(): array
+    {
+        return [
+            'E' => '#,##0',
+            'F' => '#,##0',
+            'G' => '#,##0',
+            'H' => '#,##0',
+            'I' => '#,##0',
         ];
     }
 

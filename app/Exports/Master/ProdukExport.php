@@ -7,9 +7,10 @@ use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithTitle;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use Maatwebsite\Excel\Concerns\WithColumnFormatting;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class ProdukExport implements FromCollection, WithHeadings, WithTitle, WithStyles, ShouldAutoSize
+class ProdukExport implements FromCollection, WithHeadings, WithTitle, WithStyles, ShouldAutoSize, WithColumnFormatting
 {
     public function collection()
     {
@@ -28,6 +29,18 @@ class ProdukExport implements FromCollection, WithHeadings, WithTitle, WithStyle
     public function headings(): array
     {
         return ['Nama', 'HPP', 'Harga Mitra', 'Harga Jual', 'Harga Umum', 'Harga Agen', 'Komisi', 'Status'];
+    }
+
+    public function columnFormats(): array
+    {
+        return [
+            'B' => '#,##0',
+            'C' => '#,##0',
+            'D' => '#,##0',
+            'E' => '#,##0',
+            'F' => '#,##0',
+            'G' => '#,##0',
+        ];
     }
 
     public function title(): string

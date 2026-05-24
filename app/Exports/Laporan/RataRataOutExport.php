@@ -7,9 +7,10 @@ use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithTitle;
 use Maatwebsite\Excel\Concerns\WithStyles;
+use Maatwebsite\Excel\Concerns\WithColumnFormatting;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class RataRataOutExport implements FromArray, WithHeadings, WithTitle, WithStyles
+class RataRataOutExport implements FromArray, WithHeadings, WithTitle, WithStyles, WithColumnFormatting
 {
     protected $bulan;
     protected $wilayahId;
@@ -64,6 +65,26 @@ class RataRataOutExport implements FromArray, WithHeadings, WithTitle, WithStyle
             ->with('details')->get()->flatMap(fn($d) => $d->details->pluck('produk_id'))->unique();
         $produkList = Produk::whereIn('id', $produkIds)->orderBy('nama')->pluck('nama')->toArray();
         return array_merge(['Outlet', 'Wilayah'], $produkList);
+    }
+
+    public function columnFormats(): array
+    {
+        [$tahun, $bln] = explode('-', $this->bulan);
+        $query = Distribusi::with('details')
+            ->whereYear('tanggal', $tahun)
+            ->whereMonth('tanggal', $bln);
+        if ($this->wilayahId !== 'semua') {
+            $query->whereHas('outlet', fn($q) => $q->where('wilayah_id', $this->wilayahId));
+        }
+        $count = $query->get()->flatMap(fn($d) => $d->details->pluck('produk_id'))->unique()->count();
+
+        $formats = [];
+        $col = 'C';
+        for ($i = 0; $i < $count; $i++) {
+            $formats[$col] = '#,##0';
+            $col++;
+        }
+        return $formats;
     }
 
     public function title(): string { return 'Rata-rata OUT'; }

@@ -10,9 +10,9 @@ use Maatwebsite\Excel\Concerns\WithTitle;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use Maatwebsite\Excel\Concerns\WithColumnFormatting;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
-
-class RekapStokSheet implements FromCollection, WithTitle, WithHeadings, WithStyles, ShouldAutoSize
+class RekapStokSheet implements FromCollection, WithTitle, WithHeadings, WithStyles, ShouldAutoSize, WithColumnFormatting
 {
     protected $bulan;
     protected $wilayahId;
@@ -90,6 +90,19 @@ class RekapStokSheet implements FromCollection, WithTitle, WithHeadings, WithSty
     public function title(): string
     {
         return 'REKAP STOK';
+    }
+
+    public function columnFormats(): array
+    {
+        return [
+            'B' => '#,##0',
+            'C' => '#,##0',
+            'D' => '#,##0',
+            'E' => '#,##0',
+            'F' => '#,##0',
+            'G' => '#,##0',
+            'H' => '#,##0',
+        ];
     }
 
     public function styles(Worksheet $sheet)

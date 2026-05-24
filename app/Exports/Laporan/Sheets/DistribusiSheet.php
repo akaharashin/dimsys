@@ -7,9 +7,10 @@ use Maatwebsite\Excel\Concerns\WithTitle;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use Maatwebsite\Excel\Concerns\WithColumnFormatting;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class DistribusiSheet implements FromCollection, WithTitle, WithHeadings, WithStyles, ShouldAutoSize
+class DistribusiSheet implements FromCollection, WithTitle, WithHeadings, WithStyles, ShouldAutoSize, WithColumnFormatting
 {
     protected $bulan;
     protected $wilayahId;
@@ -60,6 +61,13 @@ class DistribusiSheet implements FromCollection, WithTitle, WithHeadings, WithSt
     public function title(): string
     {
         return 'DISTRIBUSI';
+    }
+
+    public function columnFormats(): array
+    {
+        return [
+            'F' => '#,##0',
+        ];
     }
 
     public function styles(Worksheet $sheet)

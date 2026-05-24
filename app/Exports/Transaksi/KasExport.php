@@ -6,9 +6,10 @@ use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithTitle;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use Maatwebsite\Excel\Concerns\WithColumnFormatting;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class KasExport implements FromCollection, WithHeadings, WithTitle, WithStyles, ShouldAutoSize
+class KasExport implements FromCollection, WithHeadings, WithTitle, WithStyles, ShouldAutoSize, WithColumnFormatting
 {
     protected $data;
     protected $rekening;
@@ -49,6 +50,15 @@ class KasExport implements FromCollection, WithHeadings, WithTitle, WithStyles, 
             'Debit',
             'Kredit',
             'Saldo'
+        ];
+    }
+
+    public function columnFormats(): array
+    {
+        return [
+            'H' => '#,##0',
+            'I' => '#,##0',
+            'J' => '#,##0',
         ];
     }
 

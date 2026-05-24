@@ -6,10 +6,11 @@ use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithTitle;
 use Maatwebsite\Excel\Concerns\WithStyles;
+use Maatwebsite\Excel\Concerns\WithColumnFormatting;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use Carbon\Carbon;
 
-class OmsetExport implements FromCollection, WithHeadings, WithTitle, WithStyles
+class OmsetExport implements FromCollection, WithHeadings, WithTitle, WithStyles, WithColumnFormatting
 {
     protected $bulan;
     protected $wilayahId;
@@ -60,6 +61,19 @@ class OmsetExport implements FromCollection, WithHeadings, WithTitle, WithStyles
     public function headings(): array
     {
         return ['Outlet', 'Wilayah', 'Hari Jualan', 'Terjual (pcs)', 'Omset', 'Modal', 'Komisi', 'Laba', 'Setor'];
+    }
+
+    public function columnFormats(): array
+    {
+        return [
+            'C' => '#,##0',
+            'D' => '#,##0',
+            'E' => '#,##0',
+            'F' => '#,##0',
+            'G' => '#,##0',
+            'H' => '#,##0',
+            'I' => '#,##0',
+        ];
     }
 
     public function title(): string
