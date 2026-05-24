@@ -32,7 +32,12 @@
                 <button type="submit"
                     class="px-4 py-2 text-sm bg-orange-500 hover:bg-orange-600 text-white rounded-lg">Tampilkan</button>
                 <a href="{{ route('laporan.omset.export', ['bulan' => $bulan, 'wilayah_id' => $wilayahId]) }}"
-                    class="px-4 py-2 text-sm bg-green-500 hover:bg-green-600 text-white rounded-lg"><i class="fa-solid fa-file-excel mr-1"></i> Export Excel</a>
+                    class="px-4 py-2 text-sm bg-green-500 hover:bg-green-600 text-white rounded-lg"><i
+                        class="fa-solid fa-file-excel mr-1"></i> Export Excel</a>
+                <a href="{{ route('laporan.export-bulanan', ['bulan' => $bulan, 'wilayah_id' => $wilayahId]) }}"
+                    class="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center gap-2">
+                    <i class="fa-solid fa-file-excel"></i> Export Rekap Bulanan
+                </a>
             </div>
         </form>
     </div>

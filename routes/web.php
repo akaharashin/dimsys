@@ -1,4 +1,5 @@
 <?php
+use App\Http\Controllers\Laporan\ExportBulananController;
 use App\Http\Controllers\Stok\StokOpnameController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DashboardController;
@@ -74,13 +75,16 @@ Route::middleware(['auth'])->group(function () {
         Route::get('stok/export', [StokController::class, 'export'])->name('stok.export');
         Route::get('rata-rata-out', [RataRataOutController::class, 'index'])->name('rata-rata-out');
         Route::get('rata-rata-out/export', [RataRataOutController::class, 'export'])->name('rata-rata-out.export');
+        Route::get('export-bulanan', [ExportBulananController::class, 'export'])->name('export-bulanan');
+
+
     });
 
     Route::prefix('api')->group(function () {
         Route::get('distribusi', [DistribusiApiController::class, 'getByOutletTanggal'])->name('api.distribusi');
         Route::get('stok-tersedia', [\App\Http\Controllers\Api\StokApiController::class, 'getStokTersedia'])->name('api.stok-tersedia');
     });
-    
+
 
 });
 
