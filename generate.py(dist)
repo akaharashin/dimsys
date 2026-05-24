@@ -1,0 +1,33 @@
+import pandas as pd
+import json
+
+df = pd.read_excel('storage/app/_PUSAT MEI 2026.xlsx', sheet_name='PENJUALAN', header=None)
+df_data = df.iloc[2:, :8].copy()
+df_data.columns = ['tanggal','outlet','kategori','keterangan','nama_barang','out','stok','sisa']
+df_data = df_data[df_data['outlet'].notna()]
+df_data['out'] = pd.to_numeric(df_data['out'], errors='coerce')
+df_data = df_data[df_data['out'] > 0]
+
+outlet_sukabumi = ['BAROS 1','CISAAT','CICURUG','CIBADAK','KALAPA NUNGGAL',
+                   'KARANG TENGAH','LAPANG BOJONG','GUNUNG GURUH ','SAGARANTEN',
+                   'PASAWAHAN','PELABUHAN','PARUNGKUDA II','SUKARAJA',
+                   'BOJONG LOPANG','LIMUS NUNGGAL','GEGER BITUNG','GANG PEDA',
+                   'YADI','JAMPANG','CIJANGKAR']
+
+df_local = df_data[df_data['outlet'].isin(outlet_sukabumi)].copy()
+df_local['tanggal_str'] = df_local['tanggal'].apply(lambda x: str(x)[:10])
+
+result = {}
+for _, row in df_local.iterrows():
+    tgl = row['tanggal_str']
+    outlet = str(row['outlet']).strip()
+    produk = str(row['nama_barang']).strip()
+    out = int(row['out'])
+    if tgl not in result: result[tgl] = {}
+    if outlet not in result[tgl]: result[tgl][outlet] = {}
+    result[tgl][outlet][produk] = out
+
+with open('storage/app/distribusi_mei.json', 'w') as f:
+    json.dump(result, f)
+
+print('DONE:', len(result), 'hari')

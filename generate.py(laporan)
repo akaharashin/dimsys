@@ -1,0 +1,66 @@
+import pandas as pd
+import json
+
+df = pd.read_excel('storage/app/_PUSAT MEI 2026.xlsx', sheet_name='PENJUALAN', header=None)
+
+# Baca harga dari DATABASE sheet
+db = pd.read_excel('storage/app/_PUSAT MEI 2026.xlsx', sheet_name='DATABASE', header=None)
+harga_df = db.iloc[1:, 8:15].dropna(subset=[8])
+harga_df.columns = ['nama','hpp','mitra','jual','umum','agen','komisi']
+harga_map = {}
+for _, row in harga_df.iterrows():
+    if pd.notna(row['nama']):
+        harga_map[str(row['nama']).upper().strip()] = {
+            'hpp': float(row['hpp']) if pd.notna(row['hpp']) else 0,
+            'harga_jual': float(row['mitra']) if pd.notna(row['mitra']) else 0,
+            'komisi': float(row['komisi']) if pd.notna(row['komisi']) else 0,
+        }
+
+df_data = df.iloc[2:, :8].copy()
+df_data.columns = ['tanggal','outlet','kategori','keterangan','nama_barang','out','stok','sisa']
+df_data['out'] = pd.to_numeric(df_data['out'], errors='coerce')
+df_data['sisa'] = pd.to_numeric(df_data['sisa'], errors='coerce')
+df_data = df_data[df_data['outlet'].notna()]
+df_data = df_data[df_data['out'] > 0]
+df_data['terjual'] = (df_data['out'] - df_data['sisa'].fillna(0)).clip(lower=0).astype(int)
+
+outlet_lokal = ['BAROS 1','CISAAT','CICURUG','CIBADAK','KALAPA NUNGGAL',
+                'KARANG TENGAH','LAPANG BOJONG','GUNUNG GURUH ','SAGARANTEN',
+                'PASAWAHAN','PELABUHAN','PARUNGKUDA II','SUKARAJA',
+                'BOJONG LOPANG','LIMUS NUNGGAL','GEGER BITUNG','GANG PEDA',
+                'YADI','JAMPANG','CIJANGKAR']
+
+df_local = df_data[df_data['outlet'].isin(outlet_lokal)].copy()
+df_local['tanggal_str'] = df_local['tanggal'].apply(lambda x: str(x)[:10])
+
+result = {}
+for _, row in df_local.iterrows():
+    tgl = row['tanggal_str']
+    outlet = str(row['outlet']).strip()
+    produk = str(row['nama_barang']).strip().upper()
+    terjual = int(row['terjual'])
+    out = int(row['out'])
+    sisa = int(row['sisa']) if pd.notna(row['sisa']) else 0
+
+    harga = harga_map.get(produk, {'hpp': 0, 'harga_jual': 0, 'komisi': 0})
+
+    if tgl not in result: result[tgl] = {}
+    if outlet not in result[tgl]: result[tgl][outlet] = []
+
+    result[tgl][outlet].append({
+        'produk': produk,
+        'out': out,
+        'sisa': sisa,
+        'terjual': terjual,
+        'hpp': harga['hpp'],
+        'harga_jual': harga['harga_jual'],
+        'komisi': harga['komisi'],
+        'omset': terjual * harga['harga_jual'],
+        'modal': terjual * harga['hpp'],
+        'total_komisi': terjual * harga['komisi'],
+    })
+
+with open('storage/app/laporan_harian_mei.json', 'w') as f:
+    json.dump(result, f)
+
+print(f'Done! {len(result)} hari, {sum(len(v) for v in result.values())} outlet-hari')
