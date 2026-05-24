@@ -15,7 +15,7 @@
         {{-- Logo & Title --}}
         <div class="text-center mb-8">
             <h1 class="text-4xl font-bold text-orange-500">DIMSYS</h1>
-            <p class="text-gray-500 text-sm mt-1">Dimsum IN Management System</p>
+            <p class="text-gray-500 text-sm mt-1">Dimsum In Management System</p>
         </div>
 
         {{-- Card --}}

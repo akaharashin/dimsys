@@ -17,7 +17,7 @@
             {{-- Logo --}}
             <div class="px-6 py-4 border-b border-gray-100 flex-shrink-0">
                 <h1 class="text-2xl font-bold text-orange-500 tracking-tight">DIMSYS</h1>
-                <p class="text-xs text-gray-400 mt-0.5">Dimsum IN Management System</p>
+                <p class="text-xs text-gray-400 mt-0.5">Dimsum In Management System</p>
             </div>
 
             {{-- Nav --}}
@@ -75,6 +75,13 @@
                         {{ request()->routeIs('stok.opname*') ? 'bg-orange-500 text-white shadow-sm font-medium' : 'text-gray-600 hover:bg-orange-50 hover:text-orange-600' }}">
                         <i class="fa-solid fa-clipboard-check w-4 text-center"></i> Stok Opname
                     </a>
+                    @if(auth()->user()->hasRole(['admin_pusat', 'koordinator']))
+                    <a href="{{ route('stok.generate-awal') }}"
+                        class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all
+                        {{ request()->routeIs('stok.generate-awal*') ? 'bg-orange-500 text-white shadow-sm font-medium' : 'text-gray-600 hover:bg-orange-50 hover:text-orange-600' }}">
+                        <i class="fa-solid fa-arrows-rotate w-4 text-center"></i> Generate Stok Awal
+                    </a>
+                    @endif
 
                     <p class="px-3 pt-5 pb-1.5 text-xs text-gray-300 uppercase tracking-widest font-semibold">Transaksi</p>
                     <a href="{{ route('transaksi.laporan-harian.index') }}"
@@ -93,7 +100,7 @@
                     <a href="{{ route('transaksi.penjualan-wilayah.index') }}"
                         class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all
                         {{ request()->routeIs('transaksi.penjualan-wilayah.*') ? 'bg-orange-500 text-white shadow-sm font-medium' : 'text-gray-600 hover:bg-orange-50 hover:text-orange-600' }}">
-                        <i class="fa-solid fa-city w-4 text-center"></i> Penjualan Wilayah
+                        <i class="fa-solid fa-city w-4 text-center"></i> Transfer & Penjualan
                     </a>
                 @endif
 

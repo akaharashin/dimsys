@@ -9,7 +9,7 @@ class PenjualanWilayah extends Model
     use HasUuids;
     use SoftDeletes;
     protected $table = 'penjualan_wilayah';
-    protected $fillable = ['wilayah_asal_id', 'wilayah_tujuan_id', 'tanggal', 'total', 'status_bayar', 'keterangan', 'created_by', 'deleted_by'];
+    protected $fillable = ['tipe', 'wilayah_asal_id', 'wilayah_tujuan_id', 'tanggal', 'total', 'status_bayar', 'keterangan', 'transfer_stok_masuk_id', 'created_by', 'deleted_by'];
 
     public function wilayahAsal()
     {

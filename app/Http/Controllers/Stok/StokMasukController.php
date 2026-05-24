@@ -5,9 +5,12 @@ use App\Exports\Stok\StokMasukExport;
 use App\Http\Controllers\Controller;
 use App\Models\StokMasuk;
 use App\Models\StokMasukDetail;
+use App\Models\DistribusiDetail;
+use App\Models\PenjualanWilayahDetail;
 use App\Models\Wilayah;
 use App\Models\Supplier;
 use App\Models\Produk;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -54,7 +57,6 @@ class StokMasukController extends Controller
     {
         $filters = $request->only(['wilayah_id', 'supplier_id', 'jenis', 'dari', 'sampai']);
 
-        // Koordinator hanya bisa export wilayahnya sendiri
         if (auth()->user()->hasRole('koordinator')) {
             $filters['wilayah_id'] = auth()->user()->wilayah_id;
         }
@@ -62,14 +64,15 @@ class StokMasukController extends Controller
         $filename = 'stok-masuk-' . now()->format('Y-m-d') . '.xlsx';
         return Excel::download(new StokMasukExport($filters), $filename);
     }
+
     public function create()
     {
         $wilayah = auth()->user()->hasRole('koordinator')
-            ? \App\Models\Wilayah::where('id', auth()->user()->wilayah_id)->get()
-            : \App\Models\Wilayah::where('aktif', true)->orderBy('nama')->get();
+            ? Wilayah::where('id', auth()->user()->wilayah_id)->get()
+            : Wilayah::where('aktif', true)->orderBy('nama')->get();
 
-        $supplier = \App\Models\Supplier::where('aktif', true)->orderBy('nama')->get();
-        $produk = \App\Models\Produk::where('aktif', true)->orderBy('nama')->get();
+        $supplier = Supplier::where('aktif', true)->orderBy('nama')->get();
+        $produk = Produk::where('aktif', true)->orderBy('nama')->get();
 
         return view('stok.masuk.create', compact('wilayah', 'supplier', 'produk'));
     }
@@ -100,7 +103,6 @@ class StokMasukController extends Controller
             'jumlah.*.min' => 'Jumlah produk tidak boleh bernilai negatif.',
         ]);
 
-        // Cek apakah ada minimal 1 produk dengan jumlah > 0
         $adaProduk = false;
         foreach ($request->produk_id as $i => $pid) {
             if (($request->jumlah[$i] ?? 0) > 0) {
@@ -126,7 +128,7 @@ class StokMasukController extends Controller
             foreach ($request->produk_id as $i => $pid) {
                 $jumlah = $request->jumlah[$i] ?? 0;
                 if ($jumlah > 0) {
-                    $produk = \App\Models\Produk::find($pid);
+                    $produk = Produk::find($pid);
                     StokMasukDetail::create([
                         'stok_masuk_id' => $stokMasuk->id,
                         'produk_id' => $pid,
@@ -142,6 +144,7 @@ class StokMasukController extends Controller
             return back()->with('error', 'Gagal mencatat stok masuk. Silakan coba lagi.')->withInput();
         }
     }
+
     public function show(StokMasuk $masuk)
     {
         $masuk->load(['wilayah', 'supplier', 'details.produk']);
@@ -153,5 +156,186 @@ class StokMasukController extends Controller
         $masuk->update(['deleted_by' => auth()->id()]);
         $masuk->delete();
         return redirect()->route('stok.masuk.index')->with('success', 'Stok masuk berhasil dibatalkan.');
+    }
+
+    // ─── Generate Stok Awal ───────────────────────────────────────────────────
+
+    public function generateAwalForm(Request $request)
+    {
+        if (auth()->user()->hasRole('koordinator')) {
+            $wilayahList = Wilayah::where('id', auth()->user()->wilayah_id)->get();
+        } else {
+            $wilayahList = Wilayah::where('aktif', true)->orderBy('nama')->get();
+        }
+
+        $defaultBulan = now()->subMonth()->format('Y-m');
+        return view('stok.generate-awal', compact('wilayahList', 'defaultBulan'));
+    }
+
+    public function generateAwalPreview(Request $request)
+    {
+        $wilayahId = $request->wilayah_id;
+        $bulan     = $request->bulan;
+
+        if (!$wilayahId || !$bulan || !preg_match('/^\d{4}-\d{2}$/', $bulan)) {
+            return response()->json(['error' => 'Parameter tidak lengkap.'], 422);
+        }
+
+        if (auth()->user()->hasRole('koordinator')) {
+            $wilayahId = auth()->user()->wilayah_id;
+        }
+
+        $wilayah = Wilayah::find($wilayahId);
+        if (!$wilayah) {
+            return response()->json(['error' => 'Wilayah tidak ditemukan.'], 404);
+        }
+
+        [$tahun, $bln] = explode('-', $bulan);
+        $nextMonth = Carbon::parse($bulan . '-01')->addMonth();
+
+        $alreadyExists = StokMasuk::where('jenis', 'awal')
+            ->where('wilayah_id', $wilayahId)
+            ->whereYear('tanggal', $nextMonth->year)
+            ->whereMonth('tanggal', $nextMonth->month)
+            ->exists();
+
+        $produkList = Produk::where('aktif', true)->orderBy('nama')->get();
+        $data = $this->hitungStokAkhirBulan($wilayahId, $produkList, (int) $tahun, (int) $bln);
+
+        $bulanIndo = ['', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+                          'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+
+        return response()->json([
+            'wilayah_id'          => $wilayahId,
+            'bulan'               => $bulan,
+            'bulan_label'         => $bulanIndo[(int) $bln] . ' ' . $tahun,
+            'bulan_tujuan_label'  => $bulanIndo[$nextMonth->month] . ' ' . $nextMonth->year,
+            'tanggal_tujuan'      => $nextMonth->format('Y-m-01'),
+            'already_exists'      => $alreadyExists,
+            'wilayah_nama'        => $wilayah->nama,
+            'data'                => $data,
+        ]);
+    }
+
+    public function generateAwal(Request $request)
+    {
+        $request->validate([
+            'wilayah_id' => 'required|exists:wilayah,id',
+            'bulan'      => ['required', 'regex:/^\d{4}-\d{2}$/'],
+        ], [
+            'wilayah_id.required' => 'Wilayah wajib dipilih.',
+            'bulan.required'      => 'Bulan wajib dipilih.',
+            'bulan.regex'         => 'Format bulan tidak valid.',
+        ]);
+
+        $wilayahId = $request->wilayah_id;
+        if (auth()->user()->hasRole('koordinator')) {
+            $wilayahId = auth()->user()->wilayah_id;
+        }
+
+        $bulan = $request->bulan;
+        [$tahun, $bln] = explode('-', $bulan);
+        $nextMonth = Carbon::parse($bulan . '-01')->addMonth();
+
+        $bulanIndo = ['', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+                          'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+        $nextBulanLabel = $bulanIndo[$nextMonth->month] . ' ' . $nextMonth->year;
+
+        // Cek apakah stok awal bulan tujuan sudah ada
+        $alreadyExists = StokMasuk::where('jenis', 'awal')
+            ->where('wilayah_id', $wilayahId)
+            ->whereYear('tanggal', $nextMonth->year)
+            ->whereMonth('tanggal', $nextMonth->month)
+            ->exists();
+
+        if ($alreadyExists) {
+            return back()->with('error', "Stok awal {$nextBulanLabel} untuk wilayah ini sudah ada.");
+        }
+
+        $produkList = Produk::where('aktif', true)->orderBy('nama')->get();
+        $stokData = $this->hitungStokAkhirBulan($wilayahId, $produkList, (int) $tahun, (int) $bln);
+
+        if (empty($stokData)) {
+            return back()->with('error', "Tidak ada produk dengan stok akhir > 0 pada {$bulanIndo[(int)$bln]} {$tahun}.");
+        }
+
+        try {
+            $supplier = Supplier::where('aktif', true)->orderBy('created_at')->first();
+            $wilayah = Wilayah::find($wilayahId);
+
+            $stokMasuk = StokMasuk::create([
+                'wilayah_id'  => $wilayahId,
+                'supplier_id' => $supplier?->id,
+                'tanggal'     => $nextMonth->format('Y-m-01'),
+                'jenis'       => 'awal',
+                'keterangan'  => 'Stok Awal ' . $nextBulanLabel . ' - Auto Generate',
+                'created_by'  => auth()->id(),
+            ]);
+
+            foreach ($stokData as $row) {
+                StokMasukDetail::create([
+                    'stok_masuk_id' => $stokMasuk->id,
+                    'produk_id'     => $row['produk_id'],
+                    'jumlah'        => $row['stok_akhir'],
+                    'hpp'           => $row['hpp'],
+                ]);
+            }
+
+            $jumlahProduk = count($stokData);
+
+            return redirect()->route('stok.masuk.index', [
+                'dari'       => $nextMonth->format('Y-m-01'),
+                'sampai'     => $nextMonth->copy()->endOfMonth()->format('Y-m-d'),
+                'jenis'      => 'awal',
+                'wilayah_id' => $wilayahId,
+            ])->with('success', "Stok awal {$nextBulanLabel} berhasil di-generate ({$jumlahProduk} produk).");
+
+        } catch (\Exception $e) {
+            return back()->with('error', 'Gagal generate stok awal. Silakan coba lagi.');
+        }
+    }
+
+    private function hitungStokAkhirBulan(string $wilayahId, $produkList, int $tahun, int $bulan): array
+    {
+        return $produkList->map(function ($produk) use ($wilayahId, $tahun, $bulan) {
+
+            $stokAwal = StokMasukDetail::whereHas('stokMasuk', function ($q) use ($tahun, $bulan, $wilayahId) {
+                $q->whereYear('tanggal', $tahun)
+                  ->whereMonth('tanggal', $bulan)
+                  ->where('jenis', 'awal')
+                  ->where('wilayah_id', $wilayahId);
+            })->where('produk_id', $produk->id)->sum('jumlah');
+
+            $masuk = StokMasukDetail::whereHas('stokMasuk', function ($q) use ($tahun, $bulan, $wilayahId) {
+                $q->whereYear('tanggal', $tahun)
+                  ->whereMonth('tanggal', $bulan)
+                  ->where('jenis', 'masuk')
+                  ->where('wilayah_id', $wilayahId);
+            })->where('produk_id', $produk->id)->sum('jumlah');
+
+            $out = DistribusiDetail::whereHas('distribusi', function ($q) use ($tahun, $bulan, $wilayahId) {
+                $q->whereYear('tanggal', $tahun)
+                  ->whereMonth('tanggal', $bulan)
+                  ->whereHas('outlet', fn($o) => $o->where('wilayah_id', $wilayahId));
+            })->where('produk_id', $produk->id)->sum('jumlah_out');
+
+            $keluarWilayah = PenjualanWilayahDetail::whereHas('penjualan', function ($q) use ($tahun, $bulan, $wilayahId) {
+                $q->whereYear('tanggal', $tahun)
+                  ->whereMonth('tanggal', $bulan)
+                  ->where('wilayah_asal_id', $wilayahId);
+            })->where('produk_id', $produk->id)->sum('jumlah');
+
+            $stokAkhir = ($stokAwal + $masuk) - $out - $keluarWilayah;
+
+            return [
+                'produk_id'   => $produk->id,
+                'produk_nama' => $produk->nama,
+                'stok_awal'   => (int) $stokAwal,
+                'masuk'       => (int) $masuk,
+                'out'         => (int) ($out + $keluarWilayah),
+                'stok_akhir'  => (int) $stokAkhir,
+                'hpp'         => $produk->hpp,
+            ];
+        })->filter(fn($r) => $r['stok_akhir'] > 0)->values()->toArray();
     }
 }

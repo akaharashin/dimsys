@@ -1,14 +1,14 @@
 @extends('layouts.app')
-@section('title', 'Penjualan Wilayah')
+@section('title', 'Transfer & Penjualan')
 
 @section('content')
 
     <div class="flex items-center justify-between mb-6">
-        <h2 class="text-2xl font-bold text-gray-700">Penjualan Wilayah</h2>
+        <h2 class="text-2xl font-bold text-gray-700">Transfer & Penjualan</h2>
         @if(!auth()->user()->hasRole('owner'))
         <a href="{{ route('transaksi.penjualan-wilayah.create') }}"
             class="bg-orange-500 hover:bg-orange-600 text-white text-sm px-4 py-2 rounded-lg">
-            + Tambah Penjualan
+            + Tambah Transaksi
         </a>
         @endif
     </div>
@@ -27,14 +27,23 @@
                     class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300">
             </div>
             <div>
+                <label class="block text-xs text-gray-500 mb-1">Tipe</label>
+                <select name="tipe"
+                    class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300"
+                    style="min-width:120px">
+                    <option value="">Semua</option>
+                    <option value="penjualan" {{ request('tipe') == 'penjualan' ? 'selected' : '' }}>Penjualan</option>
+                    <option value="transfer" {{ request('tipe') == 'transfer' ? 'selected' : '' }}>Transfer</option>
+                </select>
+            </div>
+            <div>
                 <label class="block text-xs text-gray-500 mb-1">Wilayah Asal</label>
                 <select name="wilayah_asal_id"
                     class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300"
                     style="min-width:130px">
                     <option value="">Semua</option>
                     @foreach($wilayahList as $w)
-                        <option value="{{ $w->id }}" {{ request('wilayah_asal_id') == $w->id ? 'selected' : '' }}>{{ $w->nama }}
-                        </option>
+                        <option value="{{ $w->id }}" {{ request('wilayah_asal_id') == $w->id ? 'selected' : '' }}>{{ $w->nama }}</option>
                     @endforeach
                 </select>
             </div>
@@ -45,8 +54,7 @@
                     style="min-width:130px">
                     <option value="">Semua</option>
                     @foreach($wilayahList as $w)
-                        <option value="{{ $w->id }}" {{ request('wilayah_tujuan_id') == $w->id ? 'selected' : '' }}>{{ $w->nama }}
-                        </option>
+                        <option value="{{ $w->id }}" {{ request('wilayah_tujuan_id') == $w->id ? 'selected' : '' }}>{{ $w->nama }}</option>
                     @endforeach
                 </select>
             </div>
@@ -56,8 +64,7 @@
                     class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300">
                     <option value="">Semua</option>
                     <option value="lunas" {{ request('status_bayar') == 'lunas' ? 'selected' : '' }}>Lunas</option>
-                    <option value="belum_lunas" {{ request('status_bayar') == 'belum_lunas' ? 'selected' : '' }}>Belum Lunas
-                    </option>
+                    <option value="belum_lunas" {{ request('status_bayar') == 'belum_lunas' ? 'selected' : '' }}>Belum Lunas</option>
                     <option value="sebagian" {{ request('status_bayar') == 'sebagian' ? 'selected' : '' }}>Sebagian</option>
                 </select>
             </div>
@@ -81,10 +88,10 @@
         </form>
     </div>
 
-    {{-- Summary --}}
+    {{-- Summary (penjualan only) --}}
     <div class="grid grid-cols-3 gap-4 mb-4">
         <div class="bg-white rounded-xl p-4 shadow-sm border-l-4 border-gray-400">
-            <p class="text-xs text-gray-400 uppercase">Total Nilai</p>
+            <p class="text-xs text-gray-400 uppercase">Total Penjualan</p>
             <p class="text-xl font-bold text-gray-700 mt-1">Rp {{ number_format($totalNilai) }}</p>
         </div>
         <div class="bg-white rounded-xl p-4 shadow-sm border-l-4 border-green-400">
@@ -110,6 +117,7 @@
                 <tr>
                     <th class="px-4 py-3 text-center w-12">No</th>
                     <th class="px-4 py-3 text-left">Tanggal</th>
+                    <th class="px-4 py-3 text-left">Tipe</th>
                     <th class="px-4 py-3 text-left">Dari</th>
                     <th class="px-4 py-3 text-left">Ke</th>
                     <th class="px-4 py-3 text-right">Total</th>
@@ -120,42 +128,58 @@
             </thead>
             <tbody class="divide-y divide-gray-100">
                 @forelse($penjualan as $p)
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-4 py-3 text-center text-gray-400 text-xs">{{ $penjualan->firstItem() + $loop->index }}
-                            </td>
-                            <td class="px-4 py-3 text-gray-700">{{ \Carbon\Carbon::parse($p->tanggal)->format('d M Y') }}</td>
-                            <td class="px-4 py-3 font-medium text-gray-700">{{ $p->wilayahAsal->nama }}</td>
-                            <td class="px-4 py-3 text-gray-600">{{ $p->wilayahTujuan->nama }}</td>
-                            <td class="px-4 py-3 text-right font-medium text-gray-700">Rp {{ number_format($p->total) }}</td>
-                            <td class="px-4 py-3">
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-4 py-3 text-center text-gray-400 text-xs">{{ $penjualan->firstItem() + $loop->index }}</td>
+                        <td class="px-4 py-3 text-gray-700">{{ \Carbon\Carbon::parse($p->tanggal)->format('d M Y') }}</td>
+                        <td class="px-4 py-3">
+                            @if($p->tipe === 'transfer')
+                                <span class="px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-600">Transfer</span>
+                            @else
+                                <span class="px-2 py-1 rounded-full text-xs bg-orange-100 text-orange-600">Penjualan</span>
+                            @endif
+                        </td>
+                        <td class="px-4 py-3 font-medium text-gray-700">{{ $p->wilayahAsal->nama }}</td>
+                        <td class="px-4 py-3 text-gray-600">{{ $p->wilayahTujuan->nama }}</td>
+                        <td class="px-4 py-3 text-right font-medium text-gray-700">
+                            @if($p->tipe === 'transfer')
+                                <span class="text-gray-400">—</span>
+                            @else
+                                Rp {{ number_format($p->total) }}
+                            @endif
+                        </td>
+                        <td class="px-4 py-3">
+                            @if($p->tipe === 'transfer')
+                                <span class="text-gray-400 text-xs">—</span>
+                            @else
                                 <span class="px-2 py-1 rounded-full text-xs
                                     {{ $p->status_bayar === 'lunas' ? 'bg-green-100 text-green-600' :
-                    ($p->status_bayar === 'sebagian' ? 'bg-yellow-100 text-yellow-600' :
-                        'bg-red-100 text-red-500') }}">
+                                      ($p->status_bayar === 'sebagian' ? 'bg-yellow-100 text-yellow-600' :
+                                       'bg-red-100 text-red-500') }}">
                                     {{ ucfirst(str_replace('_', ' ', $p->status_bayar)) }}
                                 </span>
-                            </td>
-                            <td class="px-4 py-3 text-gray-500">{{ $p->keterangan ?? '-' }}</td>
-                            <td class="px-4 py-3 flex gap-2">
-                                <a href="{{ route('transaksi.penjualan-wilayah.show', $p) }}"
-                                    class="text-xs px-3 py-1 bg-blue-50 hover:bg-blue-100 rounded-lg text-blue-600">Detail</a>
-                                @if(!auth()->user()->hasRole('owner'))
-                                    @if($p->status_bayar !== 'lunas')
-                                        <button onclick="openUpdateStatus('{{ $p->id }}','{{ $p->status_bayar }}')"
-                                            class="text-xs px-3 py-1 bg-yellow-50 hover:bg-yellow-100 rounded-lg text-yellow-600">Update</button>
-                                    @endif
-                                    <form method="POST" action="{{ route('transaksi.penjualan-wilayah.destroy', $p) }}"
-                                        data-confirm="Yakin ingin membatalkan penjualan wilayah ini?">
-                                        @csrf @method('DELETE')
-                                        <button
-                                            class="text-xs px-3 py-1 bg-red-50 hover:bg-red-100 rounded-lg text-red-500">Batalkan</button>
-                                    </form>
+                            @endif
+                        </td>
+                        <td class="px-4 py-3 text-gray-500">{{ $p->keterangan ?? '-' }}</td>
+                        <td class="px-4 py-3 flex gap-2">
+                            <a href="{{ route('transaksi.penjualan-wilayah.show', $p) }}"
+                                class="text-xs px-3 py-1 bg-blue-50 hover:bg-blue-100 rounded-lg text-blue-600">Detail</a>
+                            @if(!auth()->user()->hasRole('owner'))
+                                @if($p->tipe === 'penjualan' && $p->status_bayar !== 'lunas')
+                                    <button onclick="openUpdateStatus('{{ $p->id }}','{{ $p->status_bayar }}')"
+                                        class="text-xs px-3 py-1 bg-yellow-50 hover:bg-yellow-100 rounded-lg text-yellow-600">Update</button>
                                 @endif
-                            </td>
-                        </tr>
+                                <form method="POST" action="{{ route('transaksi.penjualan-wilayah.destroy', $p) }}"
+                                    data-confirm="{{ $p->tipe === 'transfer' ? 'Yakin ingin membatalkan transfer ini? Stok masuk di wilayah tujuan juga akan dihapus.' : 'Yakin ingin membatalkan penjualan wilayah ini?' }}">
+                                    @csrf @method('DELETE')
+                                    <button
+                                        class="text-xs px-3 py-1 bg-red-50 hover:bg-red-100 rounded-lg text-red-500">Batalkan</button>
+                                </form>
+                            @endif
+                        </td>
+                    </tr>
                 @empty
                     <tr>
-                        <td colspan="8" class="px-4 py-8 text-center text-gray-400">Belum ada data penjualan wilayah.</td>
+                        <td colspan="9" class="px-4 py-8 text-center text-gray-400">Belum ada data transaksi.</td>
                     </tr>
                 @endforelse
             </tbody>

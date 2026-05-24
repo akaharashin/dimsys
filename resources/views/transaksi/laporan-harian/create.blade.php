@@ -207,8 +207,8 @@
 
         let pengeluaranCount = 1;
         function tambahPengeluaran() {
-            if (pengeluaranCount >= 2) {
-                alert('Maksimal 2 pengeluaran per laporan.');
+            if (pengeluaranCount >= 10) {
+                alert('Maksimal 10 pengeluaran per laporan.');
                 return;
             }
             const container = document.getElementById('pengeluaran-container');

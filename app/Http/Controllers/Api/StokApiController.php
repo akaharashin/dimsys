@@ -13,10 +13,16 @@ class StokApiController extends Controller
 {
     public function getStokTersedia(Request $request)
     {
-        $outlet = Outlet::find($request->outlet_id);
-        if (!$outlet) return response()->json([]);
+        if ($request->filled('wilayah_id')) {
+            $wilayahId = $request->wilayah_id;
+        } elseif ($request->filled('outlet_id')) {
+            $outlet = Outlet::find($request->outlet_id);
+            if (!$outlet) return response()->json([]);
+            $wilayahId = $outlet->wilayah_id;
+        } else {
+            return response()->json([]);
+        }
 
-        $wilayahId = $outlet->wilayah_id;
         $produkList = Produk::where('aktif', true)->orderBy('nama')->get();
 
         $result = $produkList->map(function ($produk) use ($wilayahId) {

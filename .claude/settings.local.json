@@ -1,7 +1,14 @@
 {
   "permissions": {
     "allow": [
-      "Bash(findstr /i \"SESSION APP_KEY VITE\")"
+      "Bash(findstr /i \"SESSION APP_KEY VITE\")",
+      "Bash(php artisan *)",
+      "Bash(Find app/Http/Controllers -type f -name \"*.php\")",
+      "Bash(Find c:\\\\laragon\\\\www\\\\dimsys/app/Models -type f -name \"*.php\")",
+      "Bash(php -l app/Http/Controllers/Stok/StokMasukController.php)",
+      "Bash(php -l app/Http/Controllers/Transaksi/PenjualanWilayahController.php)",
+      "Bash(php -l app/Http/Controllers/Api/StokApiController.php)",
+      "Bash(php -l \"c:\\\\laragon\\\\www\\\\dimsys\\\\app\\\\Http\\\\Controllers\\\\Transaksi\\\\PenjualanWilayahController.php\")"
     ]
   }
 }

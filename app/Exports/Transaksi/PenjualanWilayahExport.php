@@ -24,29 +24,30 @@ class PenjualanWilayahExport implements FromCollection, WithHeadings, WithTitle,
         return $this->data->map(fn($p) => [
             $no++,
             \Carbon\Carbon::parse($p->tanggal)->format('d/m/Y'),
+            ucfirst($p->tipe),
             $p->wilayahAsal->nama,
             $p->wilayahTujuan->nama,
-            $p->total,
-            ucfirst(str_replace('_', ' ', $p->status_bayar)),
+            $p->tipe === 'transfer' ? 0 : $p->total,
+            $p->tipe === 'transfer' ? '-' : ucfirst(str_replace('_', ' ', $p->status_bayar)),
             $p->keterangan ?? '-',
         ]);
     }
 
     public function headings(): array
     {
-        return ['No', 'Tanggal', 'Dari', 'Ke', 'Total', 'Status Bayar', 'Keterangan'];
+        return ['No', 'Tanggal', 'Tipe', 'Dari', 'Ke', 'Total', 'Status Bayar', 'Keterangan'];
     }
 
     public function columnFormats(): array
     {
         return [
-            'E' => '#,##0',
+            'F' => '#,##0',
         ];
     }
 
     public function title(): string
     {
-        return 'Penjualan Wilayah';
+        return 'Transfer & Penjualan';
     }
 
     public function styles(Worksheet $sheet)

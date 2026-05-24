@@ -76,51 +76,52 @@
     <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
 
         @if(auth()->user()->hasRole(['admin_pusat']))
-            <a href="{{ route('stok.masuk.create') }}"
+            <a href="{{ route('stok.masuk.index') }}"
                 class="bg-white rounded-xl p-4 shadow-sm hover:shadow-md hover:border-orange-200 border border-transparent transition flex items-center gap-3">
                 <div
                     class="w-9 h-9 bg-orange-100 rounded-lg flex items-center justify-center text-orange-500 font-bold text-sm">
                     SM</div>
                 <div>
                     <p class="text-sm font-medium text-gray-700">Stok Masuk</p>
-                    <p class="text-xs text-gray-400">Tambah stok</p>
+                    <p class="text-xs text-gray-400">Lihat & tambah stok</p>
                 </div>
             </a>
         @endif
 
         @if(auth()->user()->hasRole(['admin_pusat', 'koordinator']))
-            <a href="{{ route('stok.distribusi.create') }}"
+            <a href="{{ route('stok.distribusi.index') }}"
                 class="bg-white rounded-xl p-4 shadow-sm hover:shadow-md hover:border-orange-200 border border-transparent transition flex items-center gap-3">
                 <div class="w-9 h-9 bg-blue-100 rounded-lg flex items-center justify-center text-blue-500 font-bold text-sm">DS
                 </div>
                 <div>
                     <p class="text-sm font-medium text-gray-700">Distribusi</p>
-                    <p class="text-xs text-gray-400">OUT ke gerobak</p>
+                    <p class="text-xs text-gray-400">Lihat & input OUT</p>
                 </div>
             </a>
-            <a href="{{ route('transaksi.laporan-harian.create') }}"
+            <a href="{{ route('transaksi.laporan-harian.index') }}"
                 class="bg-white rounded-xl p-4 shadow-sm hover:shadow-md hover:border-orange-200 border border-transparent transition flex items-center gap-3">
                 <div class="w-9 h-9 bg-green-100 rounded-lg flex items-center justify-center text-green-500 font-bold text-sm">
                     LH</div>
                 <div>
                     <p class="text-sm font-medium text-gray-700">Laporan Harian</p>
-                    <p class="text-xs text-gray-400">Input laporan</p>
+                    <p class="text-xs text-gray-400">Lihat & input laporan</p>
                 </div>
             </a>
         @endif
 
-        <a href="{{ route('stok.rekap') }}"
-            class="bg-white rounded-xl p-4 shadow-sm hover:shadow-md hover:border-orange-200 border border-transparent transition flex items-center gap-3">
-            <div
-                class="w-9 h-9 bg-purple-100 rounded-lg flex items-center justify-center text-purple-500 font-bold text-sm">
-                RS</div>
-            <div>
-                <p class="text-sm font-medium text-gray-700">Rekap Stok</p>
-                <p class="text-xs text-gray-400">Cek stok freezer</p>
-            </div>
-        </a>
+        @if(auth()->user()->hasRole(['admin_pusat', 'koordinator', 'owner']))
+            <a href="{{ route('stok.rekap') }}"
+                class="bg-white rounded-xl p-4 shadow-sm hover:shadow-md hover:border-orange-200 border border-transparent transition flex items-center gap-3">
+                <div
+                    class="w-9 h-9 bg-purple-100 rounded-lg flex items-center justify-center text-purple-500 font-bold text-sm">
+                    RS</div>
+                <div>
+                    <p class="text-sm font-medium text-gray-700">Rekap Stok</p>
+                    <p class="text-xs text-gray-400">Cek stok freezer</p>
+                </div>
+            </a>
+        @endif
 
-        {{-- Owner hanya lihat laporan --}}
         @if(auth()->user()->hasRole('owner'))
             <a href="{{ route('laporan.omset') }}"
                 class="bg-white rounded-xl p-4 shadow-sm hover:shadow-md hover:border-orange-200 border border-transparent transition flex items-center gap-3">
@@ -139,6 +140,15 @@
                 <div>
                     <p class="text-sm font-medium text-gray-700">Kontrol Penjualan</p>
                     <p class="text-xs text-gray-400">Monitor outlet</p>
+                </div>
+            </a>
+            <a href="{{ route('laporan.rata-rata-out') }}"
+                class="bg-white rounded-xl p-4 shadow-sm hover:shadow-md hover:border-orange-200 border border-transparent transition flex items-center gap-3">
+                <div class="w-9 h-9 bg-green-100 rounded-lg flex items-center justify-center text-green-500 font-bold text-sm">
+                    RO</div>
+                <div>
+                    <p class="text-sm font-medium text-gray-700">Rata-rata OUT</p>
+                    <p class="text-xs text-gray-400">Lihat rata-rata</p>
                 </div>
             </a>
         @endif
