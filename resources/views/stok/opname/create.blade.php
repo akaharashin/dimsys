@@ -16,7 +16,7 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                     <label class="block text-sm text-gray-600 mb-1">Tanggal</label>
-                    <input type="date" name="tanggal" value="{{ date('Y-m-d') }}" required
+                    <input type="date" name="tanggal" value="{{ date('Y-m-d') }}" min="{{ date('Y-m-d') }}" required
                         class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300">
                 </div>
                 <div>

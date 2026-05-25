@@ -17,7 +17,7 @@ class LaporanHarianController extends Controller
         $outletList = \App\Models\Outlet::where('aktif', true)->orderBy('nama')->get();
 
         $query = LaporanHarian::with(['outlet.wilayah', 'details'])
-            ->orderByDesc('tanggal');
+            ->orderByDesc('tanggal')->orderByDesc('created_at');
 
         if (auth()->user()->hasRole('koordinator')) {
             $query->whereHas(
@@ -74,7 +74,7 @@ class LaporanHarianController extends Controller
     {
         $request->validate([
             'outlet_id' => 'required|exists:outlet,id',
-            'tanggal' => 'required|date',
+            'tanggal' => 'required|date|date_equals:today',
             'pengeluaran_ket.*' => 'nullable|string|max:255',
             'pengeluaran_jml.*' => 'nullable|numeric|min:0',
         ], [
@@ -82,6 +82,7 @@ class LaporanHarianController extends Controller
             'outlet_id.exists' => 'Outlet yang dipilih tidak valid.',
             'tanggal.required' => 'Tanggal laporan wajib diisi.',
             'tanggal.date' => 'Format tanggal tidak valid.',
+            'tanggal.date_equals' => 'Tanggal transaksi harus hari ini.',
             'pengeluaran_ket.*.max' => 'Keterangan pengeluaran maksimal 255 karakter.',
             'pengeluaran_jml.*.numeric' => 'Jumlah pengeluaran harus berupa angka.',
             'pengeluaran_jml.*.min' => 'Jumlah pengeluaran tidak boleh bernilai negatif.',
@@ -125,7 +126,7 @@ class LaporanHarianController extends Controller
             foreach ($distribusi->details as $d) {
                 $sisa = $request->input('sisa_' . $d->produk_id, 0);
                 $terjual = max(0, $d->jumlah_out - $sisa);
-                $totalOmset += $terjual * $d->produk->harga_jual;
+                $totalOmset += $terjual * $d->produk->harga_mitra;
                 $totalKomisi += $terjual * $d->produk->komisi;
             }
         }
@@ -165,7 +166,7 @@ class LaporanHarianController extends Controller
                         'produk_id' => $d->produk_id,
                         'sisa' => $sisa,
                         'terjual' => $terjual,
-                        'omset' => $terjual * $d->produk->harga_jual,
+                        'omset' => $terjual * $d->produk->harga_mitra,
                         'modal' => $terjual * $d->produk->hpp,
                         'komisi' => $terjual * $d->produk->komisi,
                     ]);

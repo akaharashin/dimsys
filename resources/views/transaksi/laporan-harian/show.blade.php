@@ -95,9 +95,9 @@
                 <p class="text-xl font-bold text-red-500 mt-1">Rp {{ number_format($laporanHarian->total_pengeluaran) }}</p>
             </div>
             <div class="p-4 bg-orange-50 rounded-lg">
-                <p class="text-xs text-gray-400 uppercase">Kas Bersih</p>
+                <p class="text-xs text-gray-400 uppercase">Total Omset</p>
                 <p class="text-xl font-bold text-orange-500 mt-1">
-                    Rp {{ number_format($laporanHarian->total_setor - $laporanHarian->total_pengeluaran) }}
+                    Rp {{ number_format($laporanHarian->details->sum('omset')) }}
                 </p>
             </div>
         </div>

@@ -35,7 +35,7 @@ class StokApiController extends Controller
             )->where('produk_id', $produk->id)->sum('jumlah_out');
 
             $keluarWilayah = PenjualanWilayahDetail::whereHas('penjualan', fn($q) =>
-                $q->where('wilayah_asal_id', $wilayahId)
+                $q->where('wilayah_asal_id', $wilayahId)->where('status', 'disetujui')
             )->where('produk_id', $produk->id)->sum('jumlah');
 
             $stokTersedia = $masuk - $sudahOut - $keluarWilayah;

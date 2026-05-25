@@ -46,7 +46,7 @@ class KasController extends Controller
             });
         }
 
-        // Hitung saldo berjalan
+        // Hitung saldo berjalan (ASC order supaya akumulasi benar)
         $allKas = $query->get();
         $saldo = Rekening::find($selectedRekening)?->saldo_awal ?? 0;
 
@@ -60,6 +60,14 @@ class KasController extends Controller
             return $k;
         });
 
+        // Summary dihitung sebelum reverse
+        $totalDebit = $kasWithSaldo->where('tipe', 'debit')->sum('jumlah');
+        $totalKredit = $kasWithSaldo->where('tipe', 'kredit')->sum('jumlah');
+        $saldoAkhir = $kasWithSaldo->last()?->saldo_berjalan ?? 0;
+
+        // Balik urutan untuk tampilkan terbaru di atas
+        $kasWithSaldo = $kasWithSaldo->reverse()->values();
+
         // Paginate manual
         $perPage = in_array($request->per_page, [10, 25, 50, 100]) ? $request->per_page : 25;
         $page = $request->input('page', 1);
@@ -71,11 +79,6 @@ class KasController extends Controller
             $page,
             ['path' => $request->url(), 'query' => $request->query()]
         );
-
-        // Summary
-        $totalDebit = $kasWithSaldo->where('tipe', 'debit')->sum('jumlah');
-        $totalKredit = $kasWithSaldo->where('tipe', 'kredit')->sum('jumlah');
-        $saldoAkhir = $kasWithSaldo->last()?->saldo_berjalan ?? 0;
 
         return view('transaksi.kas.index', compact(
             'rekeningList',
@@ -109,7 +112,7 @@ class KasController extends Controller
     {
         $request->validate([
             'rekening_id' => 'required|exists:rekening,id',
-            'tanggal' => 'required|date',
+            'tanggal' => 'required|date|date_equals:today',
             'tipe' => 'required|in:debit,kredit',
             'kategori' => 'required|string|max:100',
             'sub_kategori' => 'nullable|string|max:100',
@@ -122,6 +125,7 @@ class KasController extends Controller
             'rekening_id.exists' => 'Rekening yang dipilih tidak valid.',
             'tanggal.required' => 'Tanggal transaksi wajib diisi.',
             'tanggal.date' => 'Format tanggal tidak valid.',
+            'tanggal.date_equals' => 'Tanggal transaksi harus hari ini.',
             'tipe.required' => 'Tipe transaksi wajib dipilih.',
             'tipe.in' => 'Tipe transaksi harus berupa debit atau kredit.',
             'kategori.required' => 'Kategori transaksi wajib diisi.',

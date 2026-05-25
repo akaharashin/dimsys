@@ -22,7 +22,7 @@ class StokMasukController extends Controller
         $supplierList = Supplier::where('aktif', true)->orderBy('nama')->get();
 
         $query = StokMasuk::with(['wilayah', 'supplier', 'details.produk'])
-            ->orderByDesc('tanggal');
+            ->orderByDesc('tanggal')->orderByDesc('created_at');
 
         if (auth()->user()->hasRole('koordinator')) {
             $query->where('wilayah_id', auth()->user()->wilayah_id);
@@ -82,7 +82,7 @@ class StokMasukController extends Controller
         $request->validate([
             'wilayah_id' => 'required|exists:wilayah,id',
             'supplier_id' => 'required|exists:supplier,id',
-            'tanggal' => 'required|date',
+            'tanggal' => 'required|date|date_equals:today',
             'jenis' => 'required|in:awal,masuk',
             'keterangan' => 'nullable|string|max:255',
             'produk_id' => 'required|array|min:1',
@@ -94,6 +94,7 @@ class StokMasukController extends Controller
             'supplier_id.exists' => 'Supplier yang dipilih tidak valid.',
             'tanggal.required' => 'Tanggal stok masuk wajib diisi.',
             'tanggal.date' => 'Format tanggal tidak valid.',
+            'tanggal.date_equals' => 'Tanggal transaksi harus hari ini.',
             'jenis.required' => 'Jenis stok wajib dipilih.',
             'jenis.in' => 'Jenis stok harus berupa stok awal atau stok masuk.',
             'keterangan.max' => 'Keterangan maksimal 255 karakter.',
@@ -261,11 +262,19 @@ class StokMasukController extends Controller
 
         try {
             $supplier = Supplier::where('aktif', true)->orderBy('created_at')->first();
+
+            if (!$supplier) {
+                $supplier = Supplier::create([
+                    'nama'   => 'Internal',
+                    'aktif'  => true,
+                ]);
+            }
+
             $wilayah = Wilayah::find($wilayahId);
 
             $stokMasuk = StokMasuk::create([
                 'wilayah_id'  => $wilayahId,
-                'supplier_id' => $supplier?->id,
+                'supplier_id' => $supplier->id,
                 'tanggal'     => $nextMonth->format('Y-m-01'),
                 'jenis'       => 'awal',
                 'keterangan'  => 'Stok Awal ' . $nextBulanLabel . ' - Auto Generate',
@@ -322,7 +331,8 @@ class StokMasukController extends Controller
             $keluarWilayah = PenjualanWilayahDetail::whereHas('penjualan', function ($q) use ($tahun, $bulan, $wilayahId) {
                 $q->whereYear('tanggal', $tahun)
                   ->whereMonth('tanggal', $bulan)
-                  ->where('wilayah_asal_id', $wilayahId);
+                  ->where('wilayah_asal_id', $wilayahId)
+                  ->where('status', 'disetujui');
             })->where('produk_id', $produk->id)->sum('jumlah');
 
             $stokAkhir = ($stokAwal + $masuk) - $out - $keluarWilayah;

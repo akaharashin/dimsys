@@ -140,7 +140,7 @@
                             Rp {{ number_format($k->saldo_berjalan) }}
                         </td>
                         <td class="px-4 py-3">
-                            @if(!auth()->user()->hasRole('owner'))
+                            @if(!auth()->user()->hasRole('owner') && \Carbon\Carbon::parse($k->tanggal)->isToday())
                             <form method="POST" action="{{ route('transaksi.kas.destroy', $k) }}"
                                 data-confirm="Yakin ingin membatalkan transaksi kas ini?">
                                 @csrf @method('DELETE')

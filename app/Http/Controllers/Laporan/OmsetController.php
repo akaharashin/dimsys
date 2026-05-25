@@ -100,19 +100,6 @@ class OmsetController extends Controller
             'totalSetor',
             'produkTerlaris'
         ));
-
-        return view('laporan.omset', compact(
-            'bulan',
-            'wilayahId',
-            'wilayahList',
-            'rekapOutlet',
-            'rekapHarian',
-            'totalOmset',
-            'totalModal',
-            'totalKomisi',
-            'totalLaba',
-            'totalSetor'
-        ));
     }
 
 

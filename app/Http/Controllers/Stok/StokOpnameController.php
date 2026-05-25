@@ -20,7 +20,7 @@ class StokOpnameController extends Controller
         $wilayahList = Wilayah::where('aktif', true)->orderBy('nama')->get();
 
         $query = StokOpname::with(['wilayah', 'details'])
-            ->orderByDesc('tanggal');
+            ->orderByDesc('tanggal')->orderByDesc('created_at');
 
         if (auth()->user()->hasRole('koordinator')) {
             $query->where('wilayah_id', auth()->user()->wilayah_id);
@@ -76,7 +76,7 @@ class StokOpnameController extends Controller
             $keluarWilayah = PenjualanWilayahDetail::whereHas(
                 'penjualan',
                 fn($q) =>
-                $q->where('wilayah_asal_id', $wilayahId)
+                $q->where('wilayah_asal_id', $wilayahId)->where('status', 'disetujui')
             )->where('produk_id', $produk->id)->sum('jumlah');
 
             return [
@@ -94,7 +94,7 @@ class StokOpnameController extends Controller
     {
         $request->validate([
             'wilayah_id' => 'required|exists:wilayah,id',
-            'tanggal' => 'required|date',
+            'tanggal' => 'required|date|date_equals:today',
             'keterangan' => 'nullable|string|max:255',
             'produk_id' => 'required|array|min:1',
             'stok_fisik' => 'required|array',
@@ -103,6 +103,7 @@ class StokOpnameController extends Controller
             'wilayah_id.exists' => 'Wilayah yang dipilih tidak valid.',
             'tanggal.required' => 'Tanggal stok opname wajib diisi.',
             'tanggal.date' => 'Format tanggal tidak valid.',
+            'tanggal.date_equals' => 'Tanggal transaksi harus hari ini.',
             'keterangan.max' => 'Keterangan maksimal 255 karakter.',
             'produk_id.required' => 'Data produk wajib diisi.',
             'produk_id.min' => 'Minimal satu produk wajib diisi.',

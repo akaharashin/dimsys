@@ -1,11 +1,11 @@
 @extends('layouts.app')
-@section('title', 'Transfer & Penjualan')
+@section('title', 'Pindah Stok')
 
 @section('content')
 
     <div class="flex items-center justify-between mb-6">
-        <h2 class="text-2xl font-bold text-gray-700">Transfer & Penjualan</h2>
-        @if(!auth()->user()->hasRole('owner'))
+        <h2 class="text-2xl font-bold text-gray-700">Pindah Stok</h2>
+        @if(!auth()->user()->hasRole(['owner', 'koordinator']))
         <a href="{{ route('transaksi.penjualan-wilayah.create') }}"
             class="bg-orange-500 hover:bg-orange-600 text-white text-sm px-4 py-2 rounded-lg">
             + Tambah Transaksi
@@ -33,7 +33,18 @@
                     style="min-width:120px">
                     <option value="">Semua</option>
                     <option value="penjualan" {{ request('tipe') == 'penjualan' ? 'selected' : '' }}>Penjualan</option>
-                    <option value="transfer" {{ request('tipe') == 'transfer' ? 'selected' : '' }}>Transfer</option>
+                    <option value="transfer" {{ request('tipe') == 'transfer' ? 'selected' : '' }}>Pindah Stok</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs text-gray-500 mb-1">Status Approval</label>
+                <select name="status"
+                    class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300"
+                    style="min-width:120px">
+                    <option value="">Semua</option>
+                    <option value="menunggu" {{ request('status') == 'menunggu' ? 'selected' : '' }}>Menunggu</option>
+                    <option value="disetujui" {{ request('status') == 'disetujui' ? 'selected' : '' }}>Disetujui</option>
+                    <option value="ditolak" {{ request('status') == 'ditolak' ? 'selected' : '' }}>Ditolak</option>
                 </select>
             </div>
             <div>
@@ -56,16 +67,6 @@
                     @foreach($wilayahList as $w)
                         <option value="{{ $w->id }}" {{ request('wilayah_tujuan_id') == $w->id ? 'selected' : '' }}>{{ $w->nama }}</option>
                     @endforeach
-                </select>
-            </div>
-            <div>
-                <label class="block text-xs text-gray-500 mb-1">Status Bayar</label>
-                <select name="status_bayar"
-                    class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300">
-                    <option value="">Semua</option>
-                    <option value="lunas" {{ request('status_bayar') == 'lunas' ? 'selected' : '' }}>Lunas</option>
-                    <option value="belum_lunas" {{ request('status_bayar') == 'belum_lunas' ? 'selected' : '' }}>Belum Lunas</option>
-                    <option value="sebagian" {{ request('status_bayar') == 'sebagian' ? 'selected' : '' }}>Sebagian</option>
                 </select>
             </div>
             <div>
@@ -122,18 +123,20 @@
                     <th class="px-4 py-3 text-left">Ke</th>
                     <th class="px-4 py-3 text-right">Total</th>
                     <th class="px-4 py-3 text-left">Status Bayar</th>
+                    <th class="px-4 py-3 text-left">Status</th>
                     <th class="px-4 py-3 text-left">Keterangan</th>
                     <th class="px-4 py-3 text-left">Aksi</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-100">
                 @forelse($penjualan as $p)
+                    @php $isToday = \Carbon\Carbon::parse($p->tanggal)->isToday(); @endphp
                     <tr class="hover:bg-gray-50">
                         <td class="px-4 py-3 text-center text-gray-400 text-xs">{{ $penjualan->firstItem() + $loop->index }}</td>
                         <td class="px-4 py-3 text-gray-700">{{ \Carbon\Carbon::parse($p->tanggal)->format('d M Y') }}</td>
-                        <td class="px-4 py-3">
+                        <td class="px-1 py-3">
                             @if($p->tipe === 'transfer')
-                                <span class="px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-600">Transfer</span>
+                                <span class="px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-600">Pindah Stok</span>
                             @else
                                 <span class="px-2 py-1 rounded-full text-xs bg-orange-100 text-orange-600">Penjualan</span>
                             @endif
@@ -159,27 +162,59 @@
                                 </span>
                             @endif
                         </td>
+                        <td class="px-4 py-3">
+                            @if($p->status === 'menunggu')
+                                <span class="px-2 py-1 rounded-full text-xs bg-yellow-100 text-yellow-700">Menunggu</span>
+                            @elseif($p->status === 'disetujui')
+                                <span class="px-2 py-1 rounded-full text-xs bg-green-100 text-green-600">Disetujui</span>
+                            @else
+                                <span class="px-2 py-1 rounded-full text-xs bg-red-100 text-red-500">Ditolak</span>
+                            @endif
+                        </td>
                         <td class="px-4 py-3 text-gray-500">{{ $p->keterangan ?? '-' }}</td>
-                        <td class="px-4 py-3 flex gap-2">
-                            <a href="{{ route('transaksi.penjualan-wilayah.show', $p) }}"
-                                class="text-xs px-3 py-1 bg-blue-50 hover:bg-blue-100 rounded-lg text-blue-600">Detail</a>
-                            @if(!auth()->user()->hasRole('owner'))
-                                @if($p->tipe === 'penjualan' && $p->status_bayar !== 'lunas')
+                        <td class="px-4 py-3">
+                            <div class="flex gap-2 flex-wrap">
+                                <a href="{{ route('transaksi.penjualan-wilayah.show', $p) }}"
+                                    class="text-xs px-3 py-1 bg-blue-50 hover:bg-blue-100 rounded-lg text-blue-600">Detail</a>
+
+                                {{-- Approve/Reject: hanya untuk pindah stok menunggu, oleh koordinator tujuan atau admin --}}
+                                @if($p->tipe === 'transfer' && $p->status === 'menunggu')
+                                    @if(auth()->user()->hasRole('admin_pusat') ||
+                                        (auth()->user()->hasRole('koordinator') && auth()->user()->wilayah_id === $p->wilayah_tujuan_id))
+                                        <form method="POST" action="{{ route('transaksi.penjualan-wilayah.approve', $p) }}"
+                                            data-confirm="Setujui pindah stok ini? Stok masuk di wilayah tujuan akan dibuat otomatis.">
+                                            @csrf
+                                            <button class="text-xs px-3 py-1 bg-green-50 hover:bg-green-100 rounded-lg text-green-600">Setujui</button>
+                                        </form>
+                                        <form method="POST" action="{{ route('transaksi.penjualan-wilayah.reject', $p) }}"
+                                            data-confirm="Tolak pindah stok ini?">
+                                            @csrf
+                                            <button class="text-xs px-3 py-1 bg-red-50 hover:bg-red-100 rounded-lg text-red-500">Tolak</button>
+                                        </form>
+                                    @endif
+                                @endif
+
+                                {{-- Update status bayar: hanya untuk penjualan yang belum lunas --}}
+                                @if(!auth()->user()->hasRole('owner') && $p->tipe === 'penjualan' && $p->status_bayar !== 'lunas')
                                     <button onclick="openUpdateStatus('{{ $p->id }}','{{ $p->status_bayar }}')"
                                         class="text-xs px-3 py-1 bg-yellow-50 hover:bg-yellow-100 rounded-lg text-yellow-600">Update</button>
                                 @endif
-                                <form method="POST" action="{{ route('transaksi.penjualan-wilayah.destroy', $p) }}"
-                                    data-confirm="{{ $p->tipe === 'transfer' ? 'Yakin ingin membatalkan transfer ini? Stok masuk di wilayah tujuan juga akan dihapus.' : 'Yakin ingin membatalkan penjualan wilayah ini?' }}">
-                                    @csrf @method('DELETE')
-                                    <button
-                                        class="text-xs px-3 py-1 bg-red-50 hover:bg-red-100 rounded-lg text-red-500">Batalkan</button>
-                                </form>
-                            @endif
+
+                                {{-- Batalkan: hanya untuk status menunggu dan tanggal hari ini --}}
+                                @if(!auth()->user()->hasRole('owner') && $p->status === 'menunggu' && $isToday)
+                                    <form method="POST" action="{{ route('transaksi.penjualan-wilayah.destroy', $p) }}"
+                                        data-confirm="{{ $p->tipe === 'transfer' ? 'Yakin ingin membatalkan pindah stok ini?' : 'Yakin ingin membatalkan penjualan wilayah ini?' }}">
+                                        @csrf @method('DELETE')
+                                        <button
+                                            class="text-xs px-3 py-1 bg-red-50 hover:bg-red-100 rounded-lg text-red-500">Batalkan</button>
+                                    </form>
+                                @endif
+                            </div>
                         </td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="9" class="px-4 py-8 text-center text-gray-400">Belum ada data transaksi.</td>
+                        <td colspan="10" class="px-4 py-8 text-center text-gray-400">Belum ada data transaksi.</td>
                     </tr>
                 @endforelse
             </tbody>

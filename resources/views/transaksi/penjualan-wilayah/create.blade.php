@@ -1,11 +1,11 @@
 @extends('layouts.app')
-@section('title', 'Tambah Transfer & Penjualan')
+@section('title', 'Tambah Pindah Stok')
 
 @section('content')
 
 <div class="flex items-center gap-3 mb-6">
     <a href="{{ route('transaksi.penjualan-wilayah.index') }}" class="text-gray-400 hover:text-gray-600 text-sm">← Kembali</a>
-    <h2 class="text-2xl font-bold text-gray-700">Tambah Transfer & Penjualan</h2>
+    <h2 class="text-2xl font-bold text-gray-700">Tambah Pindah Stok</h2>
 </div>
 
 @if($errors->any())
@@ -26,7 +26,7 @@
     <h3 class="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-4">Tipe Transaksi</h3>
     <div class="flex gap-6">
         <label class="flex items-center gap-2 cursor-pointer">
-            <input type="radio" name="tipe" value="penjualan" {{ old('tipe', 'penjualan') === 'penjualan' ? 'checked' : '' }}
+            <input type="radio" name="tipe" value="penjualan" {{ old('tipe', 'transfer') === 'penjualan' ? 'checked' : '' }}
                 onchange="toggleTipe(this.value)"
                 class="accent-orange-500 w-4 h-4">
             <div>
@@ -35,7 +35,7 @@
             </div>
         </label>
         <label class="flex items-center gap-2 cursor-pointer">
-            <input type="radio" name="tipe" value="transfer" {{ old('tipe') === 'transfer' ? 'checked' : '' }}
+            <input type="radio" name="tipe" value="transfer" {{ old('tipe', 'transfer') === 'transfer' ? 'checked' : '' }}
                 onchange="toggleTipe(this.value)"
                 class="accent-orange-500 w-4 h-4">
             <div>
@@ -51,7 +51,7 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
             <label class="block text-sm text-gray-600 mb-1">Tanggal</label>
-            <input type="date" name="tanggal" value="{{ old('tanggal', date('Y-m-d')) }}" required
+            <input type="date" name="tanggal" value="{{ old('tanggal', date('Y-m-d')) }}" min="{{ date('Y-m-d') }}" required
                 class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300">
         </div>
         <div>

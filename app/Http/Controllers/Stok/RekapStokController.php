@@ -83,11 +83,11 @@ class RekapStokController extends Controller
                 $q->whereHas('outlet', fn($o) => $o->where('wilayah_id', $wilayahId))
             )->where('produk_id', $produk->id)->sum('jumlah_out');
 
-            // Keluar ke wilayah lain
+            // Keluar ke wilayah lain (hanya yang sudah disetujui)
             $keluarWilayah = PenjualanWilayahDetail::whereHas(
                 'penjualan',
                 fn($q) =>
-                $q->where('wilayah_asal_id', $wilayahId)
+                $q->where('wilayah_asal_id', $wilayahId)->where('status', 'disetujui')
             )->where('produk_id', $produk->id)->sum('jumlah');
 
             $stokAkhir = $masuk - $out - $keluarWilayah;

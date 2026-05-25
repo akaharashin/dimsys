@@ -138,7 +138,7 @@
                                 class="text-xs px-3 py-1 bg-blue-50 hover:bg-blue-100 rounded-lg text-blue-600">
                                 Detail
                             </a>
-                            @if(!auth()->user()->hasRole('owner'))
+                            @if(!auth()->user()->hasRole('owner') && \Carbon\Carbon::parse($d->tanggal)->isToday())
                             <form method="POST" action="{{ route('stok.distribusi.destroy', $d) }}"
                                 data-confirm="Yakin ingin membatalkan distribusi ini?">
                                 @csrf @method('DELETE')

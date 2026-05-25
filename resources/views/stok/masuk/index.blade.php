@@ -6,10 +6,10 @@
     <div class="flex items-center justify-between mb-6">
         <h2 class="text-2xl font-bold text-gray-700">Stok Masuk</h2>
         @if(!auth()->user()->hasRole('owner'))
-        <a href="{{ route('stok.masuk.create') }}"
-            class="bg-orange-500 hover:bg-orange-600 text-white text-sm px-4 py-2 rounded-lg">
-            + Tambah Stok
-        </a>
+            <a href="{{ route('stok.masuk.create') }}"
+                class="bg-orange-500 hover:bg-orange-600 text-white text-sm px-4 py-2 rounded-lg">
+                + Tambah Stok
+            </a>
         @endif
     </div>
 
@@ -158,7 +158,8 @@
                             </span>
                         </td>
                         <td class="px-4 py-3 text-gray-600">{{ $s->wilayah->nama }}</td>
-                        <td class="px-4 py-3 text-gray-600">{{ $s->supplier->nama }}</td>
+                        <td class="px-4 py-3 text-gray-600">{{ $s->supplier?->nama ?? '-' }}</td>
+
                         <td class="px-4 py-3 text-gray-500">{{ $s->keterangan ?? '-' }}</td>
                         <td class="px-4 py-3 text-right font-medium text-gray-700">
                             {{ number_format($s->details->sum('jumlah')) }} pcs
@@ -171,14 +172,14 @@
                                 class="text-xs px-3 py-1 bg-blue-50 hover:bg-blue-100 rounded-lg text-blue-600">
                                 Detail
                             </a>
-                            @if(!auth()->user()->hasRole('owner'))
-                            <form method="POST" action="{{ route('stok.masuk.destroy', $s) }}"
-                                data-confirm="Yakin ingin membatalkan stok masuk ini?">
-                                @csrf @method('DELETE')
-                                <button class="text-xs px-3 py-1 bg-red-50 hover:bg-red-100 rounded-lg text-red-500">
-                                    Batalkan
-                                </button>
-                            </form>
+                            @if(!auth()->user()->hasRole('owner') && \Carbon\Carbon::parse($s->tanggal)->isToday())
+                                <form method="POST" action="{{ route('stok.masuk.destroy', $s) }}"
+                                    data-confirm="Yakin ingin membatalkan stok masuk ini?">
+                                    @csrf @method('DELETE')
+                                    <button class="text-xs px-3 py-1 bg-red-50 hover:bg-red-100 rounded-lg text-red-500">
+                                        Batalkan
+                                    </button>
+                                </form>
                             @endif
                         </td>
                     </tr>

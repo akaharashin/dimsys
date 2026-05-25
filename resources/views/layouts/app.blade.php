@@ -68,7 +68,7 @@
                     <a href="{{ route('stok.rekap') }}"
                         class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all
                         {{ request()->routeIs('stok.rekap*') ? 'bg-orange-500 text-white shadow-sm font-medium' : 'text-gray-600 hover:bg-orange-50 hover:text-orange-600' }}">
-                        <i class="fa-solid fa-chart-pie w-4 text-center"></i> Rekap Stok
+                        <i class="fa-solid fa-chart-pie w-4 text-center"></i> Stok Freezer
                     </a>
                     <a href="{{ route('stok.opname.index') }}"
                         class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all
@@ -96,11 +96,11 @@
                     </a>
                 @endif
 
-                @if(auth()->user()->hasRole(['admin_pusat', 'owner']))
+                @if(auth()->user()->hasRole(['admin_pusat', 'koordinator', 'owner']))
                     <a href="{{ route('transaksi.penjualan-wilayah.index') }}"
                         class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all
                         {{ request()->routeIs('transaksi.penjualan-wilayah.*') ? 'bg-orange-500 text-white shadow-sm font-medium' : 'text-gray-600 hover:bg-orange-50 hover:text-orange-600' }}">
-                        <i class="fa-solid fa-city w-4 text-center"></i> Transfer & Penjualan
+                        <i class="fa-solid fa-city w-4 text-center"></i> Pindah Stok
                     </a>
                 @endif
 

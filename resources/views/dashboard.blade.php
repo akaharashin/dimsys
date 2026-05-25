@@ -71,6 +71,25 @@
         </div>
     </div>
 
+    {{-- Notifikasi Pindah Stok Menunggu --}}
+    @if(auth()->user()->hasRole(['koordinator', 'admin_pusat']) && $pindahStokMenunggu > 0)
+    <a href="{{ route('transaksi.penjualan-wilayah.index', ['status' => 'menunggu', 'tipe' => 'transfer']) }}"
+        class="flex items-center gap-4 bg-yellow-50 border border-yellow-200 rounded-xl p-4 mb-6 hover:bg-yellow-100 transition">
+        <div class="w-10 h-10 bg-yellow-400 rounded-lg flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+            {{ $pindahStokMenunggu }}
+        </div>
+        <div class="flex-1">
+            <p class="text-sm font-semibold text-yellow-800">Pindah Stok Menunggu Persetujuan</p>
+            <p class="text-xs text-yellow-600">
+                {{ $pindahStokMenunggu }} permintaan pindah stok
+                {{ auth()->user()->hasRole('koordinator') ? 'ke wilayah Anda' : '' }}
+                menunggu tindakan → klik untuk review
+            </p>
+        </div>
+        <i class="fa-solid fa-chevron-right text-yellow-500"></i>
+    </a>
+    @endif
+
     {{-- Shortcut --}}
     <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Akses Cepat</p>
     <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">

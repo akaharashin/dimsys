@@ -8,6 +8,7 @@ use App\Models\StokMasuk;
 use App\Models\Kas;
 use App\Models\Outlet;
 use App\Models\Wilayah;
+use App\Models\PenjualanWilayah;
 use Carbon\Carbon;
 
 class DashboardController extends Controller
@@ -59,6 +60,13 @@ class DashboardController extends Controller
             ->limit(10)
             ->get();
 
+        // Pindah stok menunggu persetujuan
+        $pindahStokQuery = PenjualanWilayah::where('tipe', 'transfer')->where('status', 'menunggu');
+        if (auth()->user()->hasRole('koordinator')) {
+            $pindahStokQuery->where('wilayah_tujuan_id', auth()->user()->wilayah_id);
+        }
+        $pindahStokMenunggu = $pindahStokQuery->count();
+
         return view('dashboard', compact(
             'omsetHariIni',
             'modalHariIni',
@@ -70,7 +78,8 @@ class DashboardController extends Controller
             'totalOutHariIni',
             'totalOutlet',
             'outletSudahLapor',
-            'laporanTerbaru'
+            'laporanTerbaru',
+            'pindahStokMenunggu'
         ));
     }
 }

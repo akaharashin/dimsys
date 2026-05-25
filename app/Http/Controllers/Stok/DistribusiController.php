@@ -19,7 +19,7 @@ class DistribusiController extends Controller
         $outletList = Outlet::where('aktif', true)->orderBy('nama')->get();
 
         $query = Distribusi::with(['outlet.wilayah', 'details.produk'])
-            ->orderByDesc('tanggal');
+            ->orderByDesc('tanggal')->orderByDesc('created_at');
 
         if (auth()->user()->hasRole('koordinator')) {
             $query->whereHas(
@@ -84,7 +84,7 @@ class DistribusiController extends Controller
     {
         $request->validate([
             'outlet_id' => 'required|exists:outlet,id',
-            'tanggal' => 'required|date',
+            'tanggal' => 'required|date|date_equals:today',
             'keterangan' => 'nullable|string|max:255',
             'produk_id' => 'required|array|min:1',
             'jumlah_out.*' => 'nullable|integer|min:0',
@@ -93,6 +93,7 @@ class DistribusiController extends Controller
             'outlet_id.exists' => 'Outlet yang dipilih tidak valid.',
             'tanggal.required' => 'Tanggal distribusi wajib diisi.',
             'tanggal.date' => 'Format tanggal tidak valid.',
+            'tanggal.date_equals' => 'Tanggal transaksi harus hari ini.',
             'keterangan.max' => 'Keterangan maksimal 255 karakter.',
             'produk_id.required' => 'Minimal satu produk wajib dipilih.',
             'produk_id.min' => 'Minimal satu produk wajib dipilih.',
@@ -129,7 +130,7 @@ class DistribusiController extends Controller
             $keluarWilayah = \App\Models\PenjualanWilayahDetail::whereHas(
                 'penjualan',
                 fn($q) =>
-                $q->where('wilayah_asal_id', $wilayahId)
+                $q->where('wilayah_asal_id', $wilayahId)->where('status', 'disetujui')
             )->where('produk_id', $pid)->sum('jumlah');
 
             $stokTersedia = $masuk - $sudahOut - $keluarWilayah;

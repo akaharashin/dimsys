@@ -9,7 +9,7 @@ class PenjualanWilayah extends Model
     use HasUuids;
     use SoftDeletes;
     protected $table = 'penjualan_wilayah';
-    protected $fillable = ['tipe', 'wilayah_asal_id', 'wilayah_tujuan_id', 'tanggal', 'total', 'status_bayar', 'keterangan', 'transfer_stok_masuk_id', 'created_by', 'deleted_by'];
+    protected $fillable = ['tipe', 'wilayah_asal_id', 'wilayah_tujuan_id', 'tanggal', 'total', 'status_bayar', 'keterangan', 'status', 'transfer_stok_masuk_id', 'created_by', 'deleted_by'];
 
     public function wilayahAsal()
     {
@@ -26,5 +26,10 @@ class PenjualanWilayah extends Model
     public function createdBy()
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function fotos()
+    {
+        return $this->hasMany(FotoPindahStok::class, 'penjualan_wilayah_id')->orderBy('created_at');
     }
 }

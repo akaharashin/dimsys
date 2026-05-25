@@ -114,7 +114,7 @@
                         <td class="px-4 py-3 flex gap-2">
                             <a href="{{ route('stok.opname.show', $so) }}"
                                 class="text-xs px-3 py-1 bg-blue-50 hover:bg-blue-100 rounded-lg text-blue-600">Detail</a>
-                            @if(!auth()->user()->hasRole('owner'))
+                            @if(!auth()->user()->hasRole('owner') && \Carbon\Carbon::parse($so->tanggal)->isToday())
                             <form method="POST" action="{{ route('stok.opname.destroy', $so) }}"
                                 data-confirm="Yakin ingin membatalkan stok opname ini?">
                                 @csrf @method('DELETE')

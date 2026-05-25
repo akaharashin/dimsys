@@ -65,6 +65,10 @@ Route::middleware(['auth'])->group(function () {
         Route::get('kas/export', [KasController::class, 'export'])->name('kas.export');
         Route::resource('kas', KasController::class);
         Route::get('penjualan-wilayah/export', [PenjualanWilayahController::class, 'export'])->name('penjualan-wilayah.export');
+        Route::post('penjualan-wilayah/{penjualanWilayah}/approve', [PenjualanWilayahController::class, 'approve'])->name('penjualan-wilayah.approve');
+        Route::post('penjualan-wilayah/{penjualanWilayah}/reject', [PenjualanWilayahController::class, 'reject'])->name('penjualan-wilayah.reject');
+        Route::post('penjualan-wilayah/{id}/foto', [PenjualanWilayahController::class, 'uploadFoto'])->name('penjualan-wilayah.foto.upload');
+        Route::delete('penjualan-wilayah/foto/{fotoId}', [PenjualanWilayahController::class, 'hapusFoto'])->name('penjualan-wilayah.foto.hapus');
         Route::resource('penjualan-wilayah', PenjualanWilayahController::class);
     });
 

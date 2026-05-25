@@ -127,7 +127,7 @@
                         <td class="px-4 py-3 flex gap-2">
                             <a href="{{ route('transaksi.laporan-harian.show', $l) }}"
                                 class="text-xs px-3 py-1 bg-blue-50 hover:bg-blue-100 rounded-lg text-blue-600">Detail</a>
-                            @if(!auth()->user()->hasRole('owner'))
+                            @if(!auth()->user()->hasRole('owner') && \Carbon\Carbon::parse($l->tanggal)->isToday())
                             <form method="POST" action="{{ route('transaksi.laporan-harian.destroy', $l) }}"
                                 data-confirm="Yakin ingin membatalkan laporan ini?">
                                 @csrf @method('DELETE')
