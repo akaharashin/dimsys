@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DIMSYS — @yield('title', 'Dashboard')</title>
+    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
@@ -16,82 +17,99 @@
 
             {{-- Logo --}}
             <div class="px-6 py-4 border-b border-gray-100 flex-shrink-0">
-                <h1 class="text-2xl font-bold text-orange-500 tracking-tight">DIMSYS</h1>
-                <p class="text-xs text-gray-400 mt-0.5">Dimsum In Management System</p>
+                <div class="flex items-center gap-3">
+                    <img src="{{ asset('dimsumin.png') }}" alt="Logo" class="h-14 w-14 object-contain rounded-full">
+                    <div class="leading-tight">
+                        <h1 class="text-xl font-bold tracking-tight" style="color:#A51616">DIMSYS</h1>
+                        <p class="text-xs text-gray-400">Dimsum In Management System</p>
+                    </div>
+                </div>
             </div>
 
             {{-- Nav --}}
             <nav class="flex-1 px-3 py-1 space-y-0.5 text-sm overflow-y-auto">
                 <a href="{{ route('dashboard') }}"
                     class="flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-all
-        {{ request()->routeIs('dashboard') ? 'bg-orange-500 text-white shadow-sm' : 'text-gray-600 hover:bg-orange-50 hover:text-orange-600' }}">
+        {{ request()->routeIs('dashboard') ? 'text-white shadow-sm' : 'text-gray-600 hover:bg-red-50 hover:text-red-700' }}"
+                    @if(request()->routeIs('dashboard')) style="background-color:#A51616" @endif>
                     <i class="fa-solid fa-house w-4 text-center"></i> Dashboard
                 </a>
 
                 @if(auth()->user()->hasRole(['admin_pusat', 'owner']))
-                    <p class="px-3 pt-5 pb-1.5 text-xs text-gray-300 uppercase tracking-widest font-semibold">Master Data
+                    <p class="px-3 pt-5 pb-1.5 text-xs text-gray-400 uppercase tracking-widest font-semibold">Master Data
                     </p>
                     <a href="{{ route('master.wilayah.index') }}"
                         class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all
-                        {{ request()->routeIs('master.wilayah.*') ? 'bg-orange-500 text-white shadow-sm font-medium' : 'text-gray-600 hover:bg-orange-50 hover:text-orange-600' }}">
+                                {{ request()->routeIs('master.wilayah.*') ? 'text-white shadow-sm font-medium' : 'text-gray-600 hover:bg-red-50 hover:text-red-700' }}"
+                        @if(request()->routeIs('master.wilayah.*')) style="background-color:#A51616" @endif>
                         <i class="fa-solid fa-map-location-dot w-4 text-center"></i> Wilayah
                     </a>
                     <a href="{{ route('master.produk.index') }}"
                         class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all
-                        {{ request()->routeIs('master.produk.*') ? 'bg-orange-500 text-white shadow-sm font-medium' : 'text-gray-600 hover:bg-orange-50 hover:text-orange-600' }}">
+                                {{ request()->routeIs('master.produk.*') ? 'text-white shadow-sm font-medium' : 'text-gray-600 hover:bg-red-50 hover:text-red-700' }}"
+                        @if(request()->routeIs('master.produk.*')) style="background-color:#A51616" @endif>
                         <i class="fa-solid fa-box-open w-4 text-center"></i> Produk
                     </a>
                     <a href="{{ route('master.outlet.index') }}"
                         class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all
-                        {{ request()->routeIs('master.outlet.*') ? 'bg-orange-500 text-white shadow-sm font-medium' : 'text-gray-600 hover:bg-orange-50 hover:text-orange-600' }}">
+                                {{ request()->routeIs('master.outlet.*') ? 'text-white shadow-sm font-medium' : 'text-gray-600 hover:bg-red-50 hover:text-red-700' }}"
+                        @if(request()->routeIs('master.outlet.*')) style="background-color:#A51616" @endif>
                         <i class="fa-solid fa-store w-4 text-center"></i> Outlet
                     </a>
                     <a href="{{ route('master.supplier.index') }}"
                         class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all
-                        {{ request()->routeIs('master.supplier.*') ? 'bg-orange-500 text-white shadow-sm font-medium' : 'text-gray-600 hover:bg-orange-50 hover:text-orange-600' }}">
+                                {{ request()->routeIs('master.supplier.*') ? 'text-white shadow-sm font-medium' : 'text-gray-600 hover:bg-red-50 hover:text-red-700' }}"
+                        @if(request()->routeIs('master.supplier.*')) style="background-color:#A51616" @endif>
                         <i class="fa-solid fa-truck w-4 text-center"></i> Supplier
                     </a>
                 @endif
 
                 @if(auth()->user()->hasRole(['admin_pusat', 'koordinator', 'owner']))
-                    <p class="px-3 pt-5 pb-1.5 text-xs text-gray-300 uppercase tracking-widest font-semibold">Stok</p>
+                    <p class="px-3 pt-5 pb-1.5 text-xs text-gray-400 uppercase tracking-widest font-semibold">Stok</p>
                     <a href="{{ route('stok.masuk.index') }}"
                         class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all
-                        {{ request()->routeIs('stok.masuk.*') ? 'bg-orange-500 text-white shadow-sm font-medium' : 'text-gray-600 hover:bg-orange-50 hover:text-orange-600' }}">
+                                {{ request()->routeIs('stok.masuk.*') ? 'text-white shadow-sm font-medium' : 'text-gray-600 hover:bg-red-50 hover:text-red-700' }}"
+                        @if(request()->routeIs('stok.masuk.*')) style="background-color:#A51616" @endif>
                         <i class="fa-solid fa-boxes-stacked w-4 text-center"></i> Stok Masuk
                     </a>
                     <a href="{{ route('stok.distribusi.index') }}"
                         class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all
-                        {{ request()->routeIs('stok.distribusi.*') ? 'bg-orange-500 text-white shadow-sm font-medium' : 'text-gray-600 hover:bg-orange-50 hover:text-orange-600' }}">
+                                {{ request()->routeIs('stok.distribusi.*') ? 'text-white shadow-sm font-medium' : 'text-gray-600 hover:bg-red-50 hover:text-red-700' }}"
+                        @if(request()->routeIs('stok.distribusi.*')) style="background-color:#A51616" @endif>
                         <i class="fa-solid fa-truck-fast w-4 text-center"></i> Distribusi
                     </a>
                     <a href="{{ route('stok.rekap') }}"
                         class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all
-                        {{ request()->routeIs('stok.rekap*') ? 'bg-orange-500 text-white shadow-sm font-medium' : 'text-gray-600 hover:bg-orange-50 hover:text-orange-600' }}">
+                                {{ request()->routeIs('stok.rekap*') ? 'text-white shadow-sm font-medium' : 'text-gray-600 hover:bg-red-50 hover:text-red-700' }}"
+                        @if(request()->routeIs('stok.rekap*')) style="background-color:#A51616" @endif>
                         <i class="fa-solid fa-chart-pie w-4 text-center"></i> Stok Freezer
                     </a>
                     <a href="{{ route('stok.opname.index') }}"
                         class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all
-                        {{ request()->routeIs('stok.opname*') ? 'bg-orange-500 text-white shadow-sm font-medium' : 'text-gray-600 hover:bg-orange-50 hover:text-orange-600' }}">
+                                {{ request()->routeIs('stok.opname*') ? 'text-white shadow-sm font-medium' : 'text-gray-600 hover:bg-red-50 hover:text-red-700' }}"
+                        @if(request()->routeIs('stok.opname*')) style="background-color:#A51616" @endif>
                         <i class="fa-solid fa-clipboard-check w-4 text-center"></i> Stok Opname
                     </a>
                     @if(auth()->user()->hasRole(['admin_pusat', 'koordinator']))
-                    <a href="{{ route('stok.generate-awal') }}"
-                        class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all
-                        {{ request()->routeIs('stok.generate-awal*') ? 'bg-orange-500 text-white shadow-sm font-medium' : 'text-gray-600 hover:bg-orange-50 hover:text-orange-600' }}">
-                        <i class="fa-solid fa-arrows-rotate w-4 text-center"></i> Generate Stok Awal
-                    </a>
+                        <a href="{{ route('stok.generate-awal') }}"
+                            class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all
+                                        {{ request()->routeIs('stok.generate-awal*') ? 'text-white shadow-sm font-medium' : 'text-gray-600 hover:bg-red-50 hover:text-red-700' }}"
+                            @if(request()->routeIs('stok.generate-awal*')) style="background-color:#A51616" @endif>
+                            <i class="fa-solid fa-arrows-rotate w-4 text-center"></i> Generate Stok Awal
+                        </a>
                     @endif
 
-                    <p class="px-3 pt-5 pb-1.5 text-xs text-gray-300 uppercase tracking-widest font-semibold">Transaksi</p>
+                    <p class="px-3 pt-5 pb-1.5 text-xs text-gray-400 uppercase tracking-widest font-semibold">Transaksi</p>
                     <a href="{{ route('transaksi.laporan-harian.index') }}"
                         class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all
-                        {{ request()->routeIs('transaksi.laporan-harian.*') ? 'bg-orange-500 text-white shadow-sm font-medium' : 'text-gray-600 hover:bg-orange-50 hover:text-orange-600' }}">
+                                {{ request()->routeIs('transaksi.laporan-harian.*') ? 'text-white shadow-sm font-medium' : 'text-gray-600 hover:bg-red-50 hover:text-red-700' }}"
+                        @if(request()->routeIs('transaksi.laporan-harian.*')) style="background-color:#A51616" @endif>
                         <i class="fa-solid fa-file-lines w-4 text-center"></i> Laporan Harian
                     </a>
                     <a href="{{ route('transaksi.kas.index') }}"
                         class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all
-                        {{ request()->routeIs('transaksi.kas.*') ? 'bg-orange-500 text-white shadow-sm font-medium' : 'text-gray-600 hover:bg-orange-50 hover:text-orange-600' }}">
+                                {{ request()->routeIs('transaksi.kas.*') ? 'text-white shadow-sm font-medium' : 'text-gray-600 hover:bg-red-50 hover:text-red-700' }}"
+                        @if(request()->routeIs('transaksi.kas.*')) style="background-color:#A51616" @endif>
                         <i class="fa-solid fa-wallet w-4 text-center"></i> Kas Harian
                     </a>
                 @endif
@@ -99,30 +117,35 @@
                 @if(auth()->user()->hasRole(['admin_pusat', 'koordinator', 'owner']))
                     <a href="{{ route('transaksi.penjualan-wilayah.index') }}"
                         class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all
-                        {{ request()->routeIs('transaksi.penjualan-wilayah.*') ? 'bg-orange-500 text-white shadow-sm font-medium' : 'text-gray-600 hover:bg-orange-50 hover:text-orange-600' }}">
+                                {{ request()->routeIs('transaksi.penjualan-wilayah.*') ? 'text-white shadow-sm font-medium' : 'text-gray-600 hover:bg-red-50 hover:text-red-700' }}"
+                        @if(request()->routeIs('transaksi.penjualan-wilayah.*')) style="background-color:#A51616" @endif>
                         <i class="fa-solid fa-city w-4 text-center"></i> Pindah Stok
                     </a>
                 @endif
 
-                <p class="px-3 pt-5 pb-1.5 text-xs text-gray-300 uppercase tracking-widest font-semibold">Laporan</p>
+                <p class="px-3 pt-5 pb-1.5 text-xs text-gray-400 uppercase tracking-widest font-semibold">Laporan</p>
                 <a href="{{ route('laporan.omset') }}"
                     class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all
-        {{ request()->routeIs('laporan.omset*') ? 'bg-orange-500 text-white shadow-sm font-medium' : 'text-gray-600 hover:bg-orange-50 hover:text-orange-600' }}">
+        {{ request()->routeIs('laporan.omset*') ? 'text-white shadow-sm font-medium' : 'text-gray-600 hover:bg-red-50 hover:text-red-700' }}"
+                    @if(request()->routeIs('laporan.omset*')) style="background-color:#A51616" @endif>
                     <i class="fa-solid fa-chart-line w-4 text-center"></i> Rekap Omset
                 </a>
                 <a href="{{ route('laporan.kontrol') }}"
                     class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all
-        {{ request()->routeIs('laporan.kontrol*') ? 'bg-orange-500 text-white shadow-sm font-medium' : 'text-gray-600 hover:bg-orange-50 hover:text-orange-600' }}">
+        {{ request()->routeIs('laporan.kontrol*') ? 'text-white shadow-sm font-medium' : 'text-gray-600 hover:bg-red-50 hover:text-red-700' }}"
+                    @if(request()->routeIs('laporan.kontrol*')) style="background-color:#A51616" @endif>
                     <i class="fa-solid fa-sliders w-4 text-center"></i> Kontrol Penjualan
                 </a>
                 <a href="{{ route('laporan.stok') }}"
                     class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all
-        {{ request()->routeIs('laporan.stok*') ? 'bg-orange-500 text-white shadow-sm font-medium' : 'text-gray-600 hover:bg-orange-50 hover:text-orange-600' }}">
+        {{ request()->routeIs('laporan.stok*') ? 'text-white shadow-sm font-medium' : 'text-gray-600 hover:bg-red-50 hover:text-red-700' }}"
+                    @if(request()->routeIs('laporan.stok*')) style="background-color:#A51616" @endif>
                     <i class="fa-solid fa-chart-bar w-4 text-center"></i> Rekap Stok
                 </a>
                 <a href="{{ route('laporan.rata-rata-out') }}"
                     class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all
-        {{ request()->routeIs('laporan.rata-rata-out*') ? 'bg-orange-500 text-white shadow-sm font-medium' : 'text-gray-600 hover:bg-orange-50 hover:text-orange-600' }}">
+        {{ request()->routeIs('laporan.rata-rata-out*') ? 'text-white shadow-sm font-medium' : 'text-gray-600 hover:bg-red-50 hover:text-red-700' }}"
+                    @if(request()->routeIs('laporan.rata-rata-out*')) style="background-color:#A51616" @endif>
                     <i class="fa-solid fa-ruler-horizontal w-4 text-center"></i> Rata-rata OUT
                 </a>
 
@@ -130,9 +153,9 @@
 
             {{-- User Info --}}
             <div class="px-3 py-3 border-t border-gray-100 flex-shrink-0">
-                <div class="flex items-center gap-3 px-3 py-2 rounded-lg bg-gray-50 mb-2">
-                    <div
-                        class="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                <div class="flex items-center gap-3 px-3 py-2 rounded-lg bg-gray-50 border-l-4 border-red-600 mb-2">
+                    <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold"
+                        style="background-color:#A51616">
                         {{ strtoupper(substr(auth()->user()->name, 0, 2)) }}
                     </div>
                     <div class="flex-1 min-w-0">
@@ -251,16 +274,14 @@
                     '</ul>';
                 Swal.fire({
                     icon: 'error', title: 'Validasi Gagal', html: html,
-                    confirmButtonColor: '#f97316', confirmButtonText: 'Tutup',
+                    confirmButtonColor: '#A51616', confirmButtonText: 'Tutup',
                 });
             });
         </script>
     @endif
     <script>
-        // Prevent double submit - disable button after first click
         document.addEventListener('DOMContentLoaded', function () {
             document.querySelectorAll('form').forEach(function (form) {
-                // Skip form yang pakai data-confirm (sudah dihandle SweetAlert)
                 if (form.dataset.confirm) return;
 
                 form.addEventListener('submit', function () {
@@ -268,8 +289,6 @@
                     if (btn) {
                         btn.disabled = true;
                         btn.innerHTML = '<span style="opacity:0.7">Menyimpan...</span>';
-
-                        // Re-enable setelah 5 detik kalau ada error
                         setTimeout(() => {
                             btn.disabled = false;
                             btn.innerHTML = btn.dataset.originalText || 'Simpan';
@@ -278,7 +297,6 @@
                 });
             });
 
-            // Untuk form dengan data-confirm, disable setelah konfirmasi
             document.querySelectorAll('form[data-confirm]').forEach(function (form) {
                 form.addEventListener('submit', function (e) {
                     e.preventDefault();
@@ -288,7 +306,7 @@
                         text: msg,
                         icon: 'warning',
                         showCancelButton: true,
-                        confirmButtonColor: '#f97316',
+                        confirmButtonColor: '#A51616',
                         cancelButtonColor: '#6b7280',
                         confirmButtonText: 'Ya, lanjutkan',
                         cancelButtonText: 'Batal',
@@ -306,6 +324,7 @@
             });
         });
     </script>
+    @stack('scripts')
 </body>
 
 </html>

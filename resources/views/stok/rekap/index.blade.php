@@ -14,7 +14,7 @@
                 <div>
                     <label class="block text-xs text-gray-500 mb-1">Wilayah</label>
                     <select name="wilayah_id"
-                        class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300"
+                        class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300"
                         style="min-width: 150px;">
                         @foreach($wilayahList as $w)
                             <option value="{{ $w->id }}" {{ $wilayahId == $w->id ? 'selected' : '' }}>
@@ -27,14 +27,14 @@
             <div>
                 <label class="block text-xs text-gray-500 mb-1">Per Halaman</label>
                 <select name="per_page"
-                    class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300" style="min-width:60px">
+                    class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300" style="min-width:60px">
                     @foreach([10, 25, 50, 100] as $n)
                         <option value="{{ $n }}" {{ request('per_page', 25) == $n ? 'selected' : '' }}>{{ $n }}</option>
                     @endforeach
                 </select>
             </div>
             <div class="flex gap-2">
-                <button type="submit" class="px-4 py-2 text-sm bg-orange-500 hover:bg-orange-600 text-white rounded-lg">
+                <button type="submit" class="px-4 py-2 text-sm bg-red-700 hover:bg-red-800 text-white rounded-lg">
                     Tampilkan
                 </button>
                 <a href="{{ route('stok.rekap.export', ['wilayah_id' => $wilayahId]) }}"
@@ -65,7 +65,7 @@
             </div>
             <div class="bg-white rounded-xl p-4 shadow-sm">
                 <p class="text-xs text-gray-400 uppercase">Total Stok</p>
-                <p class="text-xl font-bold text-orange-500 mt-1">
+                <p class="text-xl font-bold text-yellow-600 mt-1">
                     {{ number_format($rekap->sum('stok_akhir')) }} pcs
                 </p>
             </div>

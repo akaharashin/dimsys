@@ -22,12 +22,12 @@
                 <div>
                     <label class="block text-sm text-gray-600 mb-1">Tanggal</label>
                     <input type="date" name="tanggal" value="{{ old('tanggal', date('Y-m-d')) }}" min="{{ date('Y-m-d') }}" required
-                        class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300">
+                        class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300">
                 </div>
                 <div>
                     <label class="block text-sm text-gray-600 mb-1">Rekening</label>
                     <select name="rekening_id" required
-                        class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300">
+                        class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300">
                         <option value="">-- Pilih Rekening --</option>
                         @foreach($rekening as $r)
                             <option value="{{ $r->id }}" {{ old('rekening_id') == $r->id ? 'selected' : '' }}>
@@ -39,7 +39,7 @@
                 <div>
                     <label class="block text-sm text-gray-600 mb-1">Tipe</label>
                     <select name="tipe" id="tipe" required onchange="updateKategori()"
-                        class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300">
+                        class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300">
                         <option value="debit" {{ old('tipe') == 'debit' ? 'selected' : '' }}>Debit (Pemasukan)</option>
                         <option value="kredit" {{ old('tipe') == 'kredit' ? 'selected' : '' }}>Kredit (Pengeluaran)</option>
                     </select>
@@ -47,7 +47,7 @@
                 <div>
                     <label class="block text-sm text-gray-600 mb-1">Kategori</label>
                     <select name="kategori" id="kategori" required
-                        class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300">
+                        class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300">
                     </select>
                 </div>
                 <div>
@@ -55,18 +55,18 @@
                             class="text-gray-400 text-xs">(opsional)</span></label>
                     <input type="text" name="sub_kategori" value="{{ old('sub_kategori') }}"
                         placeholder="Detail kategori..."
-                        class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300">
+                        class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300">
                 </div>
                 <div>
                     <label class="block text-sm text-gray-600 mb-1">Jumlah (Rp)</label>
                     <input type="number" name="jumlah" value="{{ old('jumlah') }}" min="1" required
-                        class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300">
+                        class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300">
                 </div>
                 <div>
                     <label class="block text-sm text-gray-600 mb-1">Outlet <span
                             class="text-gray-400 text-xs">(opsional)</span></label>
                     <select name="outlet_id"
-                        class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300">
+                        class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300">
                         <option value="">-- Tidak terkait outlet --</option>
                         @foreach($outlet as $o)
                             <option value="{{ $o->id }}" {{ old('outlet_id') == $o->id ? 'selected' : '' }}>
@@ -79,14 +79,14 @@
                     <label class="block text-sm text-gray-600 mb-1">Penerima <span
                             class="text-gray-400 text-xs">(opsional)</span></label>
                     <input type="text" name="penerima" value="{{ old('penerima') }}" placeholder="Nama penerima/staff..."
-                        class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300">
+                        class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300">
                 </div>
                 <div class="md:col-span-2">
                     <label class="block text-sm text-gray-600 mb-1">Keterangan <span
                             class="text-gray-400 text-xs">(opsional)</span></label>
                     <input type="text" name="keterangan" value="{{ old('keterangan') }}"
                         placeholder="Keterangan transaksi..."
-                        class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300">
+                        class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300">
                 </div>
             </div>
         </div>
@@ -95,7 +95,7 @@
             <a href="{{ route('transaksi.kas.index') }}"
                 class="px-5 py-2 text-sm text-gray-500 hover:bg-gray-100 rounded-lg">Batal</a>
             <button type="submit"
-                class="px-5 py-2 text-sm bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-medium">
+                class="px-5 py-2 text-sm bg-red-700 hover:bg-red-800 text-white rounded-lg font-medium">
                 Simpan Transaksi
             </button>
         </div>
@@ -165,7 +165,7 @@
                 var html = '<ul style="text-align:left;padding-left:20px;margin:0">' +
                     errors.map(function (err) { return '<li>' + err + '</li>'; }).join('') + '</ul>';
                 if (typeof Swal !== 'undefined') {
-                    Swal.fire({ icon: 'error', title: 'Periksa Form', html: html, confirmButtonColor: '#f97316', confirmButtonText: 'OK' });
+                    Swal.fire({ icon: 'error', title: 'Periksa Form', html: html, confirmButtonColor: '#A51616', confirmButtonText: 'OK' });
                 } else {
                     alert('Periksa Form:\n' + errors.join('\n'));
                 }

@@ -7,7 +7,7 @@
         <h2 class="text-2xl font-bold text-gray-700">Master Wilayah</h2>
         @if(!auth()->user()->hasRole('owner'))
         <button onclick="document.getElementById('modal-tambah').style.display='flex'"
-            class="bg-orange-500 hover:bg-orange-600 text-white text-sm px-4 py-2 rounded-lg">
+            class="bg-red-700 hover:bg-red-800 text-white text-sm px-4 py-2 rounded-lg">
             + Tambah Wilayah
         </button>
         @endif
@@ -18,12 +18,12 @@
             <div class="flex-1" style="min-width:200px">
                 <label class="block text-xs text-gray-500 mb-1">Cari Wilayah</label>
                 <input type="text" name="search" value="{{ request('search') }}" placeholder="Nama wilayah..."
-                    class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300">
+                    class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300">
             </div>
             <div>
                 <label class="block text-xs text-gray-500 mb-1">Tipe</label>
                 <select name="tipe"
-                    class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300">
+                    class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300">
                     <option value="">Semua</option>
                     <option value="pusat" {{ request('tipe') == 'pusat' ? 'selected' : '' }}>Pusat</option>
                     <option value="cabang" {{ request('tipe') == 'cabang' ? 'selected' : '' }}>Cabang</option>
@@ -32,7 +32,7 @@
             <div>
                 <label class="block text-xs text-gray-500 mb-1">Status</label>
                 <select name="status"
-                    class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300">
+                    class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300">
                     <option value="">Semua</option>
                     <option value="aktif" {{ request('status') == 'aktif' ? 'selected' : '' }}>Aktif</option>
                     <option value="nonaktif" {{ request('status') == 'nonaktif' ? 'selected' : '' }}>Nonaktif</option>
@@ -41,7 +41,7 @@
             <div>
                 <label class="block text-xs text-gray-500 mb-1">Per Halaman</label>
                 <select name="per_page"
-                    class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300" style="min-width:60px">
+                    class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300" style="min-width:60px">
                     @foreach([10, 25, 50, 100] as $n)
                         <option value="{{ $n }}" {{ request('per_page', 25) == $n ? 'selected' : '' }}>{{ $n }}</option>
                     @endforeach
@@ -49,7 +49,7 @@
             </div>
             <div class="flex gap-2">
                 <button type="submit"
-                    class="px-4 py-2 text-sm bg-orange-500 hover:bg-orange-600 text-white rounded-lg">Filter</button>
+                    class="px-4 py-2 text-sm bg-red-700 hover:bg-red-800 text-white rounded-lg">Filter</button>
                 <a href="{{ route('master.wilayah.index') }}"
                     class="px-4 py-2 text-sm bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg">Reset</a>
                 <a href="{{ route('master.wilayah.export') }}"
@@ -82,7 +82,7 @@
                         <td class="px-5 py-3 font-medium text-gray-700">{{ $w->nama }}</td>
                         <td class="px-5 py-3">
                             <span
-                                class="px-2 py-1 rounded-full text-xs {{ $w->tipe === 'pusat' ? 'bg-orange-100 text-orange-600' : 'bg-blue-100 text-blue-600' }}">
+                                class="px-2 py-1 rounded-full text-xs {{ $w->tipe === 'pusat' ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-600' }}">
                                 {{ ucfirst($w->tipe) }}
                             </span>
                         </td>
@@ -95,20 +95,20 @@
                         <td class="px-5 py-3 flex gap-2">
                             @if(!auth()->user()->hasRole('owner'))
                                 <button onclick="openEdit('{{ $w->id }}','{{ $w->nama }}','{{ $w->tipe }}')"
-                                    class="text-xs px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded-lg text-gray-600">Edit</button>
+                                    class="inline-flex items-center gap-1 text-xs px-2.5 py-1.5 bg-amber-50 hover:bg-amber-100 rounded-md text-amber-700 font-medium"><i class="fa-solid fa-pencil text-xs"></i> Edit</button>
                                 @if($w->aktif)
                                     <form method="POST" action="{{ route('master.wilayah.destroy', $w) }}"
                                         data-confirm="Yakin ingin menonaktifkan wilayah {{ $w->nama }}?">
                                         @csrf @method('DELETE')
                                         <button
-                                            class="text-xs px-3 py-1 bg-red-50 hover:bg-red-100 rounded-lg text-red-500">Nonaktifkan</button>
+                                            class="inline-flex items-center gap-1 text-xs px-2.5 py-1.5 bg-red-50 hover:bg-red-100 rounded-md text-red-600 font-medium"><i class="fa-solid fa-ban text-xs"></i> Nonaktifkan</button>
                                     </form>
                                 @else
                                     <form method="POST" action="{{ route('master.wilayah.update', $w) }}">
                                         @csrf @method('PUT')
                                         <input type="hidden" name="aktif" value="1">
                                         <button
-                                            class="text-xs px-3 py-1 bg-green-50 hover:bg-green-100 rounded-lg text-green-600">Aktifkan</button>
+                                            class="inline-flex items-center gap-1 text-xs px-2.5 py-1.5 bg-green-50 hover:bg-green-100 rounded-md text-green-600 font-medium"><i class="fa-solid fa-check text-xs"></i> Aktifkan</button>
                                     </form>
                                 @endif
                             @endif
@@ -145,12 +145,12 @@
                 <div class="mb-3">
                     <label class="block text-sm text-gray-600 mb-1">Nama Wilayah</label>
                     <input type="text" name="nama" required
-                        class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300">
+                        class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300">
                 </div>
                 <div class="mb-4">
                     <label class="block text-sm text-gray-600 mb-1">Tipe</label>
                     <select name="tipe"
-                        class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300">
+                        class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300">
                         <option value="cabang">Cabang</option>
                         <option value="pusat">Pusat</option>
                     </select>
@@ -159,7 +159,7 @@
                     <button type="button" onclick="document.getElementById('modal-tambah').style.display='none'"
                         class="px-4 py-2 text-sm text-gray-500 hover:bg-gray-100 rounded-lg">Batal</button>
                     <button type="submit"
-                        class="px-4 py-2 text-sm bg-orange-500 hover:bg-orange-600 text-white rounded-lg">Simpan</button>
+                        class="px-4 py-2 text-sm bg-red-700 hover:bg-red-800 text-white rounded-lg">Simpan</button>
                 </div>
             </form>
         </div>
@@ -176,12 +176,12 @@
                 <div class="mb-3">
                     <label class="block text-sm text-gray-600 mb-1">Nama Wilayah</label>
                     <input type="text" id="edit-nama" name="nama" required
-                        class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300">
+                        class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300">
                 </div>
                 <div class="mb-4">
                     <label class="block text-sm text-gray-600 mb-1">Tipe</label>
                     <select id="edit-tipe" name="tipe"
-                        class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300">
+                        class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300">
                         <option value="cabang">Cabang</option>
                         <option value="pusat">Pusat</option>
                     </select>
@@ -190,7 +190,7 @@
                     <button type="button" onclick="document.getElementById('modal-edit').style.display='none'"
                         class="px-4 py-2 text-sm text-gray-500 hover:bg-gray-100 rounded-lg">Batal</button>
                     <button type="submit"
-                        class="px-4 py-2 text-sm bg-orange-500 hover:bg-orange-600 text-white rounded-lg">Update</button>
+                        class="px-4 py-2 text-sm bg-red-700 hover:bg-red-800 text-white rounded-lg">Update</button>
                 </div>
             </form>
         </div>

@@ -9,18 +9,31 @@
                    ($user->hasRole('koordinator') &&
                     $user->wilayah_id === $penjualanWilayah->wilayah_tujuan_id);
 
-    $fotoReal    = $penjualanWilayah->fotos->where('tipe', 'foto_real')->values();
-    $beritaAcara = $penjualanWilayah->fotos->where('tipe', 'berita_acara')->values();
-    $videos      = $penjualanWilayah->fotos->where('tipe', 'video')->values();
+    $fotoReal    = $penjualanWilayah->getMedia('foto_real');
+    $beritaAcara = $penjualanWilayah->getMedia('berita_acara');
+    $videos      = $penjualanWilayah->getMedia('video');
     $totalFoto   = $fotoReal->count() + $beritaAcara->count();
     $totalVideo  = $videos->count();
     $bisaUpload  = $bolehUpload && in_array($penjualanWilayah->status, ['menunggu', 'disetujui']);
+
+    $bolehApprove = ($user->hasRole('admin_pusat') ||
+                    ($user->hasRole('koordinator') && $user->wilayah_id === $penjualanWilayah->wilayah_tujuan_id)) &&
+                   $penjualanWilayah->tipe === 'transfer' &&
+                   $penjualanWilayah->status === 'menunggu';
+    $adaFoto = $totalFoto > 0;
 @endphp
 
 <div class="flex items-center gap-3 mb-6">
     <a href="{{ route('transaksi.penjualan-wilayah.index') }}" class="text-gray-400 hover:text-gray-600 text-sm">← Kembali</a>
     <h2 class="text-2xl font-bold text-gray-700">Detail Pindah Stok</h2>
 </div>
+
+@if(session('error'))
+<div class="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">{{ session('error') }}</div>
+@endif
+@if(session('success'))
+<div class="mb-4 p-3 bg-green-50 border border-green-200 text-green-700 rounded-lg text-sm">{{ session('success') }}</div>
+@endif
 
 {{-- Info card --}}
 <div class="bg-white rounded-xl shadow-sm p-6 mb-4">
@@ -31,7 +44,7 @@
                 @if($penjualanWilayah->tipe === 'transfer')
                     <span class="px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-600">Transfer</span>
                 @else
-                    <span class="px-2 py-1 rounded-full text-xs bg-orange-100 text-orange-600">Penjualan</span>
+                    <span class="px-2 py-1 rounded-full text-xs bg-amber-100 text-amber-700">Penjualan</span>
                 @endif
             </p>
         </div>
@@ -127,29 +140,63 @@
     </table>
 </div>
 
+{{-- Approval actions --}}
+@if($bolehApprove)
+<div class="bg-white rounded-xl shadow-sm p-6 mb-4">
+    <h3 class="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-3">Tindakan Persetujuan</h3>
+    @if(!$adaFoto)
+    <div class="flex items-center gap-2 mb-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+        <svg class="w-4 h-4 text-yellow-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+        <p class="text-sm text-yellow-700">Upload minimal 1 foto bukti sebelum konfirmasi terima.</p>
+    </div>
+    @endif
+    <div class="flex gap-3 flex-wrap">
+        <form method="POST" action="{{ route('transaksi.penjualan-wilayah.approve', $penjualanWilayah) }}">
+            @csrf
+            <button type="submit"
+                {{ !$adaFoto ? 'disabled' : '' }}
+                class="px-5 py-2 text-sm rounded-lg font-medium transition-colors
+                    {{ $adaFoto
+                        ? 'bg-green-500 hover:bg-green-600 text-white cursor-pointer'
+                        : 'bg-gray-200 text-gray-400 cursor-not-allowed' }}">
+                Konfirmasi Terima
+            </button>
+        </form>
+        <form method="POST" action="{{ route('transaksi.penjualan-wilayah.reject', $penjualanWilayah) }}"
+            data-confirm="Tolak pindah stok ini?">
+            @csrf
+            <button type="submit"
+                class="px-5 py-2 text-sm bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium">
+                Tolak
+            </button>
+        </form>
+    </div>
+</div>
+@endif
+
 {{-- Foto & Video --}}
 <div class="bg-white rounded-xl shadow-sm p-6 mb-4">
     <div class="flex items-center justify-between mb-4">
         <h3 class="text-sm font-semibold text-gray-600 uppercase tracking-wide">Foto & Video Bukti</h3>
         <div class="flex gap-4 text-xs text-gray-400">
-            <span>Foto: <strong class="text-gray-600">{{ $totalFoto }}</strong>/10</span>
-            <span>Video: <strong class="text-gray-600">{{ $totalVideo }}</strong>/3</span>
+            <span>Foto: <strong id="counter-foto" class="text-gray-600">{{ $totalFoto }}</strong>/10</span>
+            <span>Video: <strong id="counter-video" class="text-gray-600">{{ $totalVideo }}</strong>/3</span>
         </div>
     </div>
 
     {{-- Tab buttons --}}
     <div class="flex gap-0 mb-4 border-b border-gray-100">
         <button onclick="switchTab('foto_real')" id="tab-foto_real"
-            class="px-4 py-2 text-sm font-medium border-b-2 border-orange-500 text-orange-600 -mb-px">
-            Foto Real ({{ $fotoReal->count() }})
+            class="px-4 py-2 text-sm font-medium border-b-2 border-red-600 text-red-600 -mb-px">
+            Foto Real (<span id="tab-count-foto_real">{{ $fotoReal->count() }}</span>)
         </button>
         <button onclick="switchTab('berita_acara')" id="tab-berita_acara"
             class="px-4 py-2 text-sm font-medium border-b-2 border-transparent text-gray-400 -mb-px">
-            Berita Acara ({{ $beritaAcara->count() }})
+            Berita Acara (<span id="tab-count-berita_acara">{{ $beritaAcara->count() }}</span>)
         </button>
         <button onclick="switchTab('video')" id="tab-video"
             class="px-4 py-2 text-sm font-medium border-b-2 border-transparent text-gray-400 -mb-px">
-            Video ({{ $videos->count() }})
+            Video (<span id="tab-count-video">{{ $videos->count() }}</span>)
         </button>
     </div>
 
@@ -161,15 +208,15 @@
         <div class="grid grid-cols-2 md:grid-cols-3 gap-3 mb-2">
             @foreach($fotoReal as $i => $foto)
             <div class="relative group rounded-lg border border-gray-100">
-                <img src="{{ $foto->url }}" alt="{{ $foto->nama_asli }}"
+                <img src="{{ asset('storage/' . $foto->id . '/' . $foto->file_name) }}" alt="{{ $foto->file_name }}"
                     class="w-full h-36 object-cover rounded-t-lg cursor-pointer hover:opacity-90 transition"
                     onclick="openLightbox('foto_real', {{ $i }})">
                 <div class="px-2 py-1.5">
-                    <p class="text-xs text-gray-500 truncate">{{ $foto->nama_asli }}</p>
-                    <p class="text-xs text-gray-400">{{ $foto->ukuran }} KB · {{ \Carbon\Carbon::parse($foto->created_at)->format('d/m/y') }}</p>
+                    <p class="text-xs text-gray-500 truncate">{{ $foto->file_name }}</p>
+                    <p class="text-xs text-gray-400">{{ (int) ceil($foto->size / 1024) }} KB · {{ \Carbon\Carbon::parse($foto->created_at)->format('d/m/y') }}</p>
                 </div>
                 @if($bolehUpload)
-                <button onclick="hapusFile('{{ $foto->id }}', this)"
+                <button onclick="hapusFile({{ $foto->id }}, this)"
                     class="absolute top-1 right-1 w-6 h-6 bg-red-500 text-white rounded-full text-xs
                            opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center hover:bg-red-600">
                     ×
@@ -189,15 +236,15 @@
         <div class="grid grid-cols-2 md:grid-cols-3 gap-3 mb-2">
             @foreach($beritaAcara as $i => $foto)
             <div class="relative group rounded-lg border border-gray-100">
-                <img src="{{ $foto->url }}" alt="{{ $foto->nama_asli }}"
+                <img src="{{ asset('storage/' . $foto->id . '/' . $foto->file_name) }}" alt="{{ $foto->file_name }}"
                     class="w-full h-36 object-cover rounded-t-lg cursor-pointer hover:opacity-90 transition"
                     onclick="openLightbox('berita_acara', {{ $i }})">
                 <div class="px-2 py-1.5">
-                    <p class="text-xs text-gray-500 truncate">{{ $foto->nama_asli }}</p>
-                    <p class="text-xs text-gray-400">{{ $foto->ukuran }} KB · {{ \Carbon\Carbon::parse($foto->created_at)->format('d/m/y') }}</p>
+                    <p class="text-xs text-gray-500 truncate">{{ $foto->file_name }}</p>
+                    <p class="text-xs text-gray-400">{{ (int) ceil($foto->size / 1024) }} KB · {{ \Carbon\Carbon::parse($foto->created_at)->format('d/m/y') }}</p>
                 </div>
                 @if($bolehUpload)
-                <button onclick="hapusFile('{{ $foto->id }}', this)"
+                <button onclick="hapusFile({{ $foto->id }}, this)"
                     class="absolute top-1 right-1 w-6 h-6 bg-red-500 text-white rounded-full text-xs
                            opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center hover:bg-red-600">
                     ×
@@ -216,10 +263,11 @@
         @else
         <div class="grid grid-cols-2 gap-3 mb-2">
             @foreach($videos as $i => $vid)
+            @php $durasi = $vid->getCustomProperty('durasi'); @endphp
             <div class="relative group rounded-lg border border-gray-100">
                 <div class="relative cursor-pointer" onclick="openLightbox('video', {{ $i }})">
                     <video class="w-full h-36 object-cover rounded-t-lg" preload="metadata" muted data-thumb>
-                        <source src="{{ $vid->url }}" type="video/mp4">
+                        <source src="{{ asset('storage/' . $vid->id . '/' . $vid->file_name) }}" type="video/mp4">
                     </video>
                     {{-- Play button overlay --}}
                     <div class="absolute inset-0 flex items-center justify-center rounded-t-lg">
@@ -229,17 +277,17 @@
                     </div>
                 </div>
                 <div class="px-2 py-1.5">
-                    <p class="text-xs text-gray-500 truncate">{{ $vid->nama_asli }}</p>
+                    <p class="text-xs text-gray-500 truncate">{{ $vid->file_name }}</p>
                     <div class="flex gap-2 text-xs text-gray-400">
-                        <span>{{ $vid->ukuran >= 1024 ? round($vid->ukuran / 1024, 1) . ' MB' : $vid->ukuran . ' KB' }}</span>
-                        @if($vid->durasi)
-                        <span>{{ gmdate('i:s', $vid->durasi) }}</span>
+                        <span>{{ $vid->size >= 1048576 ? round($vid->size / 1048576, 1) . ' MB' : (int) ceil($vid->size / 1024) . ' KB' }}</span>
+                        @if($durasi)
+                        <span>{{ gmdate('i:s', $durasi) }}</span>
                         @endif
                         <span>{{ \Carbon\Carbon::parse($vid->created_at)->format('d/m/y') }}</span>
                     </div>
                 </div>
                 @if($bolehUpload)
-                <button onclick="hapusFile('{{ $vid->id }}', this)"
+                <button onclick="hapusFile({{ $vid->id }}, this)"
                     class="absolute top-1 right-1 w-6 h-6 bg-red-500 text-white rounded-full text-xs
                            opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center hover:bg-red-600">
                     ×
@@ -264,26 +312,26 @@
                 <input type="file" id="upload-input" accept="image/*" multiple
                     class="text-sm text-gray-600
                            file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0
-                           file:text-sm file:font-medium file:bg-orange-50 file:text-orange-600
-                           hover:file:bg-orange-100">
+                           file:text-sm file:font-medium file:bg-red-50 file:text-red-700
+                           hover:file:bg-red-100">
             </div>
             <button onclick="startUpload()" id="upload-btn"
-                class="px-4 py-2 text-sm bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-medium">
+                class="px-4 py-2 text-sm bg-red-700 hover:bg-red-800 text-white rounded-lg font-medium">
                 Upload
             </button>
         </div>
 
         {{-- Preview antrian --}}
-        <div id="upload-preview" class="grid grid-cols-2 gap-3 mt-4" style="display:none"></div>
+        <div id="upload-preview" class="grid grid-cols-2 gap-3 mt-4" style="display:none;padding-top:12px"></div>
 
         {{-- Progress --}}
         <div id="upload-progress" class="mt-3" style="display:none">
             <div class="flex items-center gap-2 text-sm text-gray-600 mb-2">
-                <div class="w-4 h-4 border-2 border-orange-400 border-t-transparent rounded-full animate-spin flex-shrink-0"></div>
+                <div class="w-4 h-4 border-2 border-red-600 border-t-transparent rounded-full animate-spin flex-shrink-0"></div>
                 <span id="upload-status">Mengupload...</span>
             </div>
-            <div id="upload-progress-bar" style="display:none;height:6px;background:#fed7aa;border-radius:3px;overflow:hidden">
-                <div id="upload-progress-fill" style="height:100%;background:#f97316;border-radius:3px;transition:width 0.3s;width:0%"></div>
+            <div id="upload-progress-bar" style="display:none;height:6px;background:#fecaca;border-radius:3px;overflow:hidden">
+                <div id="upload-progress-fill" style="height:100%;background:#A51616;border-radius:3px;transition:width 0.3s;width:0%"></div>
             </div>
         </div>
     </div>
@@ -322,16 +370,16 @@
 <script>
 // ── Data dari server ──────────────────────────────────────────────────────────
 var fotosData  = {
-    foto_real:    @json($fotoReal->map(fn($f) => $f->url)->values()),
-    berita_acara: @json($beritaAcara->map(fn($f) => $f->url)->values()),
+    foto_real:    @json($fotoReal->map(fn($f) => asset('storage/' . $f->id . '/' . $f->file_name))->values()),
+    berita_acara: @json($beritaAcara->map(fn($f) => asset('storage/' . $f->id . '/' . $f->file_name))->values()),
 };
-var videosData = @json($videos->map(fn($v) => $v->url)->values());
+var videosData = @json($videos->map(fn($v) => asset('storage/' . $v->id . '/' . $v->file_name))->values());
 
 // ── State ─────────────────────────────────────────────────────────────────────
 var currentTab    = 'foto_real';
 var currentIdx    = 0;
-var selectedFiles = [];   // antrian file yang akan diupload
-var objectUrls    = [];   // video object URLs (untuk di-revoke saat hapus)
+var selectedFiles = [];
+var objectUrls    = [];
 
 var totalFoto  = {{ $totalFoto }};
 var totalVideo = {{ $totalVideo }};
@@ -346,14 +394,15 @@ var csrfToken  = (document.querySelector('meta[name="csrf-token"]') || {}).conte
 function switchTab(tab) {
     currentTab = tab;
 
+    // CSS show/hide: konten panel TIDAK pernah dihapus dari DOM
     ['foto_real', 'berita_acara', 'video'].forEach(function(t) {
         document.getElementById('panel-' + t).style.display = t === tab ? '' : 'none';
         var btn = document.getElementById('tab-' + t);
         if (t === tab) {
-            btn.classList.add('border-orange-500', 'text-orange-600');
+            btn.classList.add('border-red-600', 'text-red-600');
             btn.classList.remove('border-transparent', 'text-gray-400');
         } else {
-            btn.classList.remove('border-orange-500', 'text-orange-600');
+            btn.classList.remove('border-red-600', 'text-red-600');
             btn.classList.add('border-transparent', 'text-gray-400');
         }
     });
@@ -361,7 +410,6 @@ function switchTab(tab) {
     var hidden = document.getElementById('tipe-foto-aktif');
     if (hidden) hidden.value = tab;
 
-    // Update form upload
     var inputEl  = document.getElementById('upload-input');
     var labelEl  = document.getElementById('upload-label');
     var titleEl  = document.getElementById('upload-section-title');
@@ -380,7 +428,6 @@ function switchTab(tab) {
         }
     }
 
-    // Reset antrian file saat pindah tab
     clearQueue();
     updateUploadSectionVisibility();
 }
@@ -408,8 +455,8 @@ function closeLightbox() {
 }
 
 function updateLightboxItem() {
-    var imgEl = document.getElementById('lightbox-img');
-    var vidEl = document.getElementById('lightbox-video');
+    var imgEl   = document.getElementById('lightbox-img');
+    var vidEl   = document.getElementById('lightbox-video');
     var prevBtn = document.getElementById('lb-prev');
     var nextBtn = document.getElementById('lb-next');
 
@@ -480,7 +527,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     objectUrls.push(null);
                 }
             });
-            this.value = ''; // reset agar file yang sama bisa dipilih lagi
+            this.value = '';
             renderPreviews();
         });
     }
@@ -519,10 +566,10 @@ function renderPreviews() {
         var isVideo = file.type.startsWith('video/');
         var sizeMB  = file.size / 1024 / 1024;
 
+        // Kartu: TIDAK overflow:hidden agar tombol X (top:-8px) tidak terpotong
         var card = document.createElement('div');
-        card.className = 'relative rounded-lg overflow-hidden border border-gray-100';
+        card.style.cssText = 'position:relative;border-radius:8px;border:1px solid #f3f4f6;';
 
-        // Media element
         if (isVideo) {
             var vid = document.createElement('video');
             vid.src      = objectUrls[idx];
@@ -532,7 +579,6 @@ function renderPreviews() {
             vid.addEventListener('loadedmetadata', function() { this.currentTime = 0.1; });
             card.appendChild(vid);
 
-            // Play icon overlay
             var play = document.createElement('div');
             play.style.cssText = 'position:absolute;top:calc(50% - 36px);left:50%;transform:translateX(-50%);width:36px;height:36px;background:rgba(255,255,255,0.8);border-radius:50%;display:flex;align-items:center;justify-content:center;pointer-events:none';
             play.innerHTML = '<div style="width:0;height:0;border-left:12px solid #f97316;border-top:8px solid transparent;border-bottom:8px solid transparent;margin-left:3px"></div>';
@@ -548,7 +594,6 @@ function renderPreviews() {
             reader.readAsDataURL(file);
         }
 
-        // Info
         var info = document.createElement('div');
         info.className = 'px-2 py-1.5';
 
@@ -563,21 +608,20 @@ function renderPreviews() {
         info.appendChild(nameEl);
         info.appendChild(sizeEl);
 
-        // Peringatan file besar (video > 50MB)
         if (isVideo && file.size > 50 * 1024 * 1024) {
             var warn = document.createElement('p');
             warn.className   = 'text-xs text-yellow-600 mt-0.5';
-            warn.textContent = '⚠ File besar, upload mungkin membutuhkan waktu lebih lama';
+            warn.textContent = 'File besar, upload mungkin membutuhkan waktu lebih lama';
             info.appendChild(warn);
         }
 
         card.appendChild(info);
 
-        // Tombol X hapus dari antrian
+        // Tombol X: keluar dari pojok gambar (top:-8px, right:-8px), 20×20px
         var xBtn = document.createElement('button');
-        xBtn.type      = 'button';
-        xBtn.className = 'absolute top-1 right-1 w-7 h-7 bg-red-500 hover:bg-red-600 text-white rounded-full text-base flex items-center justify-center shadow';
-        xBtn.textContent = '×';
+        xBtn.type = 'button';
+        xBtn.style.cssText = 'position:absolute;top:-8px;right:-8px;width:20px;height:20px;background:#ef4444;color:white;border:none;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;z-index:10;line-height:1;padding:0;';
+        xBtn.innerHTML = '&times;';
         xBtn.onclick = (function(i) { return function() { removeFromQueue(i); }; })(idx);
         card.appendChild(xBtn);
 
@@ -594,7 +638,6 @@ function startUpload() {
 
     var tipe = (document.getElementById('tipe-foto-aktif') || {}).value || 'foto_real';
 
-    // Cek limit sisi klien
     if (tipe === 'video' && selectedFiles.length + totalVideo > maxVideo) {
         showAlert('error', 'Batas Terlampaui', 'Hanya bisa upload ' + Math.max(0, maxVideo - totalVideo) + ' video lagi (maks. 3 per transaksi).');
         return;
@@ -610,8 +653,8 @@ function startUpload() {
     var barWrap  = document.getElementById('upload-progress-bar');
     var barFill  = document.getElementById('upload-progress-fill');
 
-    btn.disabled        = true;
-    prog.style.display  = '';
+    btn.disabled       = true;
+    prog.style.display = '';
 
     var i = 0;
 
@@ -629,7 +672,6 @@ function startUpload() {
         fd.append('tipe', tipe);
 
         if (isVideo) {
-            // XHR agar progress transfer terlihat
             statusEl.textContent = 'Mengupload video: ' + file.name;
             if (barWrap) barWrap.style.display = '';
             if (barFill) barFill.style.width   = '0%';
@@ -674,7 +716,6 @@ function startUpload() {
 
             xhr.send(fd);
         } else {
-            // fetch untuk foto
             statusEl.textContent = 'Mengupload foto ' + (i + 1) + '/' + selectedFiles.length + ': ' + file.name;
             if (barWrap) barWrap.style.display = 'none';
 

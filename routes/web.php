@@ -32,7 +32,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('produk/export', [ProdukController::class, 'export'])->name('produk.export');
         Route::resource('produk', ProdukController::class);
         Route::get('outlet/export', [OutletController::class, 'export'])->name('outlet.export');
-        Route::resource('outlet', OutletController::class);
+        Route::post('outlet', [OutletController::class, 'store'])->name('outlet.store');
+        Route::delete('outlet/{outlet}', [OutletController::class, 'destroy'])->name('outlet.destroy');
         Route::get('supplier/export', [SupplierController::class, 'export'])->name('supplier.export');
         Route::resource('supplier', SupplierController::class);
     });
@@ -49,6 +50,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('rekap/export', [RekapStokController::class, 'export'])->name('rekap.export');
         Route::get('opname/export', [StokOpnameController::class, 'export'])->name('opname.export');
         Route::get('opname/stok-sistem', [StokOpnameController::class, 'getStokSistem'])->name('opname.stok-sistem');
+        Route::post('opname/{id}/foto', [StokOpnameController::class, 'uploadFoto'])->name('opname.foto.upload');
+        Route::delete('opname/foto/{fotoId}', [StokOpnameController::class, 'hapusFoto'])->name('opname.foto.hapus');
         Route::resource('opname', StokOpnameController::class);
 
         Route::middleware('role:admin_pusat|koordinator')->group(function () {
@@ -56,6 +59,15 @@ Route::middleware(['auth'])->group(function () {
             Route::get('generate-awal', [StokMasukController::class, 'generateAwalForm'])->name('generate-awal');
             Route::post('generate-awal', [StokMasukController::class, 'generateAwal'])->name('generate-awal.store');
         });
+    });
+
+    // Outlet index + update — admin_pusat | owner | koordinator
+    Route::middleware('role:admin_pusat|owner|koordinator')->prefix('master')->name('master.')->group(function () {
+        Route::get('outlet', [OutletController::class, 'index'])->name('outlet.index');
+    });
+    Route::middleware('role:admin_pusat|koordinator')->prefix('master')->name('master.')->group(function () {
+        Route::put('outlet/{outlet}', [OutletController::class, 'update'])->name('outlet.update');
+        Route::patch('outlet/{outlet}', [OutletController::class, 'update']);
     });
 
     // Transaksi — admin_pusat + koordinator full, owner read only (dikontrol di view)

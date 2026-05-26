@@ -28,7 +28,7 @@
         <label class="flex items-center gap-2 cursor-pointer">
             <input type="radio" name="tipe" value="penjualan" {{ old('tipe', 'transfer') === 'penjualan' ? 'checked' : '' }}
                 onchange="toggleTipe(this.value)"
-                class="accent-orange-500 w-4 h-4">
+                class="accent-red-700 w-4 h-4">
             <div>
                 <span class="text-sm font-medium text-gray-700">Penjualan</span>
                 <p class="text-xs text-gray-400">Jual ke agen/mitra luar, ada harga & piutang</p>
@@ -37,7 +37,7 @@
         <label class="flex items-center gap-2 cursor-pointer">
             <input type="radio" name="tipe" value="transfer" {{ old('tipe', 'transfer') === 'transfer' ? 'checked' : '' }}
                 onchange="toggleTipe(this.value)"
-                class="accent-orange-500 w-4 h-4">
+                class="accent-red-700 w-4 h-4">
             <div>
                 <span class="text-sm font-medium text-gray-700">Transfer</span>
                 <p class="text-xs text-gray-400">Pindah stok antar cabang sendiri, tanpa harga</p>
@@ -52,12 +52,12 @@
         <div>
             <label class="block text-sm text-gray-600 mb-1">Tanggal</label>
             <input type="date" name="tanggal" value="{{ old('tanggal', date('Y-m-d')) }}" min="{{ date('Y-m-d') }}" required
-                class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300">
+                class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300">
         </div>
         <div>
             <label class="block text-sm text-gray-600 mb-1">Dari Wilayah</label>
             <select name="wilayah_asal_id" id="wilayah_asal_id" required
-                class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300">
+                class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300">
                 <option value="">-- Pilih Wilayah Asal --</option>
                 @foreach($wilayah as $w)
                 <option value="{{ $w->id }}" {{ old('wilayah_asal_id') == $w->id ? 'selected' : '' }}>
@@ -69,7 +69,7 @@
         <div>
             <label class="block text-sm text-gray-600 mb-1">Ke Wilayah</label>
             <select name="wilayah_tujuan_id" required
-                class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300">
+                class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300">
                 <option value="">-- Pilih Wilayah Tujuan --</option>
                 @foreach($wilayah as $w)
                 <option value="{{ $w->id }}" {{ old('wilayah_tujuan_id') == $w->id ? 'selected' : '' }}>
@@ -81,7 +81,7 @@
         <div id="section-status-bayar">
             <label class="block text-sm text-gray-600 mb-1">Status Bayar</label>
             <select name="status_bayar"
-                class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300">
+                class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300">
                 <option value="belum_lunas" {{ old('status_bayar', 'belum_lunas') === 'belum_lunas' ? 'selected' : '' }}>Belum Lunas</option>
                 <option value="sebagian" {{ old('status_bayar') === 'sebagian' ? 'selected' : '' }}>Sebagian</option>
                 <option value="lunas" {{ old('status_bayar') === 'lunas' ? 'selected' : '' }}>Lunas</option>
@@ -90,7 +90,7 @@
         <div class="md:col-span-2">
             <label class="block text-sm text-gray-600 mb-1">Keterangan (opsional)</label>
             <input type="text" name="keterangan" value="{{ old('keterangan') }}"
-                class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300">
+                class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300">
         </div>
     </div>
 </div>
@@ -111,7 +111,7 @@
             </div>
             <div class="w-24 flex-shrink-0">
                 <input type="number" name="jumlah[{{ $p->id }}]" value="{{ old('jumlah.'.$p->id, 0) }}" min="0"
-                    class="jumlah-input w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-center focus:outline-none focus:ring-2 focus:ring-orange-300">
+                    class="jumlah-input w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-center focus:outline-none focus:ring-2 focus:ring-red-300">
             </div>
             <span class="text-xs text-gray-400 w-6 flex-shrink-0">pcs</span>
         </div>
@@ -123,7 +123,7 @@
     <a href="{{ route('transaksi.penjualan-wilayah.index') }}"
         class="px-5 py-2 text-sm text-gray-500 hover:bg-gray-100 rounded-lg">Batal</a>
     <button type="submit" id="btn-submit"
-        class="px-5 py-2 text-sm bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-medium">
+        class="px-5 py-2 text-sm bg-red-700 hover:bg-red-800 text-white rounded-lg font-medium">
         Simpan Penjualan
     </button>
 </div>
@@ -244,7 +244,7 @@
             var html = '<ul style="text-align:left;padding-left:20px;margin:0">' +
                 errors.map(function (err) { return '<li>' + err + '</li>'; }).join('') + '</ul>';
             if (typeof Swal !== 'undefined') {
-                Swal.fire({ icon: 'error', title: 'Periksa Form', html: html, confirmButtonColor: '#f97316', confirmButtonText: 'OK' });
+                Swal.fire({ icon: 'error', title: 'Periksa Form', html: html, confirmButtonColor: '#A51616', confirmButtonText: 'OK' });
             } else {
                 alert(errors.join('\n'));
             }

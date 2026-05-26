@@ -7,7 +7,7 @@
         <h2 class="text-2xl font-bold text-gray-700">Kas Harian</h2>
         @if(!auth()->user()->hasRole('owner'))
         <a href="{{ route('transaksi.kas.create') }}"
-            class="bg-orange-500 hover:bg-orange-600 text-white text-sm px-4 py-2 rounded-lg">
+            class="bg-red-700 hover:bg-red-800 text-white text-sm px-4 py-2 rounded-lg">
             + Catat Transaksi
         </a>
         @endif
@@ -19,7 +19,7 @@
             <div>
                 <label class="block text-xs text-gray-500 mb-1">Rekening</label>
                 <select name="rekening_id" onchange="this.form.submit()"
-                    class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300"
+                    class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300"
                     style="min-width:180px">
                     @foreach($rekeningList as $r)
                         <option value="{{ $r->id }}" {{ $selectedRekening == $r->id ? 'selected' : '' }}>
@@ -31,17 +31,17 @@
             <div>
                 <label class="block text-xs text-gray-500 mb-1">Dari Tanggal</label>
                 <input type="date" name="dari" value="{{ request('dari') }}"
-                    class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300">
+                    class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300">
             </div>
             <div>
                 <label class="block text-xs text-gray-500 mb-1">Sampai Tanggal</label>
                 <input type="date" name="sampai" value="{{ request('sampai') }}"
-                    class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300">
+                    class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300">
             </div>
             <div>
                 <label class="block text-xs text-gray-500 mb-1">Kategori</label>
                 <select name="kategori"
-                    class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300">
+                    class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300">
                     <option value="">Semua</option>
                     <option value="debit" {{ request('kategori') == 'debit' ? 'selected' : '' }}>Pemasukan</option>
                     <option value="kredit" {{ request('kategori') == 'kredit' ? 'selected' : '' }}>Pengeluaran</option>
@@ -50,12 +50,12 @@
             <div class="flex-1" style="min-width:160px">
                 <label class="block text-xs text-gray-500 mb-1">Cari</label>
                 <input type="text" name="search" value="{{ request('search') }}" placeholder="Keterangan, penerima..."
-                    class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300">
+                    class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300">
             </div>
             <div>
                 <label class="block text-xs text-gray-500 mb-1">Per Halaman</label>
                 <select name="per_page"
-                    class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300" style="min-width:60px">
+                    class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300" style="min-width:60px">
                     @foreach([10, 25, 50, 100] as $n)
                         <option value="{{ $n }}" {{ request('per_page', 25) == $n ? 'selected' : '' }}>{{ $n }}</option>
                     @endforeach
@@ -63,7 +63,7 @@
             </div>
             <div class="flex gap-2">
                 <button type="submit"
-                    class="px-4 py-2 text-sm bg-orange-500 hover:bg-orange-600 text-white rounded-lg">Filter</button>
+                    class="px-4 py-2 text-sm bg-red-700 hover:bg-red-800 text-white rounded-lg">Filter</button>
                 <a href="{{ route('transaksi.kas.index', ['rekening_id' => $selectedRekening]) }}"
                     class="px-4 py-2 text-sm bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg">Reset</a>
                 <a href="{{ route('transaksi.kas.export', request()->all()) }}"
@@ -145,7 +145,7 @@
                                 data-confirm="Yakin ingin membatalkan transaksi kas ini?">
                                 @csrf @method('DELETE')
                                 <button
-                                    class="text-xs px-3 py-1 bg-red-50 hover:bg-red-100 rounded-lg text-red-500">Batalkan</button>
+                                    class="inline-flex items-center gap-1 text-xs px-2.5 py-1.5 bg-red-50 hover:bg-red-100 rounded-md text-red-600 font-medium"><i class="fa-solid fa-times text-xs"></i> Batal</button>
                             </form>
                             @endif
                         </td>

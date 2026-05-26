@@ -32,7 +32,7 @@
             <div>
                 <label class="block text-sm text-gray-600 mb-1">Wilayah</label>
                 <select id="wilayah_id"
-                    class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300">
+                    class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300">
                     <option value="">-- Pilih Wilayah --</option>
                     @foreach($wilayahList as $w)
                         <option value="{{ $w->id }}">{{ $w->nama }}</option>
@@ -44,7 +44,7 @@
         <div>
             <label class="block text-sm text-gray-600 mb-1">Bulan Sumber <span class="text-gray-400">(stok akhir bulan ini yang dihitung)</span></label>
             <input type="month" id="bulan" value="{{ $defaultBulan }}"
-                class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300">
+                class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300">
         </div>
 
         <div>
@@ -61,7 +61,7 @@
     <div class="bg-white rounded-xl shadow-sm p-4 mb-2 flex items-center justify-between">
         <div>
             <p class="text-sm text-gray-500">
-                Stok akhir <strong id="lbl-bulan">-</strong> → akan jadi stok awal <strong id="lbl-bulan-tujuan" class="text-orange-600">-</strong>
+                Stok akhir <strong id="lbl-bulan">-</strong> → akan jadi stok awal <strong id="lbl-bulan-tujuan" style="color:#A51616">-</strong>
                 <span class="ml-2 text-gray-400" id="lbl-wilayah"></span>
             </p>
         </div>
@@ -104,7 +104,7 @@
         <input type="hidden" id="form-bulan" name="bulan" value="">
         <div class="flex justify-end">
             <button type="button" id="btn-generate" onclick="confirmGenerate()" style="display:none"
-                class="px-6 py-2.5 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-sm font-medium">
+                class="px-6 py-2.5 bg-red-700 hover:bg-red-800 text-white rounded-lg text-sm font-medium">
                 <i class="fa-solid fa-rotate mr-1"></i> Generate Stok Awal <span id="btn-bulan-label"></span>
             </button>
         </div>
@@ -120,13 +120,13 @@
 
         if (!wilayahId) {
             if (typeof Swal !== 'undefined') {
-                Swal.fire({ icon: 'warning', title: 'Perhatian', text: 'Pilih wilayah terlebih dahulu.', confirmButtonColor: '#f97316' });
+                Swal.fire({ icon: 'warning', title: 'Perhatian', text: 'Pilih wilayah terlebih dahulu.', confirmButtonColor: '#A51616' });
             } else { alert('Pilih wilayah terlebih dahulu.'); }
             return;
         }
         if (!bulan) {
             if (typeof Swal !== 'undefined') {
-                Swal.fire({ icon: 'warning', title: 'Perhatian', text: 'Pilih bulan terlebih dahulu.', confirmButtonColor: '#f97316' });
+                Swal.fire({ icon: 'warning', title: 'Perhatian', text: 'Pilih bulan terlebih dahulu.', confirmButtonColor: '#A51616' });
             } else { alert('Pilih bulan terlebih dahulu.'); }
             return;
         }
@@ -198,7 +198,7 @@
                 title: 'Konfirmasi Generate',
                 html: 'Yakin ingin men-generate stok awal <strong>' + label + '</strong> untuk wilayah <strong>' + wilayah + '</strong>?<br><br>Proses ini tidak dapat dibatalkan.',
                 showCancelButton: true,
-                confirmButtonColor: '#f97316',
+                confirmButtonColor: '#A51616',
                 cancelButtonColor: '#6b7280',
                 confirmButtonText: 'Ya, Generate!',
                 cancelButtonText: 'Batal'

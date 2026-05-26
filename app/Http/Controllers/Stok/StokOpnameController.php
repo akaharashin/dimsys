@@ -12,6 +12,7 @@ use App\Models\PenjualanWilayahDetail;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\Stok\StokOpnameExport;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class StokOpnameController extends Controller
 {
@@ -137,9 +138,21 @@ class StokOpnameController extends Controller
                 ]);
             }
 
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success'    => true,
+                    'id'         => $stokOpname->id,
+                    'redirect'   => route('stok.opname.show', $stokOpname),
+                    'upload_url' => route('stok.opname.foto.upload', $stokOpname->id),
+                ]);
+            }
+
             return redirect()->route('stok.opname.index')
                 ->with('success', 'Stok Opname berhasil disimpan.');
         } catch (\Exception $e) {
+            if ($request->expectsJson()) {
+                return response()->json(['error' => 'Gagal menyimpan stok opname. Silakan coba lagi.'], 500);
+            }
             return back()->with('error', 'Gagal menyimpan stok opname. Silakan coba lagi.')->withInput();
         }
     }
@@ -156,6 +169,111 @@ class StokOpnameController extends Controller
         $stokOpname->delete();
         return redirect()->route('stok.opname.index')
             ->with('success', 'Stok Opname dibatalkan.');
+    }
+
+    public function uploadFoto(Request $request, $id)
+    {
+        $stokOpname = StokOpname::findOrFail($id);
+        $user = auth()->user();
+
+        if (!$user->hasRole('admin_pusat') && !$user->hasRole('koordinator')) {
+            return response()->json(['error' => 'Anda tidak berhak mengupload foto.'], 403);
+        }
+
+        $request->validate([
+            'foto' => 'required|file|mimes:jpeg,jpg,png,webp|max:10240',
+            'tipe' => 'required|in:foto_real,berita_acara',
+        ], [
+            'foto.required' => 'File foto wajib dipilih.',
+            'foto.file'     => 'File tidak valid.',
+            'foto.mimes'    => 'Format file harus JPG, PNG, atau WebP.',
+            'foto.max'      => 'Ukuran file maksimal 10 MB.',
+            'tipe.required' => 'Tipe foto wajib dipilih.',
+            'tipe.in'       => 'Tipe foto tidak valid.',
+        ]);
+
+        $file     = $request->file('foto');
+        $tipe     = $request->input('tipe');
+        $namaAsli = $file->getClientOriginalName();
+
+        if ($stokOpname->getMedia($tipe)->count() >= 5) {
+            return response()->json(['error' => 'Maksimal 5 foto per koleksi.'], 422);
+        }
+
+        $namaFile    = 'foto_' . uniqid() . '_' . time() . '.jpg';
+        $tmpPath     = sys_get_temp_dir() . DIRECTORY_SEPARATOR . $namaFile;
+        $sourceImage = null;
+        $mime        = $file->getMimeType();
+
+        if ($mime === 'image/jpeg' || $mime === 'image/jpg') {
+            $sourceImage = imagecreatefromjpeg($file->getPathname());
+        } elseif ($mime === 'image/png') {
+            $sourceImage = imagecreatefrompng($file->getPathname());
+        } elseif ($mime === 'image/webp') {
+            $sourceImage = imagecreatefromwebp($file->getPathname());
+        } else {
+            return response()->json(['error' => 'Format tidak didukung. Gunakan JPG, PNG, atau WebP.'], 422);
+        }
+
+        if (!$sourceImage) {
+            return response()->json(['error' => 'Gagal membaca file gambar.'], 422);
+        }
+
+        $lebar   = imagesx($sourceImage);
+        $tinggi  = imagesy($sourceImage);
+        $maxSize = 1920;
+
+        if ($lebar > $maxSize || $tinggi > $maxSize) {
+            if ($lebar > $tinggi) {
+                $lebarBaru  = $maxSize;
+                $tinggiBaru = (int) round($tinggi * ($maxSize / $lebar));
+            } else {
+                $tinggiBaru = $maxSize;
+                $lebarBaru  = (int) round($lebar * ($maxSize / $tinggi));
+            }
+            $resized = imagecreatetruecolor($lebarBaru, $tinggiBaru);
+            imagecopyresampled($resized, $sourceImage, 0, 0, 0, 0, $lebarBaru, $tinggiBaru, $lebar, $tinggi);
+            imagedestroy($sourceImage);
+            $sourceImage = $resized;
+        }
+
+        imagejpeg($sourceImage, $tmpPath, 75);
+        imagedestroy($sourceImage);
+
+        $media = $stokOpname->addMedia($tmpPath)
+            ->usingFileName($namaFile)
+            ->usingName($namaAsli)
+            ->toMediaCollection($tipe);
+
+        return response()->json([
+            'success'   => true,
+            'id'        => $media->id,
+            'url'       => asset('storage/' . $media->id . '/' . $media->file_name),
+            'ukuran_kb' => (int) ceil($media->size / 1024),
+            'nama_asli' => $namaAsli,
+        ]);
+    }
+
+    public function hapusFoto($fotoId)
+    {
+        $media = Media::find($fotoId);
+        if (!$media) {
+            return response()->json(['error' => 'File tidak ditemukan.'], 404);
+        }
+
+        $stokOpname = StokOpname::find($media->model_id);
+        if (!$stokOpname) {
+            return response()->json(['error' => 'Transaksi tidak ditemukan.'], 404);
+        }
+
+        $user = auth()->user();
+        if (!$user->hasRole('admin_pusat') && !$user->hasRole('koordinator')) {
+            return response()->json(['error' => 'Anda tidak berhak menghapus file ini.'], 403);
+        }
+
+        $media->delete();
+
+        return response()->json(['success' => true]);
     }
 
     public function export(Request $request)

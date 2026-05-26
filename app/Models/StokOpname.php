@@ -4,10 +4,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
 
-class StokOpname extends Model
+class StokOpname extends Model implements HasMedia
 {
-    use HasUuids, SoftDeletes;
+    use HasUuids, SoftDeletes, InteractsWithMedia;
 
     protected $table = 'stok_opname';
 
@@ -19,6 +21,15 @@ class StokOpname extends Model
         'created_by',
         'deleted_by'
     ];
+
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('foto_real')
+            ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/webp']);
+
+        $this->addMediaCollection('berita_acara')
+            ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/webp']);
+    }
 
     public function wilayah()
     {

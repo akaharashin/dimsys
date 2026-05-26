@@ -9,14 +9,10 @@ use App\Models\StokMasukDetail;
 use App\Models\Wilayah;
 use App\Models\Produk;
 use App\Models\DistribusiDetail;
-use App\Models\FotoPindahStok;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
-use Intervention\Image\Laravel\Facades\Image;
-use Intervention\Image\ImageManager;
-use Intervention\Image\Drivers\Gd\Driver;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\Transaksi\PenjualanWilayahExport;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class PenjualanWilayahController extends Controller
 {
@@ -260,6 +256,12 @@ class PenjualanWilayahController extends Controller
         }
     }
 
+    public function show(PenjualanWilayah $penjualanWilayah)
+    {
+        $penjualanWilayah->load(['wilayahAsal', 'wilayahTujuan', 'details.produk']);
+        return view('transaksi.penjualan-wilayah.show', compact('penjualanWilayah'));
+    }
+
     public function approve(PenjualanWilayah $penjualanWilayah)
     {
         if ($penjualanWilayah->tipe !== 'transfer' || $penjualanWilayah->status !== 'menunggu') {
@@ -272,6 +274,13 @@ class PenjualanWilayahController extends Controller
             auth()->user()->wilayah_id !== $penjualanWilayah->wilayah_tujuan_id
         ) {
             return back()->with('error', 'Anda tidak berhak menyetujui pindah stok ini.');
+        }
+
+        // Wajib ada minimal 1 foto bukti sebelum approve
+        $fotoCount = $penjualanWilayah->getMedia('foto_real')->count()
+            + $penjualanWilayah->getMedia('berita_acara')->count();
+        if ($fotoCount === 0) {
+            return back()->with('error', 'Wajib upload minimal 1 foto bukti sebelum konfirmasi terima.');
         }
 
         // Validasi ulang stok sebelum approve
@@ -362,12 +371,6 @@ class PenjualanWilayahController extends Controller
         }
     }
 
-    public function show(PenjualanWilayah $penjualanWilayah)
-    {
-        $penjualanWilayah->load(['wilayahAsal', 'wilayahTujuan', 'details.produk', 'fotos']);
-        return view('transaksi.penjualan-wilayah.show', compact('penjualanWilayah'));
-    }
-
     public function uploadFoto(Request $request, $id)
     {
         $pindahStok = PenjualanWilayah::findOrFail($id);
@@ -384,7 +387,7 @@ class PenjualanWilayahController extends Controller
         $tipe = $request->input('tipe');
 
         if ($tipe === 'video') {
-            if ($pindahStok->fotos()->where('tipe', 'video')->count() >= 3) {
+            if ($pindahStok->getMedia('video')->count() >= 3) {
                 return response()->json(['error' => 'Maksimal 3 video per transaksi.'], 422);
             }
             $request->validate([
@@ -396,7 +399,9 @@ class PenjualanWilayahController extends Controller
                 'foto.max' => 'Ukuran video maksimal 100 MB.',
             ]);
         } else {
-            if ($pindahStok->fotos()->whereIn('tipe', ['foto_real', 'berita_acara'])->count() >= 10) {
+            $fotoCount = $pindahStok->getMedia('foto_real')->count()
+                + $pindahStok->getMedia('berita_acara')->count();
+            if ($fotoCount >= 10) {
                 return response()->json(['error' => 'Maksimal 10 foto per transaksi.'], 422);
             }
             $request->validate([
@@ -416,46 +421,66 @@ class PenjualanWilayahController extends Controller
             $namaFile = 'video_' . uniqid() . '_' . time() . '.mp4';
             ['ukuran' => $ukuranKb, 'durasi' => $durasi] = $this->prosesVideo($file, $namaFile);
 
-            $foto = FotoPindahStok::create([
-                'penjualan_wilayah_id' => $id,
-                'tipe' => 'video',
-                'nama_file' => $namaFile,
-                'nama_asli' => $namaAsli,
-                'ukuran' => $ukuranKb,
-                'durasi' => $durasi,
-                'created_by' => auth()->id(),
-            ]);
+            $videoPath = storage_path('app/public/pindah-stok/videos/' . $namaFile);
+
+            $media = $pindahStok->addMedia($videoPath)
+                ->usingFileName($namaFile)
+                ->usingName($namaAsli)
+                ->withCustomProperties(['durasi' => $durasi])
+                ->toMediaCollection('video');
         } else {
             $namaFile = 'foto_' . uniqid() . '_' . time() . '.jpg';
+            $tmpPath = sys_get_temp_dir() . DIRECTORY_SEPARATOR . $namaFile;
 
-            try {
-                $manager = new ImageManager(new Driver());
-                $img = $manager->read($file);
-                $img->scaleDown(1920, 1920);
-                $encoded = $img->toJpeg(75)->toString();
-            } catch (\Exception $e) {
-                return response()->json(['error' => 'Format foto tidak didukung. Gunakan JPG, PNG, atau WebP.'], 422);
+            $sourceImage = null;
+            $mime = $file->getMimeType();
+
+            if ($mime === 'image/jpeg' || $mime === 'image/jpg') {
+                $sourceImage = imagecreatefromjpeg($file->getPathname());
+            } elseif ($mime === 'image/png') {
+                $sourceImage = imagecreatefrompng($file->getPathname());
+            } elseif ($mime === 'image/webp') {
+                $sourceImage = imagecreatefromwebp($file->getPathname());
+            } else {
+                return response()->json(['error' => 'Format tidak didukung. Gunakan JPG, PNG, atau WebP.'], 422);
             }
 
-            Storage::disk('public')->put('pindah-stok/' . $namaFile, $encoded);
-            $ukuranKb = (int) ceil(strlen($encoded) / 1024);
+            if (!$sourceImage) {
+                return response()->json(['error' => 'Gagal membaca file gambar.'], 422);
+            }
 
-            $foto = FotoPindahStok::create([
-                'penjualan_wilayah_id' => $id,
-                'tipe' => $tipe,
-                'nama_file' => $namaFile,
-                'nama_asli' => $namaAsli,
-                'ukuran' => $ukuranKb,
-                'durasi' => null,
-                'created_by' => auth()->id(),
-            ]);
+            $lebar = imagesx($sourceImage);
+            $tinggi = imagesy($sourceImage);
+            $maxSize = 1920;
+
+            if ($lebar > $maxSize || $tinggi > $maxSize) {
+                if ($lebar > $tinggi) {
+                    $lebarBaru = $maxSize;
+                    $tinggiBaru = (int) round($tinggi * ($maxSize / $lebar));
+                } else {
+                    $tinggiBaru = $maxSize;
+                    $lebarBaru = (int) round($lebar * ($maxSize / $tinggi));
+                }
+                $resized = imagecreatetruecolor($lebarBaru, $tinggiBaru);
+                imagecopyresampled($resized, $sourceImage, 0, 0, 0, 0, $lebarBaru, $tinggiBaru, $lebar, $tinggi);
+                imagedestroy($sourceImage);
+                $sourceImage = $resized;
+            }
+
+            imagejpeg($sourceImage, $tmpPath, 75);
+            imagedestroy($sourceImage);
+
+            $media = $pindahStok->addMedia($tmpPath)
+                ->usingName($namaAsli)
+                ->toMediaCollection($tipe);
         }
 
         return response()->json([
             'success' => true,
-            'foto_id' => $foto->id,
-            'url' => $foto->url,
-            'ukuran_kb' => $foto->ukuran,
+            'id' => $media->id,
+            'url' => $media->getUrl(),
+            'ukuran_kb' => (int) ceil($media->size / 1024),
+            'nama_asli' => $media->file_name,
         ]);
     }
 
@@ -529,10 +554,19 @@ class PenjualanWilayahController extends Controller
 
     public function hapusFoto($fotoId)
     {
-        $foto = FotoPindahStok::findOrFail($fotoId);
-        $pindahStok = $foto->penjualanWilayah;
-        $user = auth()->user();
+        $media = Media::find($fotoId);
 
+        if (!$media) {
+            return response()->json(['error' => 'File tidak ditemukan.'], 404);
+        }
+
+        $pindahStok = PenjualanWilayah::find($media->model_id);
+
+        if (!$pindahStok) {
+            return response()->json(['error' => 'Transaksi tidak ditemukan.'], 404);
+        }
+
+        $user = auth()->user();
         $bolehHapus = $user->hasRole('admin_pusat') ||
             ($user->hasRole('koordinator') &&
                 $user->wilayah_id === $pindahStok->wilayah_tujuan_id);
@@ -541,13 +575,7 @@ class PenjualanWilayahController extends Controller
             return response()->json(['error' => 'Anda tidak berhak menghapus file ini.'], 403);
         }
 
-        if ($foto->tipe === 'video') {
-            Storage::disk('public')->delete('pindah-stok/videos/' . $foto->nama_file);
-        } else {
-            Storage::disk('public')->delete('pindah-stok/' . $foto->nama_file);
-        }
-
-        $foto->delete();
+        $media->delete();
 
         return response()->json(['success' => true]);
     }

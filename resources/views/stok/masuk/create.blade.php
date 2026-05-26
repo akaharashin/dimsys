@@ -23,12 +23,12 @@
                 <div>
                     <label class="block text-sm text-gray-600 mb-1">Tanggal</label>
                     <input type="date" name="tanggal" value="{{ old('tanggal', date('Y-m-d')) }}" min="{{ date('Y-m-d') }}" required
-                        class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300">
+                        class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300">
                 </div>
                 <div>
                     <label class="block text-sm text-gray-600 mb-1">Jenis</label>
                     <select name="jenis" required
-                        class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300">
+                        class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300">
                         <option value="masuk" {{ old('jenis') == 'masuk' ? 'selected' : '' }}>
                             Stok Masuk (dari Supplier)
                         </option>
@@ -40,7 +40,7 @@
                 <div>
                     <label class="block text-sm text-gray-600 mb-1">Wilayah Tujuan</label>
                     <select name="wilayah_id" required
-                        class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300">
+                        class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300">
                         <option value="">-- Pilih Wilayah --</option>
                         @foreach($wilayah as $w)
                             <option value="{{ $w->id }}" {{ old('wilayah_id') == $w->id ? 'selected' : '' }}>
@@ -52,7 +52,7 @@
                 <div>
                     <label class="block text-sm text-gray-600 mb-1">Supplier</label>
                     <select name="supplier_id" required
-                        class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300">
+                        class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300">
                         <option value="">-- Pilih Supplier --</option>
                         @foreach($supplier as $s)
                             <option value="{{ $s->id }}" {{ old('supplier_id') == $s->id ? 'selected' : '' }}>
@@ -64,7 +64,7 @@
                 <div class="md:col-span-2">
                     <label class="block text-sm text-gray-600 mb-1">Keterangan (opsional)</label>
                     <input type="text" name="keterangan" value="{{ old('keterangan') }}"
-                        class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300">
+                        class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300">
                 </div>
             </div>
         </div>
@@ -83,7 +83,7 @@
                         </div>
                         <div class="w-28">
                             <input type="number" name="jumlah[]" value="{{ old('jumlah.' . $i, 0) }}" min="0"
-                                class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-center focus:outline-none focus:ring-2 focus:ring-orange-300">
+                                class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-center focus:outline-none focus:ring-2 focus:ring-red-300">
                         </div>
                         <span class="text-xs text-gray-400 w-6">pcs</span>
                     </div>
@@ -95,7 +95,7 @@
             <a href="{{ route('stok.masuk.index') }}"
                 class="px-5 py-2 text-sm text-gray-500 hover:bg-gray-100 rounded-lg">Batal</a>
             <button type="submit"
-                class="px-5 py-2 text-sm bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-medium">
+                class="px-5 py-2 text-sm bg-red-700 hover:bg-red-800 text-white rounded-lg font-medium">
                 Simpan Stok
             </button>
         </div>
@@ -121,7 +121,7 @@
                 var html = '<ul style="text-align:left;padding-left:20px;margin:0">' +
                     errors.map(function (err) { return '<li>' + err + '</li>'; }).join('') + '</ul>';
                 if (typeof Swal !== 'undefined') {
-                    Swal.fire({ icon: 'error', title: 'Periksa Form', html: html, confirmButtonColor: '#f97316', confirmButtonText: 'OK' });
+                    Swal.fire({ icon: 'error', title: 'Periksa Form', html: html, confirmButtonColor: '#A51616', confirmButtonText: 'OK' });
                 } else {
                     alert('Periksa Form:\n' + errors.join('\n'));
                 }

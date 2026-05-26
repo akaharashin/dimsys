@@ -7,7 +7,7 @@
         <h2 class="text-2xl font-bold text-gray-700">Stok Opname</h2>
         @if(!auth()->user()->hasRole('owner'))
         <a href="{{ route('stok.opname.create') }}"
-            class="bg-orange-500 hover:bg-orange-600 text-white text-sm px-4 py-2 rounded-lg">
+            class="bg-red-700 hover:bg-red-800 text-white text-sm px-4 py-2 rounded-lg">
             + Tambah STO
         </a>
         @endif
@@ -18,18 +18,18 @@
             <div>
                 <label class="block text-xs text-gray-500 mb-1">Dari Tanggal</label>
                 <input type="date" name="dari" value="{{ request('dari') }}"
-                    class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300">
+                    class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300">
             </div>
             <div>
                 <label class="block text-xs text-gray-500 mb-1">Sampai Tanggal</label>
                 <input type="date" name="sampai" value="{{ request('sampai') }}"
-                    class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300">
+                    class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300">
             </div>
             @if(!auth()->user()->hasRole('koordinator'))
                 <div>
                     <label class="block text-xs text-gray-500 mb-1">Wilayah</label>
                     <select name="wilayah_id"
-                        class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300"
+                        class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300"
                         style="min-width:140px">
                         <option value="">Semua</option>
                         @foreach($wilayahList as $w)
@@ -42,7 +42,7 @@
             <div>
                 <label class="block text-xs text-gray-500 mb-1">Status</label>
                 <select name="status"
-                    class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300" style="min-width:100px">
+                    class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300" style="min-width:100px">
                     <option value="">Semua</option>
                     <option value="draft" {{ request('status') == 'draft' ? 'selected' : '' }}>Draft</option>
                     <option value="final" {{ request('status') == 'final' ? 'selected' : '' }}>Final</option>
@@ -51,7 +51,7 @@
             <div>
                 <label class="block text-xs text-gray-500 mb-1">Per Halaman</label>
                 <select name="per_page"
-                    class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300" style="min-width:60px">
+                    class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300" style="min-width:60px">
                     @foreach([10, 25, 50, 100] as $n)
                         <option value="{{ $n }}" {{ request('per_page', 25) == $n ? 'selected' : '' }}>{{ $n }}</option>
                     @endforeach
@@ -59,7 +59,7 @@
             </div>
             <div class="flex gap-2">
                 <button type="submit"
-                    class="px-4 py-2 text-sm bg-orange-500 hover:bg-orange-600 text-white rounded-lg">Filter</button>
+                    class="px-4 py-2 text-sm bg-red-700 hover:bg-red-800 text-white rounded-lg">Filter</button>
                 <a href="{{ route('stok.opname.index') }}"
                     class="px-4 py-2 text-sm bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg">Reset</a>
                 <a href="{{ route('stok.opname.export', request()->all()) }}"
@@ -113,13 +113,13 @@
                         </td>
                         <td class="px-4 py-3 flex gap-2">
                             <a href="{{ route('stok.opname.show', $so) }}"
-                                class="text-xs px-3 py-1 bg-blue-50 hover:bg-blue-100 rounded-lg text-blue-600">Detail</a>
+                                class="inline-flex items-center gap-1 text-xs px-2.5 py-1.5 bg-blue-50 hover:bg-blue-100 rounded-md text-blue-600 font-medium"><i class="fa-solid fa-eye text-xs"></i> Detail</a>
                             @if(!auth()->user()->hasRole('owner') && \Carbon\Carbon::parse($so->tanggal)->isToday())
                             <form method="POST" action="{{ route('stok.opname.destroy', $so) }}"
                                 data-confirm="Yakin ingin membatalkan stok opname ini?">
                                 @csrf @method('DELETE')
                                 <button
-                                    class="text-xs px-3 py-1 bg-red-50 hover:bg-red-100 rounded-lg text-red-500">Batalkan</button>
+                                    class="inline-flex items-center gap-1 text-xs px-2.5 py-1.5 bg-red-50 hover:bg-red-100 rounded-md text-red-600 font-medium"><i class="fa-solid fa-times text-xs"></i> Batal</button>
                             </form>
                             @endif
                         </td>

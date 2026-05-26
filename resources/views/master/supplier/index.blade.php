@@ -7,7 +7,7 @@
         <h2 class="text-2xl font-bold text-gray-700">Master Supplier</h2>
         @if(!auth()->user()->hasRole('owner'))
         <button onclick="document.getElementById('modal-tambah').style.display='flex'"
-            class="bg-orange-500 hover:bg-orange-600 text-white text-sm px-4 py-2 rounded-lg">
+            class="bg-red-700 hover:bg-red-800 text-white text-sm px-4 py-2 rounded-lg">
             + Tambah Supplier
         </button>
         @endif
@@ -18,12 +18,12 @@
             <div class="flex-1" style="min-width:200px">
                 <label class="block text-xs text-gray-500 mb-1">Cari Supplier</label>
                 <input type="text" name="search" value="{{ request('search') }}" placeholder="Nama atau keterangan..."
-                    class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300">
+                    class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300">
             </div>
             <div>
                 <label class="block text-xs text-gray-500 mb-1">Status</label>
                 <select name="status"
-                    class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300">
+                    class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300">
                     <option value="">Semua</option>
                     <option value="aktif" {{ request('status') == 'aktif' ? 'selected' : '' }}>Aktif</option>
                     <option value="nonaktif" {{ request('status') == 'nonaktif' ? 'selected' : '' }}>Nonaktif</option>
@@ -32,7 +32,7 @@
             <div>
                 <label class="block text-xs text-gray-500 mb-1">Per Halaman</label>
                 <select name="per_page"
-                    class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300"
+                    class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300"
                     style="min-width:60px">
                     @foreach([10, 25, 50, 100] as $n)
                         <option value="{{ $n }}" {{ request('per_page', 25) == $n ? 'selected' : '' }}>{{ $n }}</option>
@@ -41,7 +41,7 @@
             </div>
             <div class="flex gap-2">
                 <button type="submit"
-                    class="px-4 py-2 text-sm bg-orange-500 hover:bg-orange-600 text-white rounded-lg">Filter</button>
+                    class="px-4 py-2 text-sm bg-red-700 hover:bg-red-800 text-white rounded-lg">Filter</button>
                 <a href="{{ route('master.supplier.index') }}"
                     class="px-4 py-2 text-sm bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg">Reset</a>
                 <a href="{{ route('master.supplier.export') }}"
@@ -83,20 +83,20 @@
                         <td class="px-4 py-3 flex gap-2">
                             @if(!auth()->user()->hasRole('owner'))
                                 <button onclick="openEdit({{ $s->toJson() }})"
-                                    class="text-xs px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded-lg text-gray-600">Edit</button>
+                                    class="inline-flex items-center gap-1 text-xs px-2.5 py-1.5 bg-amber-50 hover:bg-amber-100 rounded-md text-amber-700 font-medium"><i class="fa-solid fa-pencil text-xs"></i> Edit</button>
                                 @if($s->aktif)
                                     <form method="POST" action="{{ route('master.supplier.destroy', $s) }}"
                                         data-confirm="Yakin ingin menonaktifkan supplier {{ $s->nama }}?">
                                         @csrf @method('DELETE')
                                         <button
-                                            class="text-xs px-3 py-1 bg-red-50 hover:bg-red-100 rounded-lg text-red-500">Nonaktifkan</button>
+                                            class="inline-flex items-center gap-1 text-xs px-2.5 py-1.5 bg-red-50 hover:bg-red-100 rounded-md text-red-600 font-medium"><i class="fa-solid fa-ban text-xs"></i> Nonaktifkan</button>
                                     </form>
                                 @else
                                     <form method="POST" action="{{ route('master.supplier.update', $s) }}">
                                         @csrf @method('PUT')
                                         <input type="hidden" name="aktif" value="1">
                                         <button
-                                            class="text-xs px-3 py-1 bg-green-50 hover:bg-green-100 rounded-lg text-green-600">Aktifkan</button>
+                                            class="inline-flex items-center gap-1 text-xs px-2.5 py-1.5 bg-green-50 hover:bg-green-100 rounded-md text-green-600 font-medium"><i class="fa-solid fa-check text-xs"></i> Aktifkan</button>
                                     </form>
                                 @endif
                             @endif
@@ -133,18 +133,18 @@
                 <div class="mb-3">
                     <label class="block text-sm text-gray-600 mb-1">Nama Supplier</label>
                     <input type="text" name="nama" required
-                        class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300">
+                        class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300">
                 </div>
                 <div class="mb-4">
                     <label class="block text-sm text-gray-600 mb-1">Keterangan</label>
                     <input type="text" name="keterangan"
-                        class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300">
+                        class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300">
                 </div>
                 <div class="flex justify-end gap-2">
                     <button type="button" onclick="document.getElementById('modal-tambah').style.display='none'"
                         class="px-4 py-2 text-sm text-gray-500 hover:bg-gray-100 rounded-lg">Batal</button>
                     <button type="submit"
-                        class="px-4 py-2 text-sm bg-orange-500 hover:bg-orange-600 text-white rounded-lg">Simpan</button>
+                        class="px-4 py-2 text-sm bg-red-700 hover:bg-red-800 text-white rounded-lg">Simpan</button>
                 </div>
             </form>
         </div>
@@ -161,18 +161,18 @@
                 <div class="mb-3">
                     <label class="block text-sm text-gray-600 mb-1">Nama Supplier</label>
                     <input type="text" id="edit-nama" name="nama" required
-                        class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300">
+                        class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300">
                 </div>
                 <div class="mb-4">
                     <label class="block text-sm text-gray-600 mb-1">Keterangan</label>
                     <input type="text" id="edit-keterangan" name="keterangan"
-                        class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300">
+                        class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300">
                 </div>
                 <div class="flex justify-end gap-2">
                     <button type="button" onclick="document.getElementById('modal-edit').style.display='none'"
                         class="px-4 py-2 text-sm text-gray-500 hover:bg-gray-100 rounded-lg">Batal</button>
                     <button type="submit"
-                        class="px-4 py-2 text-sm bg-orange-500 hover:bg-orange-600 text-white rounded-lg">Update</button>
+                        class="px-4 py-2 text-sm bg-red-700 hover:bg-red-800 text-white rounded-lg">Update</button>
                 </div>
             </form>
         </div>

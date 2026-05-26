@@ -7,7 +7,7 @@
         <h2 class="text-2xl font-bold text-gray-700">Distribusi (OUT)</h2>
         @if(!auth()->user()->hasRole('owner'))
         <a href="{{ route('stok.distribusi.create') }}"
-            class="bg-orange-500 hover:bg-orange-600 text-white text-sm px-4 py-2 rounded-lg">
+            class="bg-red-700 hover:bg-red-800 text-white text-sm px-4 py-2 rounded-lg">
             + Tambah Distribusi
         </a>
         @endif
@@ -19,18 +19,18 @@
             <div>
                 <label class="block text-xs text-gray-500 mb-1">Dari Tanggal</label>
                 <input type="date" name="dari" value="{{ request('dari') }}"
-                    class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300">
+                    class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300">
             </div>
             <div>
                 <label class="block text-xs text-gray-500 mb-1">Sampai Tanggal</label>
                 <input type="date" name="sampai" value="{{ request('sampai') }}"
-                    class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300">
+                    class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300">
             </div>
             @if(!auth()->user()->hasRole('koordinator'))
                 <div>
                     <label class="block text-xs text-gray-500 mb-1">Wilayah</label>
                     <select name="wilayah_id" id="filter-wilayah"
-                        class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300"
+                        class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300"
                         style="min-width: 150px;">
                         <option value="">Semua Wilayah</option>
                         @foreach($wilayahList as $w)
@@ -44,7 +44,7 @@
             <div>
                 <label class="block text-xs text-gray-500 mb-1">Outlet</label>
                 <select name="outlet_id"
-                    class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300">
+                    class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300">
                     <option value="">Semua Outlet</option>
                     @foreach($outletList as $o)
                         <option value="{{ $o->id }}" {{ request('outlet_id') == $o->id ? 'selected' : '' }}>
@@ -56,14 +56,14 @@
             <div>
                 <label class="block text-xs text-gray-500 mb-1">Per Halaman</label>
                 <select name="per_page"
-                    class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300" style="min-width:60px">
+                    class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300" style="min-width:60px">
                     @foreach([10, 25, 50, 100] as $n)
                         <option value="{{ $n }}" {{ request('per_page', 25) == $n ? 'selected' : '' }}>{{ $n }}</option>
                     @endforeach
                 </select>
             </div>
             <div class="flex gap-2">
-                <button type="submit" class="px-4 py-2 text-sm bg-orange-500 hover:bg-orange-600 text-white rounded-lg">
+                <button type="submit" class="px-4 py-2 text-sm bg-red-700 hover:bg-red-800 text-white rounded-lg">
                     Filter
                 </button>
                 <a href="{{ route('stok.distribusi.index') }}"
@@ -91,7 +91,7 @@
             </div>
             <div class="bg-white rounded-xl p-4 shadow-sm">
                 <p class="text-xs text-gray-400 uppercase">Total OUT</p>
-                <p class="text-xl font-bold text-orange-500 mt-1">
+                <p class="text-xl font-bold text-yellow-600 mt-1">
                     {{ number_format($distribusi->sum(fn($d) => $d->details->sum('jumlah_out'))) }} pcs
                 </p>
             </div>
@@ -135,16 +135,12 @@
                         </td>
                         <td class="px-4 py-3 flex gap-2">
                             <a href="{{ route('stok.distribusi.show', $d) }}"
-                                class="text-xs px-3 py-1 bg-blue-50 hover:bg-blue-100 rounded-lg text-blue-600">
-                                Detail
-                            </a>
+                                class="inline-flex items-center gap-1 text-xs px-2.5 py-1.5 bg-blue-50 hover:bg-blue-100 rounded-md text-blue-600 font-medium"><i class="fa-solid fa-eye text-xs"></i> Detail</a>
                             @if(!auth()->user()->hasRole('owner') && \Carbon\Carbon::parse($d->tanggal)->isToday())
                             <form method="POST" action="{{ route('stok.distribusi.destroy', $d) }}"
                                 data-confirm="Yakin ingin membatalkan distribusi ini?">
                                 @csrf @method('DELETE')
-                                <button class="text-xs px-3 py-1 bg-red-50 hover:bg-red-100 rounded-lg text-red-500">
-                                    Batalkan
-                                </button>
+                                <button class="inline-flex items-center gap-1 text-xs px-2.5 py-1.5 bg-red-50 hover:bg-red-100 rounded-md text-red-600 font-medium"><i class="fa-solid fa-times text-xs"></i> Batal</button>
                             </form>
                             @endif
                         </td>

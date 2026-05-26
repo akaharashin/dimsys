@@ -24,12 +24,12 @@
                 <div>
                     <label class="block text-sm text-gray-600 mb-1">Tanggal</label>
                     <input type="date" name="tanggal" id="tanggal" value="{{ old('tanggal', date('Y-m-d')) }}" min="{{ date('Y-m-d') }}" required
-                        class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300">
+                        class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300">
                 </div>
                 <div>
                     <label class="block text-sm text-gray-600 mb-1">Outlet / Gerobak</label>
                     <select name="outlet_id" id="outlet_id" required
-                        class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300">
+                        class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300">
                         <option value="">-- Pilih Outlet --</option>
                         @foreach($outlet as $o)
                             <option value="{{ $o->id }}" {{ old('outlet_id') == $o->id ? 'selected' : '' }}>
@@ -62,12 +62,12 @@
                     <div>
                         <label class="block text-sm text-gray-600 mb-1">Keterangan</label>
                         <input type="text" name="pengeluaran_ket[]" placeholder="Misal: Bensin, Sewa lapak..."
-                            class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300">
+                            class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300">
                     </div>
                     <div>
                         <label class="block text-sm text-gray-600 mb-1">Jumlah (Rp)</label>
                         <input type="number" name="pengeluaran_jml[]" value="0" min="0" onchange="hitungSetor()"
-                            class="pengeluaran-jml w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300">
+                            class="pengeluaran-jml w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300">
                     </div>
                 </div>
             </div>
@@ -76,9 +76,9 @@
         <div class="bg-white rounded-xl shadow-sm p-6 mb-4">
             <h3 class="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-4">Rekap Keuangan</h3>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div class="p-4 bg-orange-50 rounded-lg">
+                <div class="p-4 bg-red-50 rounded-lg">
                     <p class="text-xs text-gray-400 uppercase">Total Omset</p>
-                    <p class="text-xl font-bold text-orange-500 mt-1" id="display-omset">Rp 0</p>
+                    <p class="text-xl font-bold text-red-600 mt-1" id="display-omset">Rp 0</p>
                 </div>
                 <div class="p-4 bg-yellow-50 rounded-lg">
                     <p class="text-xs text-gray-400 uppercase">Total Komisi</p>
@@ -101,7 +101,7 @@
             <a href="{{ route('transaksi.laporan-harian.index') }}"
                 class="px-5 py-2 text-sm text-gray-500 hover:bg-gray-100 rounded-lg">Batal</a>
             <button type="submit"
-                class="px-5 py-2 text-sm bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-medium">
+                class="px-5 py-2 text-sm bg-red-700 hover:bg-red-800 text-white rounded-lg font-medium">
                 Simpan Laporan
             </button>
         </div>
@@ -143,7 +143,7 @@
                     <div class="flex items-center gap-3 p-3 border border-gray-100 rounded-lg">
                         <div class="flex-1">
                             <p class="text-sm font-medium text-gray-700">${item.produk_nama}</p>
-                            <p class="text-xs text-gray-400">OUT: <span class="font-semibold text-orange-500">${item.jumlah_out} pcs</span></p>
+                            <p class="text-xs text-gray-400">OUT: <span class="font-semibold text-amber-600">${item.jumlah_out} pcs</span></p>
                         </div>
                         <div class="text-center">
                             <p class="text-xs text-gray-400 mb-1">Sisa</p>
@@ -158,7 +158,7 @@
                                 data-komisi="${item.komisi}"
                                 onchange="hitungSetor()"
                                 oninput="hitungSetor()"
-                                class="sisa-input w-20 border border-gray-200 rounded-lg px-2 py-1 text-sm text-center focus:outline-none focus:ring-2 focus:ring-orange-300">
+                                class="sisa-input w-20 border border-gray-200 rounded-lg px-2 py-1 text-sm text-center focus:outline-none focus:ring-2 focus:ring-red-300">
                         </div>
                     </div>`;
                     });
@@ -219,14 +219,14 @@
             <div>
                 <label class="block text-sm text-gray-600 mb-1">Keterangan</label>
                 <input type="text" name="pengeluaran_ket[]" placeholder="Misal: Air minum, Token listrik..."
-                    class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300">
+                    class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300">
             </div>
             <div class="flex gap-2 items-end">
                 <div class="flex-1">
                     <label class="block text-sm text-gray-600 mb-1">Jumlah (Rp)</label>
                     <input type="number" name="pengeluaran_jml[]" value="0" min="0"
                         onchange="hitungSetor()" oninput="hitungSetor()"
-                        class="pengeluaran-jml w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300">
+                        class="pengeluaran-jml w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300">
                 </div>
                 <button type="button" onclick="hapusPengeluaran(${pengeluaranCount})"
                     class="px-3 py-2 text-sm bg-red-50 hover:bg-red-100 text-red-500 rounded-lg mb-0">✕</button>

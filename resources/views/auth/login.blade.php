@@ -14,7 +14,9 @@
 
         {{-- Logo & Title --}}
         <div class="text-center mb-8">
-            <h1 class="text-4xl font-bold text-orange-500">DIMSYS</h1>
+            <img src="{{ asset('dimsumin.png') }}" alt="Logo"
+                class="h-24 w-24 object-contain rounded-full mx-auto mb-3">
+            <h1 class="text-4xl font-bold" style="color:#A51616">DIMSYS</h1>
             <p class="text-gray-500 text-sm mt-1">Dimsum In Management System</p>
         </div>
 
@@ -37,32 +39,33 @@
                     <label class="block text-sm font-medium text-gray-600 mb-1">Email</label>
                     <input type="email" name="email" value="{{ old('email') }}" required autofocus
                         placeholder="contoh: admin@dimsys.id"
-                        class="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300 focus:border-transparent transition">
+                        class="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-red-300 focus:border-transparent transition">
                 </div>
 
                 <div class="mb-6">
                     <label class="block text-sm font-medium text-gray-600 mb-1">Password</label>
                     <input type="password" name="password" required placeholder="••••••••"
-                        class="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300 focus:border-transparent transition">
+                        class="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-red-300 focus:border-transparent transition">
                 </div>
 
                 <div class="flex items-center justify-between mb-6">
                     <label class="flex items-center gap-2 text-sm text-gray-500 cursor-pointer">
                         <input type="checkbox" name="remember"
-                            class="rounded border-gray-300 text-orange-500 focus:ring-orange-300">
+                            class="rounded border-gray-300 text-red-700 focus:ring-red-300">
                         Ingat saya
                     </label>
                 </div>
 
-                <button type="submit"
-                    class="w-full bg-orange-500 hover:bg-orange-600 text-white font-medium py-2.5 rounded-lg text-sm transition">
+                <button type="submit" class="w-full text-white font-medium py-2.5 rounded-lg text-sm transition"
+                    style="background-color:#A51616" onmouseover="this.style.backgroundColor='#8a1212'"
+                    onmouseout="this.style.backgroundColor='#A51616'">
                     Masuk
                 </button>
             </form>
         </div>
 
         <p class="text-center text-xs text-gray-400 mt-6">
-            &copy; {{ date('Y') }} DimsumIN · All rights reserved
+            &copy; {{ date('Y') }} Dimsum In Management System · All rights reserved
         </p>
 
     </div>

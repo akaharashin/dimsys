@@ -7,7 +7,7 @@
         <h2 class="text-2xl font-bold text-gray-700">Stok Masuk</h2>
         @if(!auth()->user()->hasRole('owner'))
             <a href="{{ route('stok.masuk.create') }}"
-                class="bg-orange-500 hover:bg-orange-600 text-white text-sm px-4 py-2 rounded-lg">
+                class="bg-red-700 hover:bg-red-800 text-white text-sm px-4 py-2 rounded-lg">
                 + Tambah Stok
             </a>
         @endif
@@ -19,18 +19,18 @@
             <div>
                 <label class="block text-xs text-gray-500 mb-1">Dari Tanggal</label>
                 <input type="date" name="dari" value="{{ request('dari') }}"
-                    class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300">
+                    class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300">
             </div>
             <div>
                 <label class="block text-xs text-gray-500 mb-1">Sampai Tanggal</label>
                 <input type="date" name="sampai" value="{{ request('sampai') }}"
-                    class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300">
+                    class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300">
             </div>
             @if(!auth()->user()->hasRole('koordinator'))
                 <div>
                     <label class="block text-xs text-gray-500 mb-1">Wilayah</label>
                     <select name="wilayah_id"
-                        class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300"
+                        class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300"
                         style="min-width: 150px;">
 
                         <option value="">Semua Wilayah</option>
@@ -45,7 +45,7 @@
             <div>
                 <label class="block text-xs text-gray-500 mb-1">Supplier</label>
                 <select name="supplier_id"
-                    class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300"
+                    class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300"
                     style="min-width: 150px;">
                     <option value="">Semua Supplier</option>
                     @foreach($supplierList as $s)
@@ -58,7 +58,7 @@
             <div>
                 <label class="block text-xs text-gray-500 mb-1">Jenis</label>
                 <select name="jenis"
-                    class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300"
+                    class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300"
                     style="min-width: 130px;">
                     <option value="">Semua Jenis</option>
                     <option value="masuk" {{ request('jenis') == 'masuk' ? 'selected' : '' }}>Stok Masuk</option>
@@ -68,7 +68,7 @@
             <div>
                 <label class="block text-xs text-gray-500 mb-1">Per Halaman</label>
                 <select name="per_page"
-                    class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300"
+                    class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300"
                     style="min-width: 60px;">
                     @foreach([10, 25, 50, 100] as $n)
                         <option value="{{ $n }}" {{ request('per_page', 25) == $n ? 'selected' : '' }}>{{ $n }}</option>
@@ -77,7 +77,7 @@
             </div>
             <div class="flex gap-2">
 
-                <button type="submit" class="px-4 py-2 text-sm bg-orange-500 hover:bg-orange-600 text-white rounded-lg">
+                <button type="submit" class="px-4 py-2 text-sm bg-red-700 hover:bg-red-800 text-white rounded-lg">
                     Filter
                 </button>
                 <a href="{{ route('stok.masuk.index') }}"
@@ -107,7 +107,7 @@
             </div>
             <div class="bg-white rounded-xl p-4 shadow-sm">
                 <p class="text-xs text-gray-400 uppercase">Total Item</p>
-                <p class="text-xl font-bold text-orange-500 mt-1">
+                <p class="text-xl font-bold text-yellow-600 mt-1">
                     {{ number_format($stokMasuk->sum(fn($s) => $s->details->sum('jumlah'))) }} pcs
                 </p>
             </div>
@@ -169,16 +169,12 @@
                         </td>
                         <td class="px-4 py-3 flex gap-2">
                             <a href="{{ route('stok.masuk.show', $s) }}"
-                                class="text-xs px-3 py-1 bg-blue-50 hover:bg-blue-100 rounded-lg text-blue-600">
-                                Detail
-                            </a>
+                                class="inline-flex items-center gap-1 text-xs px-2.5 py-1.5 bg-blue-50 hover:bg-blue-100 rounded-md text-blue-600 font-medium"><i class="fa-solid fa-eye text-xs"></i> Detail</a>
                             @if(!auth()->user()->hasRole('owner') && \Carbon\Carbon::parse($s->tanggal)->isToday())
                                 <form method="POST" action="{{ route('stok.masuk.destroy', $s) }}"
                                     data-confirm="Yakin ingin membatalkan stok masuk ini?">
                                     @csrf @method('DELETE')
-                                    <button class="text-xs px-3 py-1 bg-red-50 hover:bg-red-100 rounded-lg text-red-500">
-                                        Batalkan
-                                    </button>
+                                    <button class="inline-flex items-center gap-1 text-xs px-2.5 py-1.5 bg-red-50 hover:bg-red-100 rounded-md text-red-600 font-medium"><i class="fa-solid fa-times text-xs"></i> Batal</button>
                                 </form>
                             @endif
                         </td>

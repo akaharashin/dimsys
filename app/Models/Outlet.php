@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 class Outlet extends Model
 {
     use HasUuids;
-    protected $fillable = ['nama', 'wilayah_id', 'tipe', 'aktif'];
+    protected $fillable = ['nama', 'wilayah_id', 'tipe', 'aktif', 'alamat_lengkap', 'latitude', 'longitude'];
     protected $table = 'outlet';
     public function wilayah()
     {

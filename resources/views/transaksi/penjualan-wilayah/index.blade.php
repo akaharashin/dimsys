@@ -7,7 +7,7 @@
         <h2 class="text-2xl font-bold text-gray-700">Pindah Stok</h2>
         @if(!auth()->user()->hasRole(['owner', 'koordinator']))
         <a href="{{ route('transaksi.penjualan-wilayah.create') }}"
-            class="bg-orange-500 hover:bg-orange-600 text-white text-sm px-4 py-2 rounded-lg">
+            class="bg-red-700 hover:bg-red-800 text-white text-sm px-4 py-2 rounded-lg">
             + Tambah Transaksi
         </a>
         @endif
@@ -19,17 +19,17 @@
             <div>
                 <label class="block text-xs text-gray-500 mb-1">Dari Tanggal</label>
                 <input type="date" name="dari" value="{{ request('dari') }}"
-                    class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300">
+                    class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300">
             </div>
             <div>
                 <label class="block text-xs text-gray-500 mb-1">Sampai Tanggal</label>
                 <input type="date" name="sampai" value="{{ request('sampai') }}"
-                    class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300">
+                    class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300">
             </div>
             <div>
                 <label class="block text-xs text-gray-500 mb-1">Tipe</label>
                 <select name="tipe"
-                    class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300"
+                    class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300"
                     style="min-width:120px">
                     <option value="">Semua</option>
                     <option value="penjualan" {{ request('tipe') == 'penjualan' ? 'selected' : '' }}>Penjualan</option>
@@ -39,7 +39,7 @@
             <div>
                 <label class="block text-xs text-gray-500 mb-1">Status Approval</label>
                 <select name="status"
-                    class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300"
+                    class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300"
                     style="min-width:120px">
                     <option value="">Semua</option>
                     <option value="menunggu" {{ request('status') == 'menunggu' ? 'selected' : '' }}>Menunggu</option>
@@ -50,7 +50,7 @@
             <div>
                 <label class="block text-xs text-gray-500 mb-1">Wilayah Asal</label>
                 <select name="wilayah_asal_id"
-                    class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300"
+                    class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300"
                     style="min-width:130px">
                     <option value="">Semua</option>
                     @foreach($wilayahList as $w)
@@ -61,7 +61,7 @@
             <div>
                 <label class="block text-xs text-gray-500 mb-1">Wilayah Tujuan</label>
                 <select name="wilayah_tujuan_id"
-                    class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300"
+                    class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300"
                     style="min-width:130px">
                     <option value="">Semua</option>
                     @foreach($wilayahList as $w)
@@ -72,7 +72,7 @@
             <div>
                 <label class="block text-xs text-gray-500 mb-1">Per Halaman</label>
                 <select name="per_page"
-                    class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300" style="min-width:60px">
+                    class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300" style="min-width:60px">
                     @foreach([10, 25, 50, 100] as $n)
                         <option value="{{ $n }}" {{ request('per_page', 25) == $n ? 'selected' : '' }}>{{ $n }}</option>
                     @endforeach
@@ -80,7 +80,7 @@
             </div>
             <div class="flex gap-2">
                 <button type="submit"
-                    class="px-4 py-2 text-sm bg-orange-500 hover:bg-orange-600 text-white rounded-lg">Filter</button>
+                    class="px-4 py-2 text-sm bg-red-700 hover:bg-red-800 text-white rounded-lg">Filter</button>
                 <a href="{{ route('transaksi.penjualan-wilayah.index') }}"
                     class="px-4 py-2 text-sm bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg">Reset</a>
                 <a href="{{ route('transaksi.penjualan-wilayah.export', request()->all()) }}"
@@ -138,7 +138,7 @@
                             @if($p->tipe === 'transfer')
                                 <span class="px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-600">Pindah Stok</span>
                             @else
-                                <span class="px-2 py-1 rounded-full text-xs bg-orange-100 text-orange-600">Penjualan</span>
+                                <span class="px-2 py-1 rounded-full text-xs bg-amber-100 text-amber-700">Penjualan</span>
                             @endif
                         </td>
                         <td class="px-4 py-3 font-medium text-gray-700">{{ $p->wilayahAsal->nama }}</td>
@@ -164,7 +164,7 @@
                         </td>
                         <td class="px-4 py-3">
                             @if($p->status === 'menunggu')
-                                <span class="px-2 py-1 rounded-full text-xs bg-yellow-100 text-yellow-700">Menunggu</span>
+                                <span class="px-2 py-1 rounded-full text-xs font-medium" style="background-color:#F5F028;color:#4a3f00">Menunggu</span>
                             @elseif($p->status === 'disetujui')
                                 <span class="px-2 py-1 rounded-full text-xs bg-green-100 text-green-600">Disetujui</span>
                             @else
@@ -175,21 +175,19 @@
                         <td class="px-4 py-3">
                             <div class="flex gap-2 flex-wrap">
                                 <a href="{{ route('transaksi.penjualan-wilayah.show', $p) }}"
-                                    class="text-xs px-3 py-1 bg-blue-50 hover:bg-blue-100 rounded-lg text-blue-600">Detail</a>
+                                    class="inline-flex items-center gap-1 text-xs px-2.5 py-1.5 bg-blue-50 hover:bg-blue-100 rounded-md text-blue-600 font-medium"><i class="fa-solid fa-eye text-xs"></i> Detail</a>
 
                                 {{-- Approve/Reject: hanya untuk pindah stok menunggu, oleh koordinator tujuan atau admin --}}
                                 @if($p->tipe === 'transfer' && $p->status === 'menunggu')
                                     @if(auth()->user()->hasRole('admin_pusat') ||
                                         (auth()->user()->hasRole('koordinator') && auth()->user()->wilayah_id === $p->wilayah_tujuan_id))
-                                        <form method="POST" action="{{ route('transaksi.penjualan-wilayah.approve', $p) }}"
-                                            data-confirm="Setujui pindah stok ini? Stok masuk di wilayah tujuan akan dibuat otomatis.">
-                                            @csrf
-                                            <button class="text-xs px-3 py-1 bg-green-50 hover:bg-green-100 rounded-lg text-green-600">Setujui</button>
-                                        </form>
+                                        {{-- Arahkan ke halaman detail untuk upload foto + konfirmasi --}}
+                                        <a href="{{ route('transaksi.penjualan-wilayah.show', $p) }}"
+                                            class="inline-flex items-center gap-1 text-xs px-2.5 py-1.5 bg-green-50 hover:bg-green-100 rounded-md text-green-600 font-medium"><i class="fa-solid fa-check text-xs"></i> Konfirmasi</a>
                                         <form method="POST" action="{{ route('transaksi.penjualan-wilayah.reject', $p) }}"
                                             data-confirm="Tolak pindah stok ini?">
                                             @csrf
-                                            <button class="text-xs px-3 py-1 bg-red-50 hover:bg-red-100 rounded-lg text-red-500">Tolak</button>
+                                            <button class="inline-flex items-center gap-1 text-xs px-2.5 py-1.5 bg-red-600 hover:bg-red-700 rounded-md text-white font-medium"><i class="fa-solid fa-xmark text-xs"></i> Tolak</button>
                                         </form>
                                     @endif
                                 @endif
@@ -197,7 +195,7 @@
                                 {{-- Update status bayar: hanya untuk penjualan yang belum lunas --}}
                                 @if(!auth()->user()->hasRole('owner') && $p->tipe === 'penjualan' && $p->status_bayar !== 'lunas')
                                     <button onclick="openUpdateStatus('{{ $p->id }}','{{ $p->status_bayar }}')"
-                                        class="text-xs px-3 py-1 bg-yellow-50 hover:bg-yellow-100 rounded-lg text-yellow-600">Update</button>
+                                        class="inline-flex items-center gap-1 text-xs px-2.5 py-1.5 bg-amber-50 hover:bg-amber-100 rounded-md text-amber-700 font-medium"><i class="fa-solid fa-pen text-xs"></i> Update</button>
                                 @endif
 
                                 {{-- Batalkan: hanya untuk status menunggu dan tanggal hari ini --}}
@@ -206,7 +204,7 @@
                                         data-confirm="{{ $p->tipe === 'transfer' ? 'Yakin ingin membatalkan pindah stok ini?' : 'Yakin ingin membatalkan penjualan wilayah ini?' }}">
                                         @csrf @method('DELETE')
                                         <button
-                                            class="text-xs px-3 py-1 bg-red-50 hover:bg-red-100 rounded-lg text-red-500">Batalkan</button>
+                                            class="inline-flex items-center gap-1 text-xs px-2.5 py-1.5 bg-red-50 hover:bg-red-100 rounded-md text-red-600 font-medium"><i class="fa-solid fa-times text-xs"></i> Batal</button>
                                     </form>
                                 @endif
                             </div>
@@ -239,7 +237,7 @@
                 <div class="mb-4">
                     <label class="block text-sm text-gray-600 mb-1">Status Bayar</label>
                     <select id="edit-status" name="status_bayar"
-                        class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300">
+                        class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300">
                         <option value="belum_lunas">Belum Lunas</option>
                         <option value="sebagian">Sebagian</option>
                         <option value="lunas">Lunas</option>
@@ -249,7 +247,7 @@
                     <button type="button" onclick="document.getElementById('modal-status').style.display='none'"
                         class="px-4 py-2 text-sm text-gray-500 hover:bg-gray-100 rounded-lg">Batal</button>
                     <button type="submit"
-                        class="px-4 py-2 text-sm bg-orange-500 hover:bg-orange-600 text-white rounded-lg">Update</button>
+                        class="px-4 py-2 text-sm bg-red-700 hover:bg-red-800 text-white rounded-lg">Update</button>
                 </div>
             </form>
         </div>

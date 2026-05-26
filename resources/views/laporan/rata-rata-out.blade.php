@@ -13,13 +13,13 @@
             <div>
                 <label class="block text-xs text-gray-500 mb-1">Bulan</label>
                 <input type="month" name="bulan" value="{{ $bulan }}"
-                    class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300">
+                    class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300">
             </div>
             @if(!auth()->user()->hasRole('koordinator'))
                 <div>
                     <label class="block text-xs text-gray-500 mb-1">Wilayah</label>
                     <select name="wilayah_id"
-                        class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300"
+                        class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300"
                         style="min-width:140px">
                         <option value="semua" {{ $wilayahId === 'semua' ? 'selected' : '' }}>Semua Wilayah</option>
                         @foreach($wilayahList as $w)
@@ -30,7 +30,7 @@
             @endif
             <div class="flex gap-2">
                 <button type="submit"
-                    class="px-4 py-2 text-sm bg-orange-500 hover:bg-orange-600 text-white rounded-lg">Tampilkan</button>
+                    class="px-4 py-2 text-sm bg-red-700 hover:bg-red-800 text-white rounded-lg">Tampilkan</button>
                 <a href="{{ route('laporan.rata-rata-out.export', ['bulan' => $bulan, 'wilayah_id' => $wilayahId]) }}"
                     class="px-4 py-2 text-sm bg-green-500 hover:bg-green-600 text-white rounded-lg"><i class="fa-solid fa-file-excel mr-1"></i> Export Excel</a>
             </div>
@@ -39,9 +39,9 @@
 
     {{-- Summary Cards --}}
     <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
-        <div class="bg-white rounded-xl p-4 shadow-sm border-l-4 border-orange-400">
+        <div class="bg-white rounded-xl p-4 shadow-sm border-l-4 border-red-600">
             <p class="text-xs text-gray-400 uppercase">Total Outlet</p>
-            <p class="text-2xl font-bold text-orange-500 mt-1">{{ $outletList->count() }}</p>
+            <p class="text-2xl font-bold text-red-600 mt-1">{{ $outletList->count() }}</p>
         </div>
         <div class="bg-white rounded-xl p-4 shadow-sm border-l-4 border-blue-400">
             <p class="text-xs text-gray-400 uppercase">Total Produk</p>
@@ -115,7 +115,7 @@
                                     @endif
                                 </td>
                             @endforeach
-                            <td class="px-4 py-2.5 text-right font-bold text-orange-500">
+                            <td class="px-4 py-2.5 text-right font-bold text-yellow-600">
                                 {{ number_format($totalOutlet) }}
                             </td>
                         </tr>
@@ -133,7 +133,7 @@
                             @endphp
                             <td class="px-4 py-3 text-right text-gray-700">{{ number_format($totalProduk) }}</td>
                         @endforeach
-                        <td class="px-4 py-3 text-right text-orange-500">{{ number_format($grandTotal) }}</td>
+                        <td class="px-4 py-3 text-right text-yellow-600">{{ number_format($grandTotal) }}</td>
                     </tr>
                 </tfoot>
             </table>

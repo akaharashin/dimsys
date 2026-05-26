@@ -13,13 +13,13 @@
             <div>
                 <label class="block text-xs text-gray-500 mb-1">Bulan</label>
                 <input type="month" name="bulan" value="{{ $bulan }}"
-                    class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300">
+                    class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300">
             </div>
             @if(!auth()->user()->hasRole('koordinator'))
                 <div>
                     <label class="block text-xs text-gray-500 mb-1">Wilayah</label>
                     <select name="wilayah_id"
-                        class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300"
+                        class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300"
                         style="min-width:140px">
                         <option value="semua" {{ $wilayahId === 'semua' ? 'selected' : '' }}>Semua Wilayah</option>
                         @foreach($wilayahList as $w)
@@ -30,7 +30,7 @@
             @endif
             <div class="flex gap-2">
                 <button type="submit"
-                    class="px-4 py-2 text-sm bg-orange-500 hover:bg-orange-600 text-white rounded-lg">Tampilkan</button>
+                    class="px-4 py-2 text-sm bg-red-700 hover:bg-red-800 text-white rounded-lg">Tampilkan</button>
                 <a href="{{ route('laporan.omset.export', ['bulan' => $bulan, 'wilayah_id' => $wilayahId]) }}"
                     class="px-4 py-2 text-sm bg-green-500 hover:bg-green-600 text-white rounded-lg"><i
                         class="fa-solid fa-file-excel mr-1"></i> Export Excel</a>
@@ -44,9 +44,9 @@
 
     {{-- Summary Cards --}}
     <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
-        <div class="bg-white rounded-xl p-4 shadow-sm border-l-4 border-orange-400">
+        <div class="bg-white rounded-xl p-4 shadow-sm border-l-4 border-red-600">
             <p class="text-xs text-gray-400 uppercase">Total Omset</p>
-            <p class="text-lg font-bold text-orange-500 mt-1">Rp {{ number_format($totalOmset) }}</p>
+            <p class="text-lg font-bold text-red-600 mt-1">Rp {{ number_format($totalOmset) }}</p>
         </div>
         <div class="bg-white rounded-xl p-4 shadow-sm border-l-4 border-red-400">
             <p class="text-xs text-gray-400 uppercase">Total Modal</p>
@@ -140,8 +140,8 @@
                             <span class="text-xs text-gray-500">{{ number_format($pt->total_terjual) }} pcs</span>
                         </div>
                         <div class="w-full bg-gray-100 rounded-full h-2">
-                            <div class="bg-orange-400 h-2 rounded-full"
-                                style="width: {{ $maxTerjual > 0 ? round($pt->total_terjual / $maxTerjual * 100) : 0 }}%">
+                            <div class="h-2 rounded-full"
+                                style="width: {{ $maxTerjual > 0 ? round($pt->total_terjual / $maxTerjual * 100) : 0 }}%;background-color:#A51616">
                             </div>
                         </div>
                         <p class="text-xs text-gray-400 mt-0.5">Rp {{ number_format($pt->total_omset) }}</p>
@@ -153,6 +153,14 @@
         </div>
 
     </div>
+
+    {{-- Tren Harian Chart --}}
+    @if(count($rekapHarian))
+    <div class="bg-white rounded-xl shadow-sm p-5 mb-6">
+        <h3 class="text-sm font-semibold text-gray-600 mb-4">Tren Omset Harian</h3>
+        <canvas id="chartOmsetHarian" height="80"></canvas>
+    </div>
+    @endif
 
     {{-- Rekap Harian --}}
     <div class="bg-white rounded-xl shadow-sm overflow-hidden">
@@ -191,5 +199,75 @@
             </table>
         </div>
     </div>
+
+@push('scripts')
+@if(count($rekapHarian))
+<script>
+(function() {
+    if (typeof Chart === 'undefined') return;
+    var labels = @json($rekapHarian->pluck('tanggal')->values());
+    labels = labels.map(function(d) {
+        var dt = new Date(d + 'T00:00:00');
+        return dt.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+    });
+    var omset = @json($rekapHarian->pluck('omset')->values());
+    var laba  = @json($rekapHarian->pluck('laba')->values());
+    new Chart(document.getElementById('chartOmsetHarian').getContext('2d'), {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Omset',
+                    data: omset,
+                    borderColor: '#A51616',
+                    backgroundColor: 'rgba(165,22,22,0.08)',
+                    borderWidth: 2,
+                    tension: 0.3,
+                    fill: true,
+                    pointRadius: 3,
+                    pointBackgroundColor: '#A51616'
+                },
+                {
+                    label: 'Laba',
+                    data: laba,
+                    borderColor: '#16a34a',
+                    backgroundColor: 'rgba(22,163,74,0.06)',
+                    borderWidth: 2,
+                    tension: 0.3,
+                    fill: true,
+                    pointRadius: 3,
+                    pointBackgroundColor: '#16a34a'
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: 'top', labels: { font: { size: 11 } } },
+                tooltip: {
+                    callbacks: {
+                        label: function(ctx) {
+                            return ctx.dataset.label + ': Rp ' + ctx.parsed.y.toLocaleString('id-ID');
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(v) { return 'Rp ' + (v/1000).toFixed(0) + 'k'; },
+                        font: { size: 10 }
+                    }
+                },
+                x: { grid: { display: false }, ticks: { font: { size: 10 } } }
+            }
+        }
+    });
+})();
+</script>
+@endif
+@endpush
 
 @endsection

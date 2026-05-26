@@ -13,13 +13,13 @@
             <div>
                 <label class="block text-xs text-gray-500 mb-1">Bulan</label>
                 <input type="month" name="bulan" value="{{ $bulan }}"
-                    class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300">
+                    class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300">
             </div>
             @if(!auth()->user()->hasRole('koordinator'))
                 <div>
                     <label class="block text-xs text-gray-500 mb-1">Wilayah</label>
                     <select name="wilayah_id"
-                        class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300"
+                        class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300"
                         style="min-width:140px">
                         <option value="semua" {{ $wilayahId === 'semua' ? 'selected' : '' }}>Semua Wilayah</option>
                         @foreach($wilayahList as $w)
@@ -30,7 +30,7 @@
             @endif
             <div class="flex gap-2">
                 <button type="submit"
-                    class="px-4 py-2 text-sm bg-orange-500 hover:bg-orange-600 text-white rounded-lg">Tampilkan</button>
+                    class="px-4 py-2 text-sm bg-red-700 hover:bg-red-800 text-white rounded-lg">Tampilkan</button>
                 <a href="{{ route('laporan.kontrol.export', ['bulan' => $bulan, 'wilayah_id' => $wilayahId]) }}"
                     class="px-4 py-2 text-sm bg-green-500 hover:bg-green-600 text-white rounded-lg"><i class="fa-solid fa-file-excel mr-1"></i> Export Excel</a>
             </div>
@@ -39,9 +39,9 @@
 
     {{-- Summary Cards --}}
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <div class="bg-white rounded-xl p-4 shadow-sm border-l-4 border-orange-400">
+        <div class="bg-white rounded-xl p-4 shadow-sm border-l-4 border-red-600">
             <p class="text-xs text-gray-400 uppercase">Total Outlet</p>
-            <p class="text-2xl font-bold text-orange-500 mt-1">{{ $rekap->count() }}</p>
+            <p class="text-2xl font-bold text-red-600 mt-1">{{ $rekap->count() }}</p>
         </div>
         <div class="bg-white rounded-xl p-4 shadow-sm border-l-4 border-green-400">
             <p class="text-xs text-gray-400 uppercase">Outlet Aktif</p>
@@ -72,7 +72,7 @@
         <div class="px-5 py-4 border-b border-gray-100">
             <h3 class="text-sm font-semibold text-gray-600">
                 Kontrol Penjualan —
-                <span class="text-orange-500">{{ \Carbon\Carbon::parse($bulan)->locale('id')->isoFormat('MMMM Y') }}</span>
+                <span style="color:#A51616">{{ \Carbon\Carbon::parse($bulan)->locale('id')->isoFormat('MMMM Y') }}</span>
             </h3>
         </div>
         <table class="w-full text-sm">
@@ -95,7 +95,13 @@
                         <td class="px-4 py-3 text-center text-gray-400 text-xs">{{ $loop->iteration }}</td>
                         <td class="px-4 py-3 font-medium text-gray-700">{{ $r['outlet']->nama }}</td>
                         <td class="px-4 py-3 text-gray-500">{{ $r['outlet']->wilayah->nama }}</td>
-                        <td class="px-4 py-3 text-right text-gray-600">{{ $r['total_hari'] }} hari</td>
+                        <td class="px-4 py-3 text-right text-gray-600">
+                            {{ $r['total_hari'] }} / {{ \Carbon\Carbon::parse($bulan)->daysInMonth }} hari
+                            <div class="w-full bg-gray-100 rounded-full h-1.5 mt-1">
+                                @php $pct = \Carbon\Carbon::parse($bulan)->daysInMonth > 0 ? round($r['total_hari'] / \Carbon\Carbon::parse($bulan)->daysInMonth * 100) : 0; @endphp
+                                <div class="h-1.5 rounded-full" style="width:{{ $pct }}%;background-color:{{ $r['total_hari'] == 0 ? '#ef4444' : ($pct < 50 ? '#f59e0b' : '#A51616') }}"></div>
+                            </div>
+                        </td>
                         <td class="px-4 py-3 text-right text-gray-600">{{ number_format($r['total_terjual']) }} pcs</td>
                         <td class="px-4 py-3 text-right text-gray-700">Rp {{ number_format($r['total_omset']) }}</td>
                         <td class="px-4 py-3 text-right font-medium text-green-600">Rp {{ number_format($r['total_laba']) }}

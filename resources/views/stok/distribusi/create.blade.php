@@ -23,12 +23,12 @@
                 <div>
                     <label class="block text-sm text-gray-600 mb-1">Tanggal</label>
                     <input type="date" name="tanggal" value="{{ old('tanggal', date('Y-m-d')) }}" min="{{ date('Y-m-d') }}" required
-                        class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300">
+                        class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300">
                 </div>
                 <div>
                     <label class="block text-sm text-gray-600 mb-1">Outlet / Gerobak</label>
                     <select name="outlet_id" id="outlet_id" required
-                        class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300">
+                        class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300">
                         <option value="">-- Pilih Outlet --</option>
                         @foreach($outlet as $o)
                             <option value="{{ $o->id }}" {{ old('outlet_id') == $o->id ? 'selected' : '' }}>
@@ -40,7 +40,7 @@
                 <div>
                     <label class="block text-sm text-gray-600 mb-1">Keterangan (opsional)</label>
                     <input type="text" name="keterangan" value="{{ old('keterangan') }}"
-                        class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300">
+                        class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300">
                 </div>
             </div>
         </div>
@@ -58,7 +58,7 @@
             <a href="{{ route('stok.distribusi.index') }}"
                 class="px-5 py-2 text-sm text-gray-500 hover:bg-gray-100 rounded-lg">Batal</a>
             <button type="submit"
-                class="px-5 py-2 text-sm bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-medium">
+                class="px-5 py-2 text-sm bg-red-700 hover:bg-red-800 text-white rounded-lg font-medium">
                 Simpan Distribusi
             </button>
         </div>
@@ -99,7 +99,7 @@
                             <input type="number" name="jumlah_out[]" value="0"
                                 min="0" max="${item.stok_tersedia}"
                                 ${item.stok_tersedia <= 0 ? 'disabled' : ''}
-                                class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-center focus:outline-none focus:ring-2 focus:ring-orange-300 ${item.stok_tersedia <= 0 ? 'bg-gray-100 cursor-not-allowed' : ''}">
+                                class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-center focus:outline-none focus:ring-2 focus:ring-red-300 ${item.stok_tersedia <= 0 ? 'bg-gray-100 cursor-not-allowed' : ''}">
                         </div>
                         <span class="text-xs text-gray-400 w-6">pcs</span>
                     </div>`;
@@ -135,7 +135,7 @@
                 var html = '<ul style="text-align:left;padding-left:20px;margin:0">' +
                     errors.map(function (err) { return '<li>' + err + '</li>'; }).join('') + '</ul>';
                 if (typeof Swal !== 'undefined') {
-                    Swal.fire({ icon: 'error', title: 'Periksa Form', html: html, confirmButtonColor: '#f97316', confirmButtonText: 'OK' });
+                    Swal.fire({ icon: 'error', title: 'Periksa Form', html: html, confirmButtonColor: '#A51616', confirmButtonText: 'OK' });
                 } else {
                     alert('Periksa Form:\n' + errors.join('\n'));
                 }
