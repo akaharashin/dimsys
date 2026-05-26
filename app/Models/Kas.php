@@ -20,7 +20,9 @@ class Kas extends Model
         'penerima',
         'jumlah',
         'saldo',
-        'created_by'
+        'created_by',
+        'updated_by',
+        'deleted_by',
     ];
 
 

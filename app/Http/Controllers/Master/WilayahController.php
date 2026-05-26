@@ -2,6 +2,7 @@
 namespace App\Http\Controllers\Master;
 
 use App\Http\Controllers\Controller;
+use App\Traits\LogsActivity;
 use App\Models\Wilayah;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
@@ -9,6 +10,7 @@ use App\Exports\Master\WilayahExport;
 
 class WilayahController extends Controller
 {
+    use LogsActivity;
     public function index(Request $request)
     {
         $query = Wilayah::query();
@@ -45,7 +47,8 @@ class WilayahController extends Controller
         ]);
 
         try {
-            Wilayah::create($request->only('nama', 'tipe'));
+            $wilayah = Wilayah::create($request->only('nama', 'tipe'));
+            $this->logActivity('create', 'Wilayah', $wilayah, after: $wilayah->only(['id', 'nama', 'tipe']), label: $wilayah->nama);
             return back()->with('success', 'Wilayah berhasil ditambahkan.');
         } catch (\Exception $e) {
             return back()->with('error', 'Gagal menambahkan wilayah. Silakan coba lagi.')->withInput();
@@ -55,7 +58,9 @@ class WilayahController extends Controller
     public function update(Request $request, Wilayah $wilayah)
     {
         if ($request->input('aktif') == '1' && !$request->has('nama')) {
+            $before = $wilayah->only(['id', 'nama', 'tipe', 'aktif']);
             $wilayah->update(['aktif' => true]);
+            $this->logActivity('update', 'Wilayah', $wilayah, before: $before, after: $wilayah->fresh()->only(['id', 'nama', 'tipe', 'aktif']), label: 'Aktifkan - ' . $wilayah->nama);
             return back()->with('success', 'Wilayah berhasil diaktifkan.');
         }
         $request->validate([
@@ -69,7 +74,9 @@ class WilayahController extends Controller
         ]);
 
         try {
+            $before = $wilayah->only(['id', 'nama', 'tipe']);
             $wilayah->update($request->only('nama', 'tipe'));
+            $this->logActivity('update', 'Wilayah', $wilayah, before: $before, after: $wilayah->only(['id', 'nama', 'tipe']), label: $wilayah->nama);
             return back()->with('success', 'Wilayah berhasil diperbarui.');
         } catch (\Exception $e) {
             return back()->with('error', 'Gagal memperbarui wilayah. Silakan coba lagi.')->withInput();
@@ -78,7 +85,9 @@ class WilayahController extends Controller
 
     public function destroy(Wilayah $wilayah)
     {
+        $before = $wilayah->only(['id', 'nama', 'tipe', 'aktif']);
         $wilayah->update(['aktif' => false]);
+        $this->logActivity('update', 'Wilayah', $wilayah, before: $before, after: $wilayah->fresh()->only(['id', 'nama', 'tipe', 'aktif']), label: 'Nonaktifkan - ' . $wilayah->nama);
         return back()->with('success', 'Wilayah dinonaktifkan.');
     }
 

@@ -27,127 +27,180 @@
             </div>
 
             {{-- Nav --}}
-            <nav class="flex-1 px-3 py-1 space-y-0.5 text-sm overflow-y-auto">
+            <nav class="flex-1 px-3 py-1 text-sm overflow-y-auto">
+
+                {{-- Dashboard --}}
                 <a href="{{ route('dashboard') }}"
-                    class="flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-all
-        {{ request()->routeIs('dashboard') ? 'text-white shadow-sm' : 'text-gray-600 hover:bg-red-50 hover:text-red-700' }}"
+                    class="flex items-center gap-3 px-3 py-2.5 mt-1 rounded-lg font-medium transition-all
+                           {{ request()->routeIs('dashboard') ? 'text-white shadow-sm' : 'text-gray-600 hover:bg-red-50 hover:text-red-700' }}"
                     @if(request()->routeIs('dashboard')) style="background-color:#A51616" @endif>
                     <i class="fa-solid fa-house w-4 text-center"></i> Dashboard
                 </a>
 
                 @if(auth()->user()->hasRole(['admin_pusat', 'owner']))
-                    <p class="px-3 pt-5 pb-1.5 text-xs text-gray-400 uppercase tracking-widest font-semibold">Master Data
-                    </p>
-                    <a href="{{ route('master.wilayah.index') }}"
-                        class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all
-                                {{ request()->routeIs('master.wilayah.*') ? 'text-white shadow-sm font-medium' : 'text-gray-600 hover:bg-red-50 hover:text-red-700' }}"
-                        @if(request()->routeIs('master.wilayah.*')) style="background-color:#A51616" @endif>
-                        <i class="fa-solid fa-map-location-dot w-4 text-center"></i> Wilayah
-                    </a>
-                    <a href="{{ route('master.produk.index') }}"
-                        class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all
-                                {{ request()->routeIs('master.produk.*') ? 'text-white shadow-sm font-medium' : 'text-gray-600 hover:bg-red-50 hover:text-red-700' }}"
-                        @if(request()->routeIs('master.produk.*')) style="background-color:#A51616" @endif>
-                        <i class="fa-solid fa-box-open w-4 text-center"></i> Produk
-                    </a>
-                    <a href="{{ route('master.outlet.index') }}"
-                        class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all
-                                {{ request()->routeIs('master.outlet.*') ? 'text-white shadow-sm font-medium' : 'text-gray-600 hover:bg-red-50 hover:text-red-700' }}"
-                        @if(request()->routeIs('master.outlet.*')) style="background-color:#A51616" @endif>
-                        <i class="fa-solid fa-store w-4 text-center"></i> Outlet
-                    </a>
-                    <a href="{{ route('master.supplier.index') }}"
-                        class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all
-                                {{ request()->routeIs('master.supplier.*') ? 'text-white shadow-sm font-medium' : 'text-gray-600 hover:bg-red-50 hover:text-red-700' }}"
-                        @if(request()->routeIs('master.supplier.*')) style="background-color:#A51616" @endif>
-                        <i class="fa-solid fa-truck w-4 text-center"></i> Supplier
-                    </a>
+                    {{-- MASTER DATA --}}
+                    <button class="sidebar-section-toggle w-full flex items-center justify-between px-3 pt-4 pb-1.5 text-xs text-gray-400 uppercase tracking-widest font-semibold hover:text-gray-600 transition-colors"
+                        data-section="master-data">
+                        <span>Master Data</span>
+                        <i class="fa-solid fa-chevron-down text-xs section-chevron" style="transition:transform 0.2s ease;"></i>
+                    </button>
+                    <div class="sidebar-section-content" data-section-content="master-data" style="overflow:hidden;">
+                        <div class="space-y-0.5 pb-0.5">
+                            <a href="{{ route('master.wilayah.index') }}"
+                                class="flex items-center gap-3 pl-5 pr-2 py-2.5 rounded-lg transition-all
+                                       {{ request()->routeIs('master.wilayah.*') ? 'text-white shadow-sm font-medium' : 'text-gray-600 hover:bg-red-50 hover:text-red-700' }}"
+                                @if(request()->routeIs('master.wilayah.*')) style="background-color:#A51616" @endif>
+                                <i class="fa-solid fa-map-location-dot w-4 text-center"></i> Wilayah
+                            </a>
+                            <a href="{{ route('master.produk.index') }}"
+                                class="flex items-center gap-3 pl-5 pr-2 py-2.5 rounded-lg transition-all
+                                       {{ request()->routeIs('master.produk.*') ? 'text-white shadow-sm font-medium' : 'text-gray-600 hover:bg-red-50 hover:text-red-700' }}"
+                                @if(request()->routeIs('master.produk.*')) style="background-color:#A51616" @endif>
+                                <i class="fa-solid fa-box-open w-4 text-center"></i> Produk
+                            </a>
+                            <a href="{{ route('master.outlet.index') }}"
+                                class="flex items-center gap-3 pl-5 pr-2 py-2.5 rounded-lg transition-all
+                                       {{ request()->routeIs('master.outlet.*') ? 'text-white shadow-sm font-medium' : 'text-gray-600 hover:bg-red-50 hover:text-red-700' }}"
+                                @if(request()->routeIs('master.outlet.*')) style="background-color:#A51616" @endif>
+                                <i class="fa-solid fa-store w-4 text-center"></i> Outlet
+                            </a>
+                            <a href="{{ route('master.supplier.index') }}"
+                                class="flex items-center gap-3 pl-5 pr-2 py-2.5 rounded-lg transition-all
+                                       {{ request()->routeIs('master.supplier.*') ? 'text-white shadow-sm font-medium' : 'text-gray-600 hover:bg-red-50 hover:text-red-700' }}"
+                                @if(request()->routeIs('master.supplier.*')) style="background-color:#A51616" @endif>
+                                <i class="fa-solid fa-truck w-4 text-center"></i> Supplier
+                            </a>
+                        </div>
+                    </div>
                 @endif
 
                 @if(auth()->user()->hasRole(['admin_pusat', 'koordinator', 'owner']))
-                    <p class="px-3 pt-5 pb-1.5 text-xs text-gray-400 uppercase tracking-widest font-semibold">Stok</p>
-                    <a href="{{ route('stok.masuk.index') }}"
-                        class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all
-                                {{ request()->routeIs('stok.masuk.*') ? 'text-white shadow-sm font-medium' : 'text-gray-600 hover:bg-red-50 hover:text-red-700' }}"
-                        @if(request()->routeIs('stok.masuk.*')) style="background-color:#A51616" @endif>
-                        <i class="fa-solid fa-boxes-stacked w-4 text-center"></i> Stok Masuk
-                    </a>
-                    <a href="{{ route('stok.distribusi.index') }}"
-                        class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all
-                                {{ request()->routeIs('stok.distribusi.*') ? 'text-white shadow-sm font-medium' : 'text-gray-600 hover:bg-red-50 hover:text-red-700' }}"
-                        @if(request()->routeIs('stok.distribusi.*')) style="background-color:#A51616" @endif>
-                        <i class="fa-solid fa-truck-fast w-4 text-center"></i> Distribusi
-                    </a>
-                    <a href="{{ route('stok.rekap') }}"
-                        class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all
-                                {{ request()->routeIs('stok.rekap*') ? 'text-white shadow-sm font-medium' : 'text-gray-600 hover:bg-red-50 hover:text-red-700' }}"
-                        @if(request()->routeIs('stok.rekap*')) style="background-color:#A51616" @endif>
-                        <i class="fa-solid fa-chart-pie w-4 text-center"></i> Stok Freezer
-                    </a>
-                    <a href="{{ route('stok.opname.index') }}"
-                        class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all
-                                {{ request()->routeIs('stok.opname*') ? 'text-white shadow-sm font-medium' : 'text-gray-600 hover:bg-red-50 hover:text-red-700' }}"
-                        @if(request()->routeIs('stok.opname*')) style="background-color:#A51616" @endif>
-                        <i class="fa-solid fa-clipboard-check w-4 text-center"></i> Stok Opname
-                    </a>
-                    @if(auth()->user()->hasRole(['admin_pusat', 'koordinator']))
-                        <a href="{{ route('stok.generate-awal') }}"
-                            class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all
-                                        {{ request()->routeIs('stok.generate-awal*') ? 'text-white shadow-sm font-medium' : 'text-gray-600 hover:bg-red-50 hover:text-red-700' }}"
-                            @if(request()->routeIs('stok.generate-awal*')) style="background-color:#A51616" @endif>
-                            <i class="fa-solid fa-arrows-rotate w-4 text-center"></i> Generate Stok Awal
+                    {{-- STOK --}}
+                    <button class="sidebar-section-toggle w-full flex items-center justify-between px-3 pt-4 pb-1.5 text-xs text-gray-400 uppercase tracking-widest font-semibold hover:text-gray-600 transition-colors"
+                        data-section="stok">
+                        <span>Stok</span>
+                        <i class="fa-solid fa-chevron-down text-xs section-chevron" style="transition:transform 0.2s ease;"></i>
+                    </button>
+                    <div class="sidebar-section-content" data-section-content="stok" style="overflow:hidden;">
+                        <div class="space-y-0.5 pb-0.5">
+                            <a href="{{ route('stok.masuk.index') }}"
+                                class="flex items-center gap-3 pl-5 pr-2 py-2.5 rounded-lg transition-all
+                                       {{ request()->routeIs('stok.masuk.*') ? 'text-white shadow-sm font-medium' : 'text-gray-600 hover:bg-red-50 hover:text-red-700' }}"
+                                @if(request()->routeIs('stok.masuk.*')) style="background-color:#A51616" @endif>
+                                <i class="fa-solid fa-boxes-stacked w-4 text-center"></i> Stok Masuk
+                            </a>
+                            <a href="{{ route('stok.distribusi.index') }}"
+                                class="flex items-center gap-3 pl-5 pr-2 py-2.5 rounded-lg transition-all
+                                       {{ request()->routeIs('stok.distribusi.*') ? 'text-white shadow-sm font-medium' : 'text-gray-600 hover:bg-red-50 hover:text-red-700' }}"
+                                @if(request()->routeIs('stok.distribusi.*')) style="background-color:#A51616" @endif>
+                                <i class="fa-solid fa-truck-fast w-4 text-center"></i> Distribusi
+                            </a>
+                            <a href="{{ route('stok.rekap') }}"
+                                class="flex items-center gap-3 pl-5 pr-2 py-2.5 rounded-lg transition-all
+                                       {{ request()->routeIs('stok.rekap*') ? 'text-white shadow-sm font-medium' : 'text-gray-600 hover:bg-red-50 hover:text-red-700' }}"
+                                @if(request()->routeIs('stok.rekap*')) style="background-color:#A51616" @endif>
+                                <i class="fa-solid fa-chart-pie w-4 text-center"></i> Stok Freezer
+                            </a>
+                            <a href="{{ route('stok.opname.index') }}"
+                                class="flex items-center gap-3 pl-5 pr-2 py-2.5 rounded-lg transition-all
+                                       {{ request()->routeIs('stok.opname*') ? 'text-white shadow-sm font-medium' : 'text-gray-600 hover:bg-red-50 hover:text-red-700' }}"
+                                @if(request()->routeIs('stok.opname*')) style="background-color:#A51616" @endif>
+                                <i class="fa-solid fa-clipboard-check w-4 text-center"></i> Stok Opname
+                            </a>
+                            @if(auth()->user()->hasRole(['admin_pusat', 'koordinator']))
+                                <a href="{{ route('stok.generate-awal') }}"
+                                    class="flex items-center gap-3 pl-5 pr-2 py-2.5 rounded-lg transition-all
+                                           {{ request()->routeIs('stok.generate-awal*') ? 'text-white shadow-sm font-medium' : 'text-gray-600 hover:bg-red-50 hover:text-red-700' }}"
+                                    @if(request()->routeIs('stok.generate-awal*')) style="background-color:#A51616" @endif>
+                                    <i class="fa-solid fa-arrows-rotate w-4 text-center"></i> Generate Stok Awal
+                                </a>
+                            @endif
+                        </div>
+                    </div>
+
+                    {{-- TRANSAKSI --}}
+                    <button class="sidebar-section-toggle w-full flex items-center justify-between px-3 pt-4 pb-1.5 text-xs text-gray-400 uppercase tracking-widest font-semibold hover:text-gray-600 transition-colors"
+                        data-section="transaksi">
+                        <span>Transaksi</span>
+                        <i class="fa-solid fa-chevron-down text-xs section-chevron" style="transition:transform 0.2s ease;"></i>
+                    </button>
+                    <div class="sidebar-section-content" data-section-content="transaksi" style="overflow:hidden;">
+                        <div class="space-y-0.5 pb-0.5">
+                            <a href="{{ route('transaksi.laporan-harian.index') }}"
+                                class="flex items-center gap-3 pl-5 pr-2 py-2.5 rounded-lg transition-all
+                                       {{ request()->routeIs('transaksi.laporan-harian.*') ? 'text-white shadow-sm font-medium' : 'text-gray-600 hover:bg-red-50 hover:text-red-700' }}"
+                                @if(request()->routeIs('transaksi.laporan-harian.*')) style="background-color:#A51616" @endif>
+                                <i class="fa-solid fa-file-lines w-4 text-center"></i> Laporan Harian
+                            </a>
+                            <a href="{{ route('transaksi.kas.index') }}"
+                                class="flex items-center gap-3 pl-5 pr-2 py-2.5 rounded-lg transition-all
+                                       {{ request()->routeIs('transaksi.kas.*') ? 'text-white shadow-sm font-medium' : 'text-gray-600 hover:bg-red-50 hover:text-red-700' }}"
+                                @if(request()->routeIs('transaksi.kas.*')) style="background-color:#A51616" @endif>
+                                <i class="fa-solid fa-wallet w-4 text-center"></i> Kas Harian
+                            </a>
+                            <a href="{{ route('transaksi.penjualan-wilayah.index') }}"
+                                class="flex items-center gap-3 pl-5 pr-2 py-2.5 rounded-lg transition-all
+                                       {{ request()->routeIs('transaksi.penjualan-wilayah.*') ? 'text-white shadow-sm font-medium' : 'text-gray-600 hover:bg-red-50 hover:text-red-700' }}"
+                                @if(request()->routeIs('transaksi.penjualan-wilayah.*')) style="background-color:#A51616" @endif>
+                                <i class="fa-solid fa-city w-4 text-center"></i> Pindah Stok
+                            </a>
+                        </div>
+                    </div>
+                @endif
+
+                {{-- LAPORAN --}}
+                <button class="sidebar-section-toggle w-full flex items-center justify-between px-3 pt-4 pb-1.5 text-xs text-gray-400 uppercase tracking-widest font-semibold hover:text-gray-600 transition-colors"
+                    data-section="laporan">
+                    <span>Laporan</span>
+                    <i class="fa-solid fa-chevron-down text-xs section-chevron" style="transition:transform 0.2s ease;"></i>
+                </button>
+                <div class="sidebar-section-content" data-section-content="laporan" style="overflow:hidden;">
+                    <div class="space-y-0.5 pb-0.5">
+                        <a href="{{ route('laporan.omset') }}"
+                            class="flex items-center gap-3 pl-5 pr-2 py-2.5 rounded-lg transition-all
+                                   {{ request()->routeIs('laporan.omset*') ? 'text-white shadow-sm font-medium' : 'text-gray-600 hover:bg-red-50 hover:text-red-700' }}"
+                            @if(request()->routeIs('laporan.omset*')) style="background-color:#A51616" @endif>
+                            <i class="fa-solid fa-chart-line w-4 text-center"></i> Rekap Omset
                         </a>
-                    @endif
+                        <a href="{{ route('laporan.kontrol') }}"
+                            class="flex items-center gap-3 pl-5 pr-2 py-2.5 rounded-lg transition-all
+                                   {{ request()->routeIs('laporan.kontrol*') ? 'text-white shadow-sm font-medium' : 'text-gray-600 hover:bg-red-50 hover:text-red-700' }}"
+                            @if(request()->routeIs('laporan.kontrol*')) style="background-color:#A51616" @endif>
+                            <i class="fa-solid fa-sliders w-4 text-center"></i> Kontrol Penjualan
+                        </a>
+                        <a href="{{ route('laporan.stok') }}"
+                            class="flex items-center gap-3 pl-5 pr-2 py-2.5 rounded-lg transition-all
+                                   {{ request()->routeIs('laporan.stok*') ? 'text-white shadow-sm font-medium' : 'text-gray-600 hover:bg-red-50 hover:text-red-700' }}"
+                            @if(request()->routeIs('laporan.stok*')) style="background-color:#A51616" @endif>
+                            <i class="fa-solid fa-chart-bar w-4 text-center"></i> Rekap Stok
+                        </a>
+                        <a href="{{ route('laporan.rata-rata-out') }}"
+                            class="flex items-center gap-3 pl-5 pr-2 py-2.5 rounded-lg transition-all
+                                   {{ request()->routeIs('laporan.rata-rata-out*') ? 'text-white shadow-sm font-medium' : 'text-gray-600 hover:bg-red-50 hover:text-red-700' }}"
+                            @if(request()->routeIs('laporan.rata-rata-out*')) style="background-color:#A51616" @endif>
+                            <i class="fa-solid fa-ruler-horizontal w-4 text-center"></i> Rata-rata OUT
+                        </a>
+                    </div>
+                </div>
 
-                    <p class="px-3 pt-5 pb-1.5 text-xs text-gray-400 uppercase tracking-widest font-semibold">Transaksi</p>
-                    <a href="{{ route('transaksi.laporan-harian.index') }}"
-                        class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all
-                                {{ request()->routeIs('transaksi.laporan-harian.*') ? 'text-white shadow-sm font-medium' : 'text-gray-600 hover:bg-red-50 hover:text-red-700' }}"
-                        @if(request()->routeIs('transaksi.laporan-harian.*')) style="background-color:#A51616" @endif>
-                        <i class="fa-solid fa-file-lines w-4 text-center"></i> Laporan Harian
-                    </a>
-                    <a href="{{ route('transaksi.kas.index') }}"
-                        class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all
-                                {{ request()->routeIs('transaksi.kas.*') ? 'text-white shadow-sm font-medium' : 'text-gray-600 hover:bg-red-50 hover:text-red-700' }}"
-                        @if(request()->routeIs('transaksi.kas.*')) style="background-color:#A51616" @endif>
-                        <i class="fa-solid fa-wallet w-4 text-center"></i> Kas Harian
-                    </a>
+                @if(auth()->user()->hasRole('admin_pusat'))
+                    {{-- ADMIN --}}
+                    <button class="sidebar-section-toggle w-full flex items-center justify-between px-3 pt-4 pb-1.5 text-xs text-gray-400 uppercase tracking-widest font-semibold hover:text-gray-600 transition-colors"
+                        data-section="admin">
+                        <span>Admin</span>
+                        <i class="fa-solid fa-chevron-down text-xs section-chevron" style="transition:transform 0.2s ease;"></i>
+                    </button>
+                    <div class="sidebar-section-content" data-section-content="admin" style="overflow:hidden;">
+                        <div class="space-y-0.5 pb-0.5">
+                            <a href="{{ route('admin.activity-log') }}"
+                                class="flex items-center gap-3 pl-5 pr-2 py-2.5 rounded-lg transition-all
+                                       {{ request()->routeIs('admin.activity-log*') ? 'text-white shadow-sm font-medium' : 'text-gray-600 hover:bg-red-50 hover:text-red-700' }}"
+                                @if(request()->routeIs('admin.activity-log*')) style="background-color:#A51616" @endif>
+                                <i class="fa-solid fa-clock-rotate-left w-4 text-center"></i> Activity Log
+                            </a>
+                        </div>
+                    </div>
                 @endif
-
-                @if(auth()->user()->hasRole(['admin_pusat', 'koordinator', 'owner']))
-                    <a href="{{ route('transaksi.penjualan-wilayah.index') }}"
-                        class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all
-                                {{ request()->routeIs('transaksi.penjualan-wilayah.*') ? 'text-white shadow-sm font-medium' : 'text-gray-600 hover:bg-red-50 hover:text-red-700' }}"
-                        @if(request()->routeIs('transaksi.penjualan-wilayah.*')) style="background-color:#A51616" @endif>
-                        <i class="fa-solid fa-city w-4 text-center"></i> Pindah Stok
-                    </a>
-                @endif
-
-                <p class="px-3 pt-5 pb-1.5 text-xs text-gray-400 uppercase tracking-widest font-semibold">Laporan</p>
-                <a href="{{ route('laporan.omset') }}"
-                    class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all
-        {{ request()->routeIs('laporan.omset*') ? 'text-white shadow-sm font-medium' : 'text-gray-600 hover:bg-red-50 hover:text-red-700' }}"
-                    @if(request()->routeIs('laporan.omset*')) style="background-color:#A51616" @endif>
-                    <i class="fa-solid fa-chart-line w-4 text-center"></i> Rekap Omset
-                </a>
-                <a href="{{ route('laporan.kontrol') }}"
-                    class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all
-        {{ request()->routeIs('laporan.kontrol*') ? 'text-white shadow-sm font-medium' : 'text-gray-600 hover:bg-red-50 hover:text-red-700' }}"
-                    @if(request()->routeIs('laporan.kontrol*')) style="background-color:#A51616" @endif>
-                    <i class="fa-solid fa-sliders w-4 text-center"></i> Kontrol Penjualan
-                </a>
-                <a href="{{ route('laporan.stok') }}"
-                    class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all
-        {{ request()->routeIs('laporan.stok*') ? 'text-white shadow-sm font-medium' : 'text-gray-600 hover:bg-red-50 hover:text-red-700' }}"
-                    @if(request()->routeIs('laporan.stok*')) style="background-color:#A51616" @endif>
-                    <i class="fa-solid fa-chart-bar w-4 text-center"></i> Rekap Stok
-                </a>
-                <a href="{{ route('laporan.rata-rata-out') }}"
-                    class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all
-        {{ request()->routeIs('laporan.rata-rata-out*') ? 'text-white shadow-sm font-medium' : 'text-gray-600 hover:bg-red-50 hover:text-red-700' }}"
-                    @if(request()->routeIs('laporan.rata-rata-out*')) style="background-color:#A51616" @endif>
-                    <i class="fa-solid fa-ruler-horizontal w-4 text-center"></i> Rata-rata OUT
-                </a>
 
             </nav>
 
@@ -324,6 +377,82 @@
             });
         });
     </script>
+
+    {{-- Sidebar collapsible --}}
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var STORAGE_KEY = 'dimsys_sidebar_state';
+
+        function loadState() {
+            try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; }
+            catch (e) { return {}; }
+        }
+
+        function saveState(state) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        }
+
+        function sectionHasActive(content) {
+            return content.querySelector('a[style*="A51616"]') !== null;
+        }
+
+        function applyState(content, chevron, collapsed, animate) {
+            if (!animate) {
+                content.style.transition = 'none';
+            } else {
+                content.style.transition = 'max-height 0.22s ease';
+            }
+
+            if (collapsed) {
+                content.style.maxHeight = '0px';
+                chevron.style.transform = 'rotate(-90deg)';
+            } else {
+                content.style.maxHeight = content.scrollHeight + 'px';
+                chevron.style.transform = 'rotate(0deg)';
+            }
+
+            // Re-enable transition after synchronous style flush
+            if (!animate) {
+                requestAnimationFrame(function () {
+                    content.style.transition = 'max-height 0.22s ease';
+                });
+            }
+        }
+
+        var state = loadState();
+
+        document.querySelectorAll('.sidebar-section-toggle').forEach(function (btn) {
+            var key     = btn.dataset.section;
+            var content = document.querySelector('[data-section-content="' + key + '"]');
+            var chevron = btn.querySelector('.section-chevron');
+
+            if (!content || !chevron) return;
+
+            var hasActive  = sectionHasActive(content);
+            // Default expanded; collapse only if explicitly saved false AND no active link
+            var isExpanded = hasActive || state[key] !== false;
+
+            applyState(content, chevron, !isExpanded, false);
+
+            btn.addEventListener('click', function () {
+                var isCollapsed = content.style.maxHeight === '0px';
+                var hasActiveNow = sectionHasActive(content);
+
+                // Prevent collapsing a section that contains the active page
+                if (!isCollapsed && hasActiveNow) return;
+
+                var nowCollapsed = !isCollapsed;
+                applyState(content, chevron, nowCollapsed, true);
+
+                var s = loadState();
+                s[key] = !nowCollapsed; // true = expanded
+                saveState(s);
+            });
+        });
+    });
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     @stack('scripts')
 </body>
 

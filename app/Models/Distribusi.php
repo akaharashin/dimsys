@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Distribusi extends Model
 {
     use HasUuids, SoftDeletes;
-    protected $fillable = ['outlet_id', 'tanggal', 'keterangan', 'created_by', 'deleted_by'];
+    protected $fillable = ['outlet_id', 'tanggal', 'keterangan', 'created_by', 'updated_by', 'deleted_by'];
 
     protected $table = 'distribusi';
     public function outlet()

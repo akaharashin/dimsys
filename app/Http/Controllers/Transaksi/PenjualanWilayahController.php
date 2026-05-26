@@ -2,6 +2,7 @@
 namespace App\Http\Controllers\Transaksi;
 
 use App\Http\Controllers\Controller;
+use App\Traits\LogsActivity;
 use App\Models\PenjualanWilayah;
 use App\Models\PenjualanWilayahDetail;
 use App\Models\StokMasuk;
@@ -16,6 +17,7 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class PenjualanWilayahController extends Controller
 {
+    use LogsActivity;
     public function index(Request $request)
     {
         $wilayahList = Wilayah::where('aktif', true)->orderBy('nama')->get();
@@ -210,6 +212,12 @@ class PenjualanWilayahController extends Controller
                     }
                 }
 
+                $this->logActivity(
+                    'create', 'Pindah Stok', $penjualan,
+                    after: $penjualan->only(['id', 'tipe', 'wilayah_asal_id', 'wilayah_tujuan_id', 'tanggal', 'status']),
+                    label: 'Pindah Stok ' . optional($penjualan->wilayahAsal)->nama . ' → ' . optional($penjualan->wilayahTujuan)->nama . ' - ' . $penjualan->tanggal
+                );
+
                 return redirect()->route('transaksi.penjualan-wilayah.index')
                     ->with('success', 'Pindah stok berhasil dicatat. Menunggu persetujuan koordinator wilayah tujuan.');
             } else {
@@ -247,6 +255,12 @@ class PenjualanWilayahController extends Controller
                         ]);
                     }
                 }
+
+                $this->logActivity(
+                    'create', 'Penjualan Wilayah', $penjualan,
+                    after: $penjualan->only(['id', 'tipe', 'wilayah_asal_id', 'wilayah_tujuan_id', 'tanggal', 'total', 'status_bayar']),
+                    label: 'Penjualan ' . optional($penjualan->wilayahAsal)->nama . ' → ' . optional($penjualan->wilayahTujuan)->nama . ' - ' . $penjualan->tanggal
+                );
 
                 return redirect()->route('transaksi.penjualan-wilayah.index')
                     ->with('success', 'Penjualan wilayah berhasil dicatat.');
@@ -338,9 +352,15 @@ class PenjualanWilayahController extends Controller
             }
 
             $penjualanWilayah->update([
-                'status' => 'disetujui',
+                'status'                 => 'disetujui',
+                'updated_by'             => auth()->id(),
                 'transfer_stok_masuk_id' => $stokMasuk->id,
             ]);
+
+            $this->logActivity(
+                'approve', 'Pindah Stok', $penjualanWilayah,
+                label: 'Pindah Stok ' . optional($penjualanWilayah->wilayahAsal)->nama . ' → ' . optional($penjualanWilayah->wilayahTujuan)->nama . ' - ' . $penjualanWilayah->tanggal
+            );
 
             return redirect()->route('transaksi.penjualan-wilayah.index')
                 ->with('success', 'Pindah stok disetujui. Stok masuk di wilayah tujuan berhasil dibuat.');
@@ -363,7 +383,13 @@ class PenjualanWilayahController extends Controller
         }
 
         try {
-            $penjualanWilayah->update(['status' => 'ditolak']);
+            $penjualanWilayah->update(['status' => 'ditolak', 'updated_by' => auth()->id()]);
+
+            $this->logActivity(
+                'reject', 'Pindah Stok', $penjualanWilayah,
+                label: 'Pindah Stok ' . optional($penjualanWilayah->wilayahAsal)->nama . ' → ' . optional($penjualanWilayah->wilayahTujuan)->nama . ' - ' . $penjualanWilayah->tanggal
+            );
+
             return redirect()->route('transaksi.penjualan-wilayah.index')
                 ->with('success', 'Pindah stok ditolak.');
         } catch (\Exception $e) {
@@ -474,6 +500,11 @@ class PenjualanWilayahController extends Controller
                 ->usingName($namaAsli)
                 ->toMediaCollection($tipe);
         }
+
+        $this->logActivity(
+            'upload', 'Pindah Stok - Foto', $pindahStok,
+            label: 'Upload ' . $tipe . ' - ' . optional($pindahStok->wilayahAsal)->nama . ' - ' . $pindahStok->tanggal
+        );
 
         return response()->json([
             'success' => true,
@@ -594,7 +625,14 @@ class PenjualanWilayahController extends Controller
         ]);
 
         try {
-            $penjualanWilayah->update(['status_bayar' => $request->status_bayar]);
+            $penjualanWilayah->update(['status_bayar' => $request->status_bayar, 'updated_by' => auth()->id()]);
+
+            $this->logActivity(
+                'update', 'Penjualan Wilayah', $penjualanWilayah,
+                after: ['status_bayar' => $request->status_bayar],
+                label: 'Update Status Bayar ' . optional($penjualanWilayah->wilayahAsal)->nama . ' - ' . $penjualanWilayah->tanggal
+            );
+
             return back()->with('success', 'Status bayar berhasil diperbarui.');
         } catch (\Exception $e) {
             return back()->with('error', 'Gagal memperbarui status bayar. Silakan coba lagi.');
@@ -616,6 +654,12 @@ class PenjualanWilayahController extends Controller
                 $stokMasuk->delete();
             }
         }
+
+        $this->logActivity(
+            'delete', $tipe === 'transfer' ? 'Pindah Stok' : 'Penjualan Wilayah', $penjualanWilayah,
+            before: $penjualanWilayah->only(['id', 'tipe', 'wilayah_asal_id', 'wilayah_tujuan_id', 'tanggal', 'status']),
+            label: ($tipe === 'transfer' ? 'Pindah Stok' : 'Penjualan') . ' ' . optional($penjualanWilayah->wilayahAsal)->nama . ' - ' . $penjualanWilayah->tanggal
+        );
 
         $penjualanWilayah->update(['deleted_by' => auth()->id()]);
         $penjualanWilayah->delete();

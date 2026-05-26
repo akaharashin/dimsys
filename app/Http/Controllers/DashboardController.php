@@ -67,19 +67,12 @@ class DashboardController extends Controller
         }
         $pindahStokMenunggu = $pindahStokQuery->count();
 
-        $start = Carbon::today()->subDays(6)->toDateString();
-        $end = Carbon::today()->toDateString();
-        $laporanRange = LaporanHarian::with('details')
-            ->whereBetween('tanggal', [$start, $end])
+        $tren7Hari = LaporanHarian::selectRaw('tanggal, SUM(total_setor) as omset')
+            ->whereYear('tanggal', Carbon::now()->year)
+            ->whereMonth('tanggal', Carbon::now()->month)
+            ->groupBy('tanggal')
+            ->orderBy('tanggal')
             ->get();
-        $tren7Hari = collect(range(6, 0, -1))->map(function ($i) use ($laporanRange) {
-            $tgl = Carbon::today()->subDays($i)->toDateString();
-            $dayLaporan = $laporanRange->where('tanggal', $tgl);
-            return [
-                'tanggal' => $tgl,
-                'omset' => (int) $dayLaporan->sum(fn($l) => $l->details->sum('omset')),
-            ];
-        });
 
         return view('dashboard', compact(
             'omsetHariIni',

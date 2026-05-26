@@ -10,7 +10,7 @@ class LaporanPengeluaran extends Model
     use HasUuids, SoftDeletes;
 
     protected $table = 'laporan_pengeluaran';
-    protected $fillable = ['laporan_id', 'keterangan', 'jumlah'];
+    protected $fillable = ['laporan_id', 'keterangan', 'jumlah', 'created_by', 'updated_by', 'deleted_by'];
 
     public function laporan()
     {

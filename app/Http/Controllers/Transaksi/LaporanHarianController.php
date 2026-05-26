@@ -2,6 +2,7 @@
 namespace App\Http\Controllers\Transaksi;
 
 use App\Http\Controllers\Controller;
+use App\Traits\LogsActivity;
 use App\Models\LaporanHarian;
 use App\Models\LaporanHarianDetail;
 use App\Models\Outlet;
@@ -11,6 +12,7 @@ use Illuminate\Http\Request;
 
 class LaporanHarianController extends Controller
 {
+    use LogsActivity;
     public function index(Request $request)
     {
         $wilayahList = \App\Models\Wilayah::where('aktif', true)->orderBy('nama')->get();
@@ -182,6 +184,12 @@ class LaporanHarianController extends Controller
                 ]);
             }
 
+            $this->logActivity(
+                'create', 'Laporan Harian', $laporan,
+                after: $laporan->only(['id', 'outlet_id', 'tanggal', 'total_setor', 'total_pengeluaran', 'status']),
+                label: 'Laporan Harian ' . optional($laporan->outlet)->nama . ' - ' . $laporan->tanggal
+            );
+
             return redirect()->route('transaksi.laporan-harian.index')
                 ->with('success', 'Laporan harian berhasil disimpan.');
         } catch (\Exception $e) {
@@ -196,6 +204,11 @@ class LaporanHarianController extends Controller
 
     public function destroy(LaporanHarian $laporanHarian)
     {
+        $this->logActivity(
+            'delete', 'Laporan Harian', $laporanHarian,
+            before: $laporanHarian->only(['id', 'outlet_id', 'tanggal', 'total_setor', 'status']),
+            label: 'Laporan Harian ' . optional($laporanHarian->outlet)->nama . ' - ' . $laporanHarian->tanggal
+        );
         $laporanHarian->update(['deleted_by' => auth()->id()]);
         $laporanHarian->delete();
         return redirect()->route('transaksi.laporan-harian.index')->with('success', 'Laporan berhasil dibatalkan.');

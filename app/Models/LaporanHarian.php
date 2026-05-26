@@ -9,7 +9,7 @@ class LaporanHarian extends Model
     use HasUuids;
     use SoftDeletes;
     protected $table = 'laporan_harian';
-    protected $fillable = ['outlet_id', 'tanggal', 'total_setor', 'total_pengeluaran', 'status', 'created_by', 'deleted_by'];
+    protected $fillable = ['outlet_id', 'tanggal', 'total_setor', 'total_pengeluaran', 'status', 'created_by', 'updated_by', 'deleted_by'];
 
     public function outlet()
     {

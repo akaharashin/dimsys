@@ -200,10 +200,12 @@
         </div>
     </div>
 
+@endsection
+
 @push('scripts')
 @if(count($rekapHarian))
 <script>
-(function() {
+document.addEventListener('DOMContentLoaded', function() {
     if (typeof Chart === 'undefined') return;
     var labels = @json($rekapHarian->pluck('tanggal')->values());
     labels = labels.map(function(d) {
@@ -265,9 +267,7 @@
             }
         }
     });
-})();
+});
 </script>
 @endif
 @endpush
-
-@endsection

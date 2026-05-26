@@ -12,10 +12,12 @@ use App\Models\Supplier;
 use App\Models\Produk;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use App\Traits\LogsActivity;
 use Maatwebsite\Excel\Facades\Excel;
 
 class StokMasukController extends Controller
 {
+    use LogsActivity;
     public function index(Request $request)
     {
         $wilayahList = Wilayah::where('aktif', true)->orderBy('nama')->get();
@@ -139,6 +141,12 @@ class StokMasukController extends Controller
                 }
             }
 
+            $this->logActivity(
+                'create', 'Stok Masuk', $stokMasuk,
+                after: $stokMasuk->only(['id', 'wilayah_id', 'supplier_id', 'tanggal', 'jenis', 'keterangan']),
+                label: 'Stok Masuk ' . optional($stokMasuk->wilayah)->nama . ' - ' . $stokMasuk->tanggal
+            );
+
             return redirect()->route('stok.masuk.index')
                 ->with('success', 'Stok masuk berhasil dicatat.');
         } catch (\Exception $e) {
@@ -154,6 +162,11 @@ class StokMasukController extends Controller
 
     public function destroy(StokMasuk $masuk)
     {
+        $this->logActivity(
+            'delete', 'Stok Masuk', $masuk,
+            before: $masuk->only(['id', 'wilayah_id', 'supplier_id', 'tanggal', 'jenis', 'keterangan']),
+            label: 'Stok Masuk ' . optional($masuk->wilayah)->nama . ' - ' . $masuk->tanggal
+        );
         $masuk->update(['deleted_by' => auth()->id()]);
         $masuk->delete();
         return redirect()->route('stok.masuk.index')->with('success', 'Stok masuk berhasil dibatalkan.');

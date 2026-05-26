@@ -58,28 +58,24 @@
     @if($outletList->count() && $produkList->count())
 
         {{-- Tabel Matrix --}}
-        <div class="bg-white rounded-xl shadow-sm overflow-x-auto">
+        <div class="bg-white rounded-xl shadow-sm">
             <div class="px-5 py-4 border-b border-gray-100">
                 <h3 class="text-sm font-semibold text-gray-600">
                     Rata-rata OUT per Outlet per Produk
                     <span class="text-xs text-gray-400 font-normal ml-2">(total/hari distribusi)</span>
                 </h3>
             </div>
-            <table class="text-sm" style="min-width: max-content; width: 100%;">
-                <thead class="text-gray-500 uppercase text-xs" style="position:sticky;top:0;background:#f9fafb;z-index:10;">
+            <div class="overflow-x-auto">
+            <table class="w-full min-w-max text-sm">
+                <thead class="bg-gray-50 text-gray-500 uppercase text-xs">
                     <tr>
-                        <th class="px-4 py-3 text-center w-10" style="position:sticky;left:0;background:#f9fafb;z-index:11;">No
-                        </th>
-                        <th class="px-4 py-3 text-left"
-                            style="position:sticky;left:44px;background:#f9fafb;z-index:11;min-width:140px;">Outlet</th>
-                        <th class="px-4 py-3 text-left"
-                            style="position:sticky;left:184px;background:#f9fafb;z-index:11;min-width:100px;">Wilayah</th>
+                        <th class="px-4 py-3 text-center w-10 sticky left-0 z-[11] bg-gray-50">No</th>
+                        <th class="px-4 py-3 text-left sticky left-10 z-[11] bg-gray-50 min-w-[140px]">Outlet</th>
+                        <th class="px-4 py-3 text-left sticky left-[180px] z-[11] bg-gray-50 min-w-[100px]">Wilayah</th>
                         @foreach($produkList as $p)
-                            <th class="px-4 py-3 text-right" style="min-width:90px;">
-                                {{ $p->nama }}
-                            </th>
+                            <th class="px-4 py-3 text-center min-w-[80px]">{{ $p->nama }}</th>
                         @endforeach
-                        <th class="px-4 py-3 text-right" style="min-width:100px;">Total</th>
+                        <th class="px-4 py-3 text-right min-w-[100px]">Total</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
@@ -89,14 +85,13 @@
                             $totalOutlet = collect($outletData)->sum('total');
                         @endphp
                         <tr class="hover:bg-gray-50">
-                            <td class="px-4 py-2.5 text-center text-gray-400 text-xs"
-                                style="position:sticky;left:0;background:inherit;">
+                            <td class="px-4 py-2.5 text-center text-gray-400 text-xs sticky left-0 bg-white">
                                 {{ $loop->iteration }}
                             </td>
-                            <td class="px-4 py-2.5 font-medium text-gray-700" style="position:sticky;left:44px;background:inherit;">
+                            <td class="px-4 py-2.5 font-medium text-gray-700 sticky left-10 bg-white">
                                 {{ $outlet->nama }}
                             </td>
-                            <td class="px-4 py-2.5 text-gray-500" style="position:sticky;left:184px;background:inherit;">
+                            <td class="px-4 py-2.5 text-gray-500 sticky left-[180px] bg-white">
                                 {{ $outlet->wilayah->nama }}
                             </td>
                             @foreach($produkList as $p)
@@ -106,7 +101,7 @@
                                     $hari = $data['hari'] ?? 0;
                                     $rataRata = $hari > 0 ? round($total / $hari) : 0;
                                 @endphp
-                                <td class="px-4 py-2.5 text-right {{ $total > 0 ? 'text-gray-700' : 'text-gray-300' }}">
+                                <td class="px-4 py-2.5 text-center {{ $total > 0 ? 'text-gray-700' : 'text-gray-300' }}">
                                     @if($total > 0)
                                         <span class="font-medium">{{ number_format($rataRata) }}</span>
                                         <span class="text-xs text-gray-400">/hr</span>
@@ -123,8 +118,7 @@
                 </tbody>
                 <tfoot class="bg-gray-50 font-semibold text-xs">
                     <tr>
-                        <td colspan="3" class="px-4 py-3 text-gray-600" style="position:sticky;left:0;background:#f9fafb;">Total
-                            per Produk</td>
+                        <td colspan="3" class="px-4 py-3 text-gray-600 sticky left-0 bg-gray-50">Total per Produk</td>
                         @php $grandTotal = 0; @endphp
                         @foreach($produkList as $p)
                             @php
@@ -137,6 +131,7 @@
                     </tr>
                 </tfoot>
             </table>
+            </div>
         </div>
 
     @else

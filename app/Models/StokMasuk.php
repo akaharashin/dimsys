@@ -7,10 +7,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class StokMasuk extends Model
 {
-    use HasUuids;
     use HasUuids, SoftDeletes;
     protected $table = 'stok_masuk';
-    protected $fillable = ['wilayah_id', 'supplier_id', 'tanggal', 'jenis', 'keterangan', 'created_by', 'deleted_by'];
+    protected $fillable = ['wilayah_id', 'supplier_id', 'tanggal', 'jenis', 'keterangan', 'created_by', 'updated_by', 'deleted_by'];
 
 
     public function wilayah()

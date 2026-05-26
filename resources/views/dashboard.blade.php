@@ -182,8 +182,8 @@
 
     </div>
 
-    {{-- Tren 7 Hari Terakhir --}}
-    <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Tren 7 Hari Terakhir</p>
+    {{-- Tren Bulan Ini --}}
+    <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Tren Bulan Ini</p>
     <div class="bg-white rounded-xl shadow-sm p-5 mb-6">
         <canvas id="chart-tren" height="90"></canvas>
     </div>
@@ -263,7 +263,7 @@
             var labels = @json($tren7Hari->pluck('tanggal')->values());
             labels = labels.map(function(d) {
                 var dt = new Date(d + 'T00:00:00');
-                return dt.toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric', month: 'numeric' });
+                return dt.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
             });
             var data = @json($tren7Hari->pluck('omset')->values());
             var ctx = document.getElementById('chart-tren');

@@ -2,6 +2,7 @@
 namespace App\Http\Controllers\Master;
 
 use App\Http\Controllers\Controller;
+use App\Traits\LogsActivity;
 use App\Models\Produk;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
@@ -9,6 +10,7 @@ use App\Exports\Master\ProdukExport;
 
 class ProdukController extends Controller
 {
+    use LogsActivity;
     public function index(Request $request)
     {
         $query = Produk::query();
@@ -63,7 +65,8 @@ class ProdukController extends Controller
         ]);
 
         try {
-            Produk::create($request->only('nama', 'hpp', 'harga_mitra', 'harga_jual', 'harga_umum', 'harga_agen', 'komisi'));
+            $produk = Produk::create($request->only('nama', 'hpp', 'harga_mitra', 'harga_jual', 'harga_umum', 'harga_agen', 'komisi'));
+            $this->logActivity('create', 'Produk', $produk, after: $produk->only(['id', 'nama', 'hpp', 'harga_agen']), label: $produk->nama);
             return back()->with('success', 'Produk berhasil ditambahkan.');
         } catch (\Exception $e) {
             return back()->with('error', 'Gagal menambahkan produk. Silakan coba lagi.')->withInput();
@@ -73,7 +76,9 @@ class ProdukController extends Controller
     public function update(Request $request, Produk $produk)
     {
         if ($request->input('aktif') == '1' && !$request->has('hpp')) {
+            $before = $produk->only(['id', 'nama', 'aktif']);
             $produk->update(['aktif' => true]);
+            $this->logActivity('update', 'Produk', $produk, before: $before, after: $produk->fresh()->only(['id', 'nama', 'aktif']), label: 'Aktifkan - ' . $produk->nama);
             return back()->with('success', 'Produk berhasil diaktifkan.');
         }
         $request->validate([
@@ -108,7 +113,9 @@ class ProdukController extends Controller
         ]);
 
         try {
+            $before = $produk->only(['id', 'nama', 'hpp', 'harga_agen', 'komisi']);
             $produk->update($request->only('nama', 'hpp', 'harga_mitra', 'harga_jual', 'harga_umum', 'harga_agen', 'komisi'));
+            $this->logActivity('update', 'Produk', $produk, before: $before, after: $produk->only(['id', 'nama', 'hpp', 'harga_agen', 'komisi']), label: $produk->nama);
             return back()->with('success', 'Produk berhasil diperbarui.');
         } catch (\Exception $e) {
             return back()->with('error', 'Gagal memperbarui produk. Silakan coba lagi.')->withInput();
@@ -117,7 +124,9 @@ class ProdukController extends Controller
 
     public function destroy(Produk $produk)
     {
+        $before = $produk->only(['id', 'nama', 'aktif']);
         $produk->update(['aktif' => false]);
+        $this->logActivity('update', 'Produk', $produk, before: $before, after: $produk->fresh()->only(['id', 'nama', 'aktif']), label: 'Nonaktifkan - ' . $produk->nama);
         return back()->with('success', 'Produk dinonaktifkan.');
     }
 

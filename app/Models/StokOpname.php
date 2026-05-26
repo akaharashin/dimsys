@@ -19,7 +19,8 @@ class StokOpname extends Model implements HasMedia
         'keterangan',
         'status',
         'created_by',
-        'deleted_by'
+        'updated_by',
+        'deleted_by',
     ];
 
     public function registerMediaCollections(): void

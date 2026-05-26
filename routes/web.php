@@ -18,6 +18,7 @@ use App\Http\Controllers\Laporan\KontrolController;
 use App\Http\Controllers\Laporan\StokController;
 use App\Http\Controllers\Laporan\RataRataOutController;
 use App\Http\Controllers\Stok\RekapStokController;
+use App\Http\Controllers\Admin\ActivityLogController;
 
 Route::get('/', fn() => redirect()->route('login'));
 
@@ -95,6 +96,11 @@ Route::middleware(['auth'])->group(function () {
         Route::get('rata-rata-out', [RataRataOutController::class, 'index'])->name('rata-rata-out');
         Route::get('rata-rata-out/export', [RataRataOutController::class, 'export'])->name('rata-rata-out.export');
         Route::get('export-bulanan', [ExportBulananController::class, 'export'])->name('export-bulanan');
+    });
+
+    // Admin — admin_pusat only
+    Route::middleware('role:admin_pusat')->prefix('admin')->name('admin.')->group(function () {
+        Route::get('activity-log', [ActivityLogController::class, 'index'])->name('activity-log');
     });
 
     Route::prefix('api')->group(function () {

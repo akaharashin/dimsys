@@ -2,6 +2,7 @@
 namespace App\Http\Controllers\Master;
 
 use App\Http\Controllers\Controller;
+use App\Traits\LogsActivity;
 use App\Models\Supplier;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
@@ -9,6 +10,7 @@ use App\Exports\Master\SupplierExport;
 
 class SupplierController extends Controller
 {
+    use LogsActivity;
     public function index(Request $request)
     {
         $query = Supplier::query();
@@ -42,7 +44,8 @@ class SupplierController extends Controller
         ]);
 
         try {
-            Supplier::create($request->only('nama', 'keterangan'));
+            $supplier = Supplier::create($request->only('nama', 'keterangan'));
+            $this->logActivity('create', 'Supplier', $supplier, after: $supplier->only(['id', 'nama', 'keterangan']), label: $supplier->nama);
             return back()->with('success', 'Supplier berhasil ditambahkan.');
         } catch (\Exception $e) {
             return back()->with('error', 'Gagal menambahkan supplier. Silakan coba lagi.')->withInput();
@@ -52,7 +55,9 @@ class SupplierController extends Controller
     public function update(Request $request, Supplier $supplier)
     {
         if ($request->input('aktif') == '1' && !$request->has('nama')) {
+            $before = $supplier->only(['id', 'nama', 'aktif']);
             $supplier->update(['aktif' => true]);
+            $this->logActivity('update', 'Supplier', $supplier, before: $before, after: $supplier->fresh()->only(['id', 'nama', 'aktif']), label: 'Aktifkan - ' . $supplier->nama);
             return back()->with('success', 'Supplier berhasil diaktifkan.');
         }
         $request->validate([
@@ -65,7 +70,9 @@ class SupplierController extends Controller
         ]);
 
         try {
+            $before = $supplier->only(['id', 'nama', 'keterangan']);
             $supplier->update($request->only('nama', 'keterangan'));
+            $this->logActivity('update', 'Supplier', $supplier, before: $before, after: $supplier->only(['id', 'nama', 'keterangan']), label: $supplier->nama);
             return back()->with('success', 'Supplier berhasil diperbarui.');
         } catch (\Exception $e) {
             return back()->with('error', 'Gagal memperbarui supplier. Silakan coba lagi.')->withInput();
@@ -74,7 +81,9 @@ class SupplierController extends Controller
 
     public function destroy(Supplier $supplier)
     {
+        $before = $supplier->only(['id', 'nama', 'aktif']);
         $supplier->update(['aktif' => false]);
+        $this->logActivity('update', 'Supplier', $supplier, before: $before, after: $supplier->fresh()->only(['id', 'nama', 'aktif']), label: 'Nonaktifkan - ' . $supplier->nama);
         return back()->with('success', 'Supplier dinonaktifkan.');
     }
 

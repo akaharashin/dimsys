@@ -14,7 +14,7 @@ class PenjualanWilayah extends Model implements HasMedia
     use InteractsWithMedia;
 
     protected $table = 'penjualan_wilayah';
-    protected $fillable = ['tipe', 'wilayah_asal_id', 'wilayah_tujuan_id', 'tanggal', 'total', 'status_bayar', 'keterangan', 'status', 'transfer_stok_masuk_id', 'created_by', 'deleted_by'];
+    protected $fillable = ['tipe', 'wilayah_asal_id', 'wilayah_tujuan_id', 'tanggal', 'total', 'status_bayar', 'keterangan', 'status', 'transfer_stok_masuk_id', 'created_by', 'updated_by', 'deleted_by'];
 
     public function registerMediaCollections(): void
     {

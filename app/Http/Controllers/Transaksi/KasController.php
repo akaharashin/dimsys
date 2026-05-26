@@ -2,6 +2,7 @@
 namespace App\Http\Controllers\Transaksi;
 
 use App\Http\Controllers\Controller;
+use App\Traits\LogsActivity;
 use App\Models\Kas;
 use App\Models\Rekening;
 use App\Models\Outlet;
@@ -11,6 +12,7 @@ use App\Exports\Transaksi\KasExport;
 
 class KasController extends Controller
 {
+    use LogsActivity;
     public function index(Request $request)
     {
         $rekeningList = Rekening::where('aktif', true)->orderBy('nama')->get();
@@ -140,7 +142,7 @@ class KasController extends Controller
         ]);
 
         try {
-            Kas::create([
+            $kas = Kas::create([
                 'rekening_id' => $request->rekening_id,
                 'outlet_id' => $request->outlet_id,
                 'tanggal' => $request->tanggal,
@@ -154,6 +156,12 @@ class KasController extends Controller
                 'created_by' => auth()->id(),
             ]);
 
+            $this->logActivity(
+                'create', 'Kas Harian', $kas,
+                after: $kas->only(['id', 'rekening_id', 'tipe', 'kategori', 'jumlah', 'tanggal']),
+                label: 'Kas ' . ucfirst($kas->tipe) . ' ' . $kas->kategori . ' - ' . $kas->tanggal
+            );
+
             return redirect()->route('transaksi.kas.index', ['rekening_id' => $request->rekening_id])
                 ->with('success', 'Transaksi kas berhasil dicatat.');
         } catch (\Exception $e) {
@@ -163,6 +171,11 @@ class KasController extends Controller
 
     public function destroy(Kas $ka)
     {
+        $this->logActivity(
+            'delete', 'Kas Harian', $ka,
+            before: $ka->only(['id', 'rekening_id', 'tipe', 'kategori', 'jumlah', 'tanggal']),
+            label: 'Kas ' . ucfirst($ka->tipe) . ' ' . $ka->kategori . ' - ' . $ka->tanggal
+        );
         $ka->update(['deleted_by' => auth()->id()]);
         $ka->delete();
         return redirect()->route('transaksi.kas.index')

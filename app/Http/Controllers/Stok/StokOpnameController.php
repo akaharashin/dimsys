@@ -2,6 +2,7 @@
 namespace App\Http\Controllers\Stok;
 
 use App\Http\Controllers\Controller;
+use App\Traits\LogsActivity;
 use App\Models\StokOpname;
 use App\Models\StokOpnameDetail;
 use App\Models\Wilayah;
@@ -16,6 +17,7 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class StokOpnameController extends Controller
 {
+    use LogsActivity;
     public function index(Request $request)
     {
         $wilayahList = Wilayah::where('aktif', true)->orderBy('nama')->get();
@@ -138,6 +140,12 @@ class StokOpnameController extends Controller
                 ]);
             }
 
+            $this->logActivity(
+                'create', 'Stok Opname', $stokOpname,
+                after: $stokOpname->only(['id', 'wilayah_id', 'tanggal', 'keterangan', 'status']),
+                label: 'Stok Opname ' . optional($stokOpname->wilayah)->nama . ' - ' . $stokOpname->tanggal
+            );
+
             if ($request->expectsJson()) {
                 return response()->json([
                     'success'    => true,
@@ -165,6 +173,11 @@ class StokOpnameController extends Controller
 
     public function destroy(StokOpname $stokOpname)
     {
+        $this->logActivity(
+            'delete', 'Stok Opname', $stokOpname,
+            before: $stokOpname->only(['id', 'wilayah_id', 'tanggal', 'keterangan', 'status']),
+            label: 'Stok Opname ' . optional($stokOpname->wilayah)->nama . ' - ' . $stokOpname->tanggal
+        );
         $stokOpname->update(['deleted_by' => auth()->id()]);
         $stokOpname->delete();
         return redirect()->route('stok.opname.index')
@@ -244,6 +257,11 @@ class StokOpnameController extends Controller
             ->usingFileName($namaFile)
             ->usingName($namaAsli)
             ->toMediaCollection($tipe);
+
+        $this->logActivity(
+            'upload', 'Stok Opname - Foto', $stokOpname,
+            label: 'Upload ' . $tipe . ' - ' . optional($stokOpname->wilayah)->nama . ' - ' . $stokOpname->tanggal
+        );
 
         return response()->json([
             'success'   => true,

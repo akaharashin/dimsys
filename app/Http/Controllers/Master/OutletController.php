@@ -2,6 +2,7 @@
 namespace App\Http\Controllers\Master;
 
 use App\Http\Controllers\Controller;
+use App\Traits\LogsActivity;
 use App\Models\Outlet;
 use App\Models\Wilayah;
 use Illuminate\Http\Request;
@@ -10,6 +11,7 @@ use App\Exports\Master\OutletExport;
 
 class OutletController extends Controller
 {
+    use LogsActivity;
     public function index(Request $request)
     {
         $user = auth()->user();
@@ -64,7 +66,8 @@ class OutletController extends Controller
         ]);
 
         try {
-            Outlet::create($request->only('nama', 'wilayah_id', 'tipe'));
+            $outlet = Outlet::create($request->only('nama', 'wilayah_id', 'tipe'));
+            $this->logActivity('create', 'Outlet', $outlet, after: $outlet->only(['id', 'nama', 'wilayah_id', 'tipe']), label: $outlet->nama);
             return back()->with('success', 'Outlet berhasil ditambahkan.');
         } catch (\Exception $e) {
             return back()->with('error', 'Gagal menambahkan outlet. Silakan coba lagi.')->withInput();
@@ -80,7 +83,9 @@ class OutletController extends Controller
             if (!$user->hasRole('admin_pusat')) {
                 return back()->with('error', 'Hanya admin pusat yang dapat mengaktifkan outlet.');
             }
+            $before = $outlet->only(['id', 'nama', 'wilayah_id', 'tipe', 'aktif']);
             $outlet->update(['aktif' => true]);
+            $this->logActivity('update', 'Outlet', $outlet, before: $before, after: $outlet->fresh()->only(['id', 'nama', 'wilayah_id', 'tipe', 'aktif']), label: 'Aktifkan - ' . $outlet->nama);
             return back()->with('success', 'Outlet berhasil diaktifkan.');
         }
 
@@ -104,7 +109,9 @@ class OutletController extends Controller
             ]);
 
             try {
+                $before = $outlet->only(['id', 'nama', 'alamat_lengkap', 'latitude', 'longitude']);
                 $outlet->update($request->only('nama', 'alamat_lengkap', 'latitude', 'longitude'));
+                $this->logActivity('update', 'Outlet', $outlet, before: $before, after: $outlet->only(['id', 'nama', 'alamat_lengkap', 'latitude', 'longitude']), label: $outlet->nama);
                 return back()->with('success', 'Outlet berhasil diperbarui.');
             } catch (\Exception $e) {
                 return back()->with('error', 'Gagal memperbarui outlet. Silakan coba lagi.')->withInput();
@@ -133,7 +140,9 @@ class OutletController extends Controller
         ]);
 
         try {
+            $before = $outlet->only(['id', 'nama', 'wilayah_id', 'tipe', 'alamat_lengkap', 'latitude', 'longitude']);
             $outlet->update($request->only('nama', 'wilayah_id', 'tipe', 'alamat_lengkap', 'latitude', 'longitude'));
+            $this->logActivity('update', 'Outlet', $outlet, before: $before, after: $outlet->only(['id', 'nama', 'wilayah_id', 'tipe']), label: $outlet->nama);
             return back()->with('success', 'Outlet berhasil diperbarui.');
         } catch (\Exception $e) {
             return back()->with('error', 'Gagal memperbarui outlet. Silakan coba lagi.')->withInput();
@@ -142,7 +151,9 @@ class OutletController extends Controller
 
     public function destroy(Outlet $outlet)
     {
+        $before = $outlet->only(['id', 'nama', 'wilayah_id', 'tipe', 'aktif']);
         $outlet->update(['aktif' => false]);
+        $this->logActivity('update', 'Outlet', $outlet, before: $before, after: $outlet->fresh()->only(['id', 'nama', 'wilayah_id', 'tipe', 'aktif']), label: 'Nonaktifkan - ' . $outlet->nama);
         return back()->with('success', 'Outlet dinonaktifkan.');
     }
 

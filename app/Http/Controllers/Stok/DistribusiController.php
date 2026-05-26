@@ -9,10 +9,12 @@ use App\Models\Outlet;
 use App\Models\Produk;
 use App\Models\Wilayah;
 use Illuminate\Http\Request;
+use App\Traits\LogsActivity;
 use Maatwebsite\Excel\Facades\Excel;
 
 class DistribusiController extends Controller
 {
+    use LogsActivity;
     public function index(Request $request)
     {
         $wilayahList = Wilayah::where('aktif', true)->orderBy('nama')->get();
@@ -175,6 +177,12 @@ class DistribusiController extends Controller
                 }
             }
 
+            $this->logActivity(
+                'create', 'Distribusi', $distribusi,
+                after: $distribusi->only(['id', 'outlet_id', 'tanggal', 'keterangan']),
+                label: 'Distribusi ' . optional($distribusi->outlet)->nama . ' - ' . $distribusi->tanggal
+            );
+
             return redirect()->route('stok.distribusi.index')->with('success', 'Distribusi berhasil dicatat.');
         } catch (\Exception $e) {
             return back()->with('error', 'Gagal mencatat distribusi. Silakan coba lagi.')->withInput();
@@ -189,6 +197,11 @@ class DistribusiController extends Controller
 
     public function destroy(Distribusi $distribusi)
     {
+        $this->logActivity(
+            'delete', 'Distribusi', $distribusi,
+            before: $distribusi->only(['id', 'outlet_id', 'tanggal', 'keterangan']),
+            label: 'Distribusi ' . optional($distribusi->outlet)->nama . ' - ' . $distribusi->tanggal
+        );
         $distribusi->update(['deleted_by' => auth()->id()]);
         $distribusi->delete();
         return redirect()->route('stok.distribusi.index')->with('success', 'Distribusi berhasil dibatalkan.');

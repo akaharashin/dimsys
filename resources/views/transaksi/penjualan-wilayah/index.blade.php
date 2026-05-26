@@ -125,7 +125,7 @@
                     <th class="px-4 py-3 text-left">Status Bayar</th>
                     <th class="px-4 py-3 text-left">Status</th>
                     <th class="px-4 py-3 text-left">Keterangan</th>
-                    <th class="px-4 py-3 text-left">Aksi</th>
+                    <th class="px-4 py-3 text-left min-w-[140px]">Aksi</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-100">
@@ -173,39 +173,53 @@
                         </td>
                         <td class="px-4 py-3 text-gray-500">{{ $p->keterangan ?? '-' }}</td>
                         <td class="px-4 py-3">
-                            <div class="flex gap-2 flex-wrap">
-                                <a href="{{ route('transaksi.penjualan-wilayah.show', $p) }}"
-                                    class="inline-flex items-center gap-1 text-xs px-2.5 py-1.5 bg-blue-50 hover:bg-blue-100 rounded-md text-blue-600 font-medium"><i class="fa-solid fa-eye text-xs"></i> Detail</a>
+                            <div class="flex flex-col gap-1 min-w-[120px]">
+                                {{-- Baris 1: Detail selalu tampil --}}
+                                <div class="flex gap-1">
+                                    <a href="{{ route('transaksi.penjualan-wilayah.show', $p) }}"
+                                        class="inline-flex items-center gap-1 px-2 py-1 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded text-xs font-medium">
+                                        <i class="fa-solid fa-eye"></i> Detail
+                                    </a>
+                                    {{-- Update status bayar: hanya untuk penjualan belum lunas --}}
+                                    @if(!auth()->user()->hasRole('owner') && $p->tipe === 'penjualan' && $p->status_bayar !== 'lunas')
+                                        <button onclick="openUpdateStatus('{{ $p->id }}','{{ $p->status_bayar }}')"
+                                            class="inline-flex items-center gap-1 px-2 py-1 bg-amber-50 hover:bg-amber-100 text-amber-700 rounded text-xs font-medium">
+                                            <i class="fa-solid fa-pen"></i> Update
+                                        </button>
+                                    @endif
+                                </div>
 
-                                {{-- Approve/Reject: hanya untuk pindah stok menunggu, oleh koordinator tujuan atau admin --}}
+                                {{-- Baris 2: Konfirmasi + Tolak (transfer menunggu, koordinator/admin) --}}
                                 @if($p->tipe === 'transfer' && $p->status === 'menunggu')
                                     @if(auth()->user()->hasRole('admin_pusat') ||
                                         (auth()->user()->hasRole('koordinator') && auth()->user()->wilayah_id === $p->wilayah_tujuan_id))
-                                        {{-- Arahkan ke halaman detail untuk upload foto + konfirmasi --}}
-                                        <a href="{{ route('transaksi.penjualan-wilayah.show', $p) }}"
-                                            class="inline-flex items-center gap-1 text-xs px-2.5 py-1.5 bg-green-50 hover:bg-green-100 rounded-md text-green-600 font-medium"><i class="fa-solid fa-check text-xs"></i> Konfirmasi</a>
-                                        <form method="POST" action="{{ route('transaksi.penjualan-wilayah.reject', $p) }}"
-                                            data-confirm="Tolak pindah stok ini?">
-                                            @csrf
-                                            <button class="inline-flex items-center gap-1 text-xs px-2.5 py-1.5 bg-red-600 hover:bg-red-700 rounded-md text-white font-medium"><i class="fa-solid fa-xmark text-xs"></i> Tolak</button>
-                                        </form>
+                                        <div class="flex gap-1">
+                                            <a href="{{ route('transaksi.penjualan-wilayah.show', $p) }}"
+                                                class="inline-flex items-center gap-1 px-2 py-1 bg-green-50 hover:bg-green-100 text-green-600 rounded text-xs font-medium">
+                                                <i class="fa-solid fa-check"></i> Konfirmasi
+                                            </a>
+                                            <form method="POST" action="{{ route('transaksi.penjualan-wilayah.reject', $p) }}"
+                                                data-confirm="Tolak pindah stok ini?">
+                                                @csrf
+                                                <button class="inline-flex items-center gap-1 px-2 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-xs font-medium">
+                                                    <i class="fa-solid fa-xmark"></i> Tolak
+                                                </button>
+                                            </form>
+                                        </div>
                                     @endif
                                 @endif
 
-                                {{-- Update status bayar: hanya untuk penjualan yang belum lunas --}}
-                                @if(!auth()->user()->hasRole('owner') && $p->tipe === 'penjualan' && $p->status_bayar !== 'lunas')
-                                    <button onclick="openUpdateStatus('{{ $p->id }}','{{ $p->status_bayar }}')"
-                                        class="inline-flex items-center gap-1 text-xs px-2.5 py-1.5 bg-amber-50 hover:bg-amber-100 rounded-md text-amber-700 font-medium"><i class="fa-solid fa-pen text-xs"></i> Update</button>
-                                @endif
-
-                                {{-- Batalkan: hanya untuk status menunggu dan tanggal hari ini --}}
+                                {{-- Baris 3: Batal (menunggu + hari ini) --}}
                                 @if(!auth()->user()->hasRole('owner') && $p->status === 'menunggu' && $isToday)
-                                    <form method="POST" action="{{ route('transaksi.penjualan-wilayah.destroy', $p) }}"
-                                        data-confirm="{{ $p->tipe === 'transfer' ? 'Yakin ingin membatalkan pindah stok ini?' : 'Yakin ingin membatalkan penjualan wilayah ini?' }}">
-                                        @csrf @method('DELETE')
-                                        <button
-                                            class="inline-flex items-center gap-1 text-xs px-2.5 py-1.5 bg-red-50 hover:bg-red-100 rounded-md text-red-600 font-medium"><i class="fa-solid fa-times text-xs"></i> Batal</button>
-                                    </form>
+                                    <div>
+                                        <form method="POST" action="{{ route('transaksi.penjualan-wilayah.destroy', $p) }}"
+                                            data-confirm="{{ $p->tipe === 'transfer' ? 'Yakin ingin membatalkan pindah stok ini?' : 'Yakin ingin membatalkan penjualan wilayah ini?' }}">
+                                            @csrf @method('DELETE')
+                                            <button class="inline-flex items-center gap-1 px-2 py-1 bg-red-50 hover:bg-red-100 text-red-600 rounded text-xs font-medium">
+                                                <i class="fa-solid fa-times"></i> Batal
+                                            </button>
+                                        </form>
+                                    </div>
                                 @endif
                             </div>
                         </td>
