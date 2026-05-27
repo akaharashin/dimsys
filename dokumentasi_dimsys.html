@@ -439,7 +439,8 @@ html { scroll-behavior: smooth; }
   </div>
 
   <div class="sidenav-section">Pendahuluan</div>
-  <a href="#mulai" class="active"><span class="dot"></span> Memulai</a>
+  <a href="#login"><span class="dot"></span> Akun Login</a>
+  <a href="#mulai"><span class="dot"></span> Memulai</a>
   <a href="#istilah"><span class="dot"></span> Kamus Istilah</a>
   <a href="#alur"><span class="dot"></span> Alur Harian</a>
   <a href="#akses"><span class="dot"></span> Hak Akses</a>
@@ -482,6 +483,82 @@ html { scroll-behavior: smooth; }
     <h1>📋 Dokumentasi DIMSYS</h1>
     <p>Panduan lengkap penggunaan Sistem Manajemen Distribusi Dimsum IN untuk admin dan koordinator wilayah.</p>
     <span class="badge">PT. Wijaya Kuliner Indonesia · Versi 1.0 · Mei 2026</span>
+  </div>
+
+  <!-- AKUN LOGIN -->
+  <div class="section" id="login">
+    <div class="section-header">
+      <div class="section-icon" style="background:#FDF2F2">🔑</div>
+      <div>
+        <h2>Akun Login untuk Trial</h2>
+        <p>Gunakan akun berikut untuk mencoba semua fitur sistem</p>
+      </div>
+    </div>
+    <div class="section-body">
+
+      <div class="note note-warning" style="margin-bottom:16px">
+        <span class="note-icon">⚠️</span>
+        <div class="note-body">
+          <strong>Khusus untuk Trial / Testing</strong>
+          Akun-akun di bawah adalah akun demo dengan data real Mei 2026 Sukabumi. Gunakan untuk memahami flow sistem sebelum go live.
+        </div>
+      </div>
+
+      <table class="doc-table">
+        <tr>
+          <th>Role</th>
+          <th>Email</th>
+          <th>Password</th>
+          <th>Akses</th>
+        </tr>
+        <tr>
+          <td><span class="badge badge-gray">Owner</span></td>
+          <td><code style="background:#f3f4f6;padding:2px 8px;border-radius:4px;font-size:12px">owner@dimsys.id</code></td>
+          <td><code style="background:#f3f4f6;padding:2px 8px;border-radius:4px;font-size:12px">password</code></td>
+          <td>Lihat semua data, tidak bisa input/edit</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-red">Admin Pusat</span></td>
+          <td><code style="background:#f3f4f6;padding:2px 8px;border-radius:4px;font-size:12px">admin@dimsys.id</code></td>
+          <td><code style="background:#f3f4f6;padding:2px 8px;border-radius:4px;font-size:12px">password</code></td>
+          <td>Full access semua fitur semua wilayah</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-green">Koordinator Sukabumi</span></td>
+          <td><code style="background:#f3f4f6;padding:2px 8px;border-radius:4px;font-size:12px">koordinator.sukabumi@dimsys.id</code></td>
+          <td><code style="background:#f3f4f6;padding:2px 8px;border-radius:4px;font-size:12px">password</code></td>
+          <td>Input transaksi wilayah Sukabumi saja</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-green">Koordinator Cianjur</span></td>
+          <td><code style="background:#f3f4f6;padding:2px 8px;border-radius:4px;font-size:12px">koordinator.cianjur@dimsys.id</code></td>
+          <td><code style="background:#f3f4f6;padding:2px 8px;border-radius:4px;font-size:12px">password</code></td>
+          <td>Input transaksi wilayah Cianjur, approve pindah stok dari Sukabumi</td>
+        </tr>
+      </table>
+
+      <div class="note note-info" style="margin-top:16px">
+        <span class="note-icon">💡</span>
+        <div class="note-body">
+          <strong>Saran Urutan Trial</strong>
+          <ol style="margin-top:6px;padding-left:16px;font-size:13px;line-height:2">
+            <li>Login sebagai <strong>Owner</strong> → lihat dashboard, laporan, export Excel</li>
+            <li>Login sebagai <strong>Admin Pusat</strong> → coba input distribusi, laporan harian, pindah stok</li>
+            <li>Login sebagai <strong>Koordinator Sukabumi</strong> → rasakan tampilan terbatas per wilayah</li>
+            <li>Login sebagai <strong>Koordinator Cianjur</strong> → coba approve pindah stok dari Sukabumi</li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="note note-danger" style="margin-top:8px">
+        <span class="note-icon">🚫</span>
+        <div class="note-body">
+          <strong>Data Trial adalah Data Real Mei 2026</strong>
+          Sistem sudah berisi data real operasional Mei 2026 Sukabumi. Saat trial, hindari menghapus atau mengubah data yang sudah ada — cukup tambah data baru untuk tes fitur input.
+        </div>
+      </div>
+
+    </div>
   </div>
 
   <!-- DAFTAR ISI -->
