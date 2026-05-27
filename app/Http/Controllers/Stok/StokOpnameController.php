@@ -22,8 +22,14 @@ class StokOpnameController extends Controller
     {
         $wilayahList = Wilayah::where('aktif', true)->orderBy('nama')->get();
 
+        $sort = in_array($request->sort, ['tanggal', 'wilayah_id', 'created_at']) ? $request->sort : 'tanggal';
+        $dir  = $request->direction === 'asc' ? 'asc' : 'desc';
+
         $query = StokOpname::with(['wilayah', 'details'])
-            ->orderByDesc('tanggal')->orderByDesc('created_at');
+            ->orderBy($sort, $dir);
+        if ($sort === 'tanggal') {
+            $query->orderBy('created_at', $dir);
+        }
 
         if (auth()->user()->hasRole('koordinator')) {
             $query->where('wilayah_id', auth()->user()->wilayah_id);

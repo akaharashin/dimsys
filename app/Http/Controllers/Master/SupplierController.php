@@ -23,8 +23,8 @@ class SupplierController extends Controller
             $query->where('aktif', $request->status === 'aktif');
         }
 
-        $sort = in_array($request->sort, ['nama']) ? $request->sort : 'nama';
-        $dir = $request->dir === 'desc' ? 'desc' : 'asc';
+        $sort = in_array($request->sort, ['nama', 'aktif']) ? $request->sort : 'nama';
+        $dir = $request->direction === 'desc' ? 'desc' : 'asc';
         $perPage = in_array($request->per_page, [10, 25, 50, 100]) ? $request->per_page : 25;
 
         $supplier = $query->orderBy($sort, $dir)->paginate($perPage)->withQueryString();

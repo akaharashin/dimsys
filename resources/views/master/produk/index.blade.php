@@ -64,31 +64,46 @@
             <thead class="text-gray-500 uppercase text-xs" style="position:sticky;top:0;background:#f9fafb;z-index:10;">
                 <tr>
                     @php
-                        function sortLink($label, $col, $current, $dir)
-                        {
-                            $newDir = ($current === $col && $dir === 'asc') ? 'desc' : 'asc';
-                            $icon = $current === $col ? ($dir === 'asc' ? '↑' : '↓') : '↕';
-                            $query = array_merge(request()->all(), ['sort' => $col, 'dir' => $newDir]);
-                            return '<a href="?' . http_build_query($query) . '" class="flex items-center gap-1 hover:text-red-600">' . $label . ' <span>' . $icon . '</span></a>';
+                        function sortUrl($col) {
+                            $d = request('sort') === $col && request('direction') === 'asc' ? 'desc' : 'asc';
+                            return request()->fullUrlWithQuery(['sort' => $col, 'direction' => $d]);
+                        }
+                        function sortIcon($col) {
+                            if (request('sort') !== $col) return 'fa-sort text-gray-300';
+                            return request('direction') === 'asc' ? 'fa-sort-up text-red-700' : 'fa-sort-down text-red-700';
                         }
                     @endphp
                     <th class="px-4 py-3 text-center w-12">No</th>
                     <th class="px-4 py-3 text-left">
-                        {!! sortLink('Nama', 'nama', request('sort', 'nama'), request('dir', 'asc')) !!}
+                        <a href="{{ sortUrl('nama') }}" class="flex items-center gap-1 hover:text-red-700 transition-colors">
+                            Nama <i class="fa-solid {{ sortIcon('nama') }} text-xs"></i>
+                        </a>
                     </th>
                     <th class="px-4 py-3 text-right">
-                        {!! sortLink('HPP', 'hpp', request('sort', 'nama'), request('dir', 'asc')) !!}
+                        <a href="{{ sortUrl('hpp') }}" class="flex items-center justify-end gap-1 hover:text-red-700 transition-colors">
+                            HPP <i class="fa-solid {{ sortIcon('hpp') }} text-xs"></i>
+                        </a>
                     </th>
-                    <th class="px-4 py-3 text-right">Mitra</th>
                     <th class="px-4 py-3 text-right">
-                        {!! sortLink('Jual', 'harga_jual', request('sort', 'nama'), request('dir', 'asc')) !!}
+                        <a href="{{ sortUrl('harga_mitra') }}" class="flex items-center justify-end gap-1 hover:text-red-700 transition-colors">
+                            Mitra <i class="fa-solid {{ sortIcon('harga_mitra') }} text-xs"></i>
+                        </a>
+                    </th>
+                    <th class="px-4 py-3 text-right">
+                        <a href="{{ sortUrl('harga_jual') }}" class="flex items-center justify-end gap-1 hover:text-red-700 transition-colors">
+                            Jual <i class="fa-solid {{ sortIcon('harga_jual') }} text-xs"></i>
+                        </a>
                     </th>
                     <th class="px-4 py-3 text-right">Umum</th>
                     <th class="px-4 py-3 text-right">
-                        {!! sortLink('Agen', 'harga_agen', request('sort', 'nama'), request('dir', 'asc')) !!}
+                        <a href="{{ sortUrl('harga_agen') }}" class="flex items-center justify-end gap-1 hover:text-red-700 transition-colors">
+                            Agen <i class="fa-solid {{ sortIcon('harga_agen') }} text-xs"></i>
+                        </a>
                     </th>
                     <th class="px-4 py-3 text-right">
-                        {!! sortLink('Komisi', 'komisi', request('sort', 'nama'), request('dir', 'asc')) !!}
+                        <a href="{{ sortUrl('komisi') }}" class="flex items-center justify-end gap-1 hover:text-red-700 transition-colors">
+                            Komisi <i class="fa-solid {{ sortIcon('komisi') }} text-xs"></i>
+                        </a>
                     </th>
                     <th class="px-4 py-3 text-left">Status</th>
                     <th class="px-4 py-3 text-left">Aksi</th>

@@ -108,10 +108,28 @@
     <div class="bg-white rounded-xl shadow-sm overflow-x-auto">
         <table class="w-full text-sm">
             <thead class="bg-gray-50 text-gray-500 uppercase text-xs">
+                @php
+                    function sortUrl($col) {
+                        $d = request('sort') === $col && request('direction') === 'asc' ? 'desc' : 'asc';
+                        return request()->fullUrlWithQuery(['sort' => $col, 'direction' => $d]);
+                    }
+                    function sortIcon($col) {
+                        if (request('sort') !== $col) return 'fa-sort text-gray-300';
+                        return request('direction') === 'asc' ? 'fa-sort-up text-red-700' : 'fa-sort-down text-red-700';
+                    }
+                @endphp
                 <tr>
                     <th class="px-4 py-3 text-center w-12">No</th>
-                    <th class="px-4 py-3 text-left">Tanggal</th>
-                    <th class="px-4 py-3 text-left">Outlet</th>
+                    <th class="px-4 py-3 text-left">
+                        <a href="{{ sortUrl('tanggal') }}" class="flex items-center gap-1 hover:text-red-700 transition-colors">
+                            Tanggal <i class="fa-solid {{ sortIcon('tanggal') }} text-xs"></i>
+                        </a>
+                    </th>
+                    <th class="px-4 py-3 text-left">
+                        <a href="{{ sortUrl('outlet_id') }}" class="flex items-center gap-1 hover:text-red-700 transition-colors">
+                            Outlet <i class="fa-solid {{ sortIcon('outlet_id') }} text-xs"></i>
+                        </a>
+                    </th>
                     <th class="px-4 py-3 text-left">Wilayah</th>
                     <th class="px-4 py-3 text-left">Keterangan</th>
                     <th class="px-4 py-3 text-right">Total OUT</th>

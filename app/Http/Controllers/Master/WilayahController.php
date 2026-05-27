@@ -26,7 +26,7 @@ class WilayahController extends Controller
         }
 
         $sort = in_array($request->sort, ['nama', 'tipe']) ? $request->sort : 'nama';
-        $dir = $request->dir === 'desc' ? 'desc' : 'asc';
+        $dir = $request->direction === 'desc' ? 'desc' : 'asc';
         $perPage = in_array($request->per_page, [10, 25, 50, 100]) ? $request->per_page : 25;
 
         $wilayah = $query->orderBy($sort, $dir)->paginate($perPage)->withQueryString();

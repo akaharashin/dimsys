@@ -1,0 +1,1313 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dokumentasi DIMSYS — Panduan Pengguna</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap');
+
+:root {
+  --red: #A51616;
+  --red-light: #FDF2F2;
+  --red-hover: #8B1010;
+  --yellow: #F5F028;
+  --yellow-dark: #C9C400;
+  --green: #16a34a;
+  --blue: #2563eb;
+  --gray: #6b7280;
+  --dark: #111827;
+  --border: #E8F1EF;
+  --bg: #f9fafb;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  background: var(--bg);
+  color: var(--dark);
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+/* LAYOUT */
+.layout { display: flex; min-height: 100vh; }
+
+/* SIDEBAR NAV */
+.sidenav {
+  width: 260px;
+  background: white;
+  border-right: 1px solid var(--border);
+  position: fixed;
+  top: 0; left: 0;
+  height: 100vh;
+  overflow-y: auto;
+  z-index: 100;
+}
+
+.sidenav-logo {
+  padding: 20px 20px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.sidenav-logo h1 {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--red);
+}
+
+.sidenav-logo p {
+  font-size: 11px;
+  color: var(--gray);
+  margin-top: 2px;
+}
+
+.sidenav-section {
+  padding: 16px 16px 4px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #9ca3af;
+}
+
+.sidenav a {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  font-size: 13px;
+  color: #374151;
+  text-decoration: none;
+  border-radius: 6px;
+  margin: 1px 8px;
+  transition: all 0.15s;
+}
+
+.sidenav a:hover { background: var(--red-light); color: var(--red); }
+.sidenav a.active { background: var(--red); color: white; font-weight: 600; }
+.sidenav a .dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.5;
+  flex-shrink: 0;
+}
+
+/* MAIN */
+.main {
+  margin-left: 260px;
+  flex: 1;
+  padding: 40px 48px;
+  max-width: 960px;
+}
+
+/* HEADER */
+.doc-header {
+  background: linear-gradient(135deg, var(--red) 0%, #7B1010 100%);
+  color: white;
+  border-radius: 16px;
+  padding: 32px 36px;
+  margin-bottom: 40px;
+  position: relative;
+  overflow: hidden;
+}
+
+.doc-header::before {
+  content: '';
+  position: absolute;
+  top: -20px; right: -20px;
+  width: 160px; height: 160px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 50%;
+}
+
+.doc-header::after {
+  content: '';
+  position: absolute;
+  bottom: -40px; right: 60px;
+  width: 120px; height: 120px;
+  background: rgba(245,240,40,0.1);
+  border-radius: 50%;
+}
+
+.doc-header h1 { font-size: 28px; font-weight: 800; margin-bottom: 8px; }
+.doc-header p { font-size: 14px; opacity: 0.85; max-width: 500px; }
+.doc-header .badge {
+  display: inline-block;
+  background: rgba(255,255,255,0.2);
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-top: 12px;
+}
+
+/* SECTION */
+.section {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  margin-bottom: 32px;
+  overflow: hidden;
+}
+
+.section-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.section-icon {
+  width: 40px; height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.section-header h2 { font-size: 17px; font-weight: 700; }
+.section-header p { font-size: 13px; color: var(--gray); margin-top: 2px; }
+
+.section-body { padding: 24px; }
+
+/* STEPS */
+.steps { counter-reset: step; }
+
+.step {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.step:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+
+.step-num {
+  counter-increment: step;
+  width: 32px; height: 32px;
+  background: var(--red);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.step-content h4 { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+.step-content p { font-size: 13.5px; color: #374151; }
+
+/* NOTE BOXES */
+.note {
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin: 12px 0;
+  font-size: 13px;
+  display: flex;
+  gap: 10px;
+}
+
+.note-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+.note-body { flex: 1; }
+.note-body strong { display: block; margin-bottom: 2px; }
+
+.note-info { background: #eff6ff; border-left: 3px solid #3b82f6; }
+.note-warning { background: #fffbeb; border-left: 3px solid #f59e0b; }
+.note-danger { background: #fef2f2; border-left: 3px solid #ef4444; }
+.note-success { background: #f0fdf4; border-left: 3px solid #22c55e; }
+
+/* TABLE */
+.doc-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+  margin: 12px 0;
+}
+
+.doc-table th {
+  background: #f9fafb;
+  padding: 10px 14px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--gray);
+  border-bottom: 1px solid var(--border);
+}
+
+.doc-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid #f3f4f6;
+  vertical-align: top;
+}
+
+.doc-table tr:last-child td { border-bottom: none; }
+
+/* BADGE */
+.badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.badge-red { background: var(--red-light); color: var(--red); }
+.badge-green { background: #f0fdf4; color: var(--green); }
+.badge-blue { background: #eff6ff; color: var(--blue); }
+.badge-yellow { background: #fffbeb; color: #92400e; }
+.badge-gray { background: #f3f4f6; color: var(--gray); }
+
+/* FORMULA BOX */
+.formula {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 10px;
+  padding: 16px 20px;
+  margin: 12px 0;
+  font-family: monospace;
+  font-size: 13px;
+  color: #166534;
+  line-height: 2;
+}
+
+.formula .f-label {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #16a34a;
+  margin-bottom: 8px;
+  display: block;
+}
+
+/* FLOW */
+.flow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 12px 0;
+}
+
+.flow-item {
+  background: var(--red-light);
+  color: var(--red);
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.flow-arrow { color: var(--gray); font-size: 14px; }
+
+/* ROLE CARDS */
+.role-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin: 12px 0;
+}
+
+.role-card {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px;
+}
+
+.role-name {
+  font-weight: 700;
+  font-size: 14px;
+  margin-bottom: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.role-item {
+  font-size: 12.5px;
+  padding: 2px 0;
+}
+
+.role-item.can { color: var(--green); }
+.role-item.cant { color: #ef4444; }
+
+/* GLOSSARY */
+.glossary-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin: 12px 0;
+}
+
+.glossary-item {
+  background: #f9fafb;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 14px;
+}
+
+.glossary-term {
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--red);
+  margin-bottom: 4px;
+}
+
+.glossary-def { font-size: 12.5px; color: #374151; }
+.glossary-ex { font-size: 12px; color: var(--gray); margin-top: 4px; font-style: italic; }
+
+/* QUICK REF */
+.quick-ref {
+  background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
+  color: white;
+  border-radius: 12px;
+  padding: 24px;
+  margin: 12px 0;
+}
+
+.quick-ref h3 { font-size: 15px; font-weight: 700; margin-bottom: 16px; opacity: 0.9; }
+.quick-ref-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+.quick-ref-item { background: rgba(255,255,255,0.1); border-radius: 8px; padding: 10px 14px; }
+.quick-ref-label { font-size: 11px; opacity: 0.7; text-transform: uppercase; letter-spacing: 0.5px; }
+.quick-ref-value { font-size: 13px; font-weight: 600; margin-top: 2px; }
+
+/* TOC */
+.toc { padding: 16px 24px; }
+.toc-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+  font-size: 13.5px;
+  color: #374151;
+  text-decoration: none;
+  border-bottom: 1px solid #f3f4f6;
+}
+.toc-item:last-child { border-bottom: none; }
+.toc-item:hover { color: var(--red); }
+.toc-num {
+  width: 24px; height: 24px;
+  background: var(--red-light);
+  color: var(--red);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+/* SCROLL & PRINT */
+html { scroll-behavior: smooth; }
+
+@media print {
+  .sidenav { display: none; }
+  .main { margin-left: 0; padding: 20px; }
+  .section { break-inside: avoid; }
+}
+
+@media (max-width: 768px) {
+  .sidenav { display: none; }
+  .main { margin-left: 0; padding: 20px; }
+  .role-grid { grid-template-columns: 1fr; }
+  .glossary-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="layout">
+
+<!-- SIDEBAR -->
+<nav class="sidenav">
+  <div class="sidenav-logo">
+    <h1>DIMSYS</h1>
+    <p>Dokumentasi Pengguna v1.0</p>
+  </div>
+
+  <div class="sidenav-section">Pendahuluan</div>
+  <a href="#mulai" class="active"><span class="dot"></span> Memulai</a>
+  <a href="#istilah"><span class="dot"></span> Kamus Istilah</a>
+  <a href="#alur"><span class="dot"></span> Alur Harian</a>
+  <a href="#akses"><span class="dot"></span> Hak Akses</a>
+
+  <div class="sidenav-section">Master Data</div>
+  <a href="#wilayah"><span class="dot"></span> Wilayah</a>
+  <a href="#produk"><span class="dot"></span> Produk</a>
+  <a href="#outlet"><span class="dot"></span> Outlet / Gerobak</a>
+  <a href="#supplier"><span class="dot"></span> Supplier</a>
+
+  <div class="sidenav-section">Stok</div>
+  <a href="#stok-masuk"><span class="dot"></span> Stok Masuk</a>
+  <a href="#distribusi"><span class="dot"></span> Distribusi</a>
+  <a href="#stok-freezer"><span class="dot"></span> Stok Freezer</a>
+  <a href="#stok-opname"><span class="dot"></span> Stok Opname</a>
+  <a href="#generate-stok"><span class="dot"></span> Generate Stok Awal</a>
+
+  <div class="sidenav-section">Transaksi</div>
+  <a href="#laporan-harian"><span class="dot"></span> Laporan Harian</a>
+  <a href="#kas-harian"><span class="dot"></span> Kas Harian</a>
+  <a href="#pindah-stok"><span class="dot"></span> Pindah Stok</a>
+
+  <div class="sidenav-section">Laporan</div>
+  <a href="#rekap-omset"><span class="dot"></span> Rekap Omset</a>
+  <a href="#kontrol"><span class="dot"></span> Kontrol Penjualan</a>
+  <a href="#rekap-stok-lap"><span class="dot"></span> Rekap Stok</a>
+  <a href="#rata-out"><span class="dot"></span> Rata-rata OUT</a>
+  <a href="#export-bulanan"><span class="dot"></span> Export Rekap Bulanan</a>
+
+  <div class="sidenav-section">Admin</div>
+  <a href="#activity-log"><span class="dot"></span> Activity Log</a>
+  <a href="#faq"><span class="dot"></span> FAQ</a>
+</nav>
+
+<!-- MAIN CONTENT -->
+<main class="main">
+
+  <!-- HEADER -->
+  <div class="doc-header">
+    <h1>📋 Dokumentasi DIMSYS</h1>
+    <p>Panduan lengkap penggunaan Sistem Manajemen Distribusi Dimsum IN untuk admin dan koordinator wilayah.</p>
+    <span class="badge">PT. Wijaya Kuliner Indonesia · Versi 1.0 · Mei 2026</span>
+  </div>
+
+  <!-- DAFTAR ISI -->
+  <div class="section" id="mulai">
+    <div class="section-header">
+      <div class="section-icon" style="background:#FDF2F2">🗺️</div>
+      <div>
+        <h2>Daftar Isi & Cara Membaca Dokumen Ini</h2>
+        <p>Panduan navigasi dokumentasi</p>
+      </div>
+    </div>
+    <div class="toc">
+      <a href="#istilah" class="toc-item"><span class="toc-num">1</span> Kamus Istilah — Penjelasan istilah keuangan & operasional</a>
+      <a href="#alur" class="toc-item"><span class="toc-num">2</span> Alur Kerja Harian — Urutan input data setiap hari</a>
+      <a href="#akses" class="toc-item"><span class="toc-num">3</span> Hak Akses — Siapa bisa akses apa</a>
+      <a href="#stok-masuk" class="toc-item"><span class="toc-num">4</span> Stok Masuk — Input stok dari supplier</a>
+      <a href="#distribusi" class="toc-item"><span class="toc-num">5</span> Distribusi — OUT stok ke gerobak</a>
+      <a href="#laporan-harian" class="toc-item"><span class="toc-num">6</span> Laporan Harian — Input sisa & hitung omset otomatis</a>
+      <a href="#kas-harian" class="toc-item"><span class="toc-num">7</span> Kas Harian — Catat uang masuk & keluar</a>
+      <a href="#pindah-stok" class="toc-item"><span class="toc-num">8</span> Pindah Stok — Transfer antar wilayah</a>
+      <a href="#rekap-omset" class="toc-item"><span class="toc-num">9</span> Laporan & Export — Rekap bulanan & export Excel</a>
+      <a href="#faq" class="toc-item"><span class="toc-num">10</span> FAQ — Pertanyaan yang sering muncul</a>
+    </div>
+
+    <div style="padding: 0 24px 24px">
+      <div class="note note-info">
+        <span class="note-icon">💡</span>
+        <div class="note-body">
+          <strong>Tips Membaca</strong>
+          Gunakan sidebar kiri untuk navigasi cepat. Setiap bagian bisa dibaca mandiri — tidak harus urut. Kalau kamu sudah paham flow bisnis DimsumIN, langsung lompat ke bagian yang relevan.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- KAMUS ISTILAH -->
+  <div class="section" id="istilah">
+    <div class="section-header">
+      <div class="section-icon" style="background:#eff6ff">📚</div>
+      <div>
+        <h2>Kamus Istilah</h2>
+        <p>Istilah yang dipakai di seluruh sistem</p>
+      </div>
+    </div>
+    <div class="section-body">
+      <div class="glossary-grid">
+        <div class="glossary-item">
+          <div class="glossary-term">Omset</div>
+          <div class="glossary-def">Total uang dari penjualan gerobak. Dihitung dari jumlah terjual × harga mitra.</div>
+          <div class="glossary-ex">Contoh: 100 Mini × Rp 2.250 = Rp 225.000 omset</div>
+        </div>
+        <div class="glossary-item">
+          <div class="glossary-term">HPP / Modal</div>
+          <div class="glossary-def">Harga Pokok Penjualan — biaya beli produk dari supplier per pcs.</div>
+          <div class="glossary-ex">Contoh: HPP Mini = Rp 800/pcs → modal = 100 × 800 = Rp 80.000</div>
+        </div>
+        <div class="glossary-item">
+          <div class="glossary-term">Komisi</div>
+          <div class="glossary-def">Upah mitra/gerobak per produk yang terjual. Sudah diatur di master produk.</div>
+          <div class="glossary-ex">Contoh: Komisi Mini Rp 50/pcs → 100 pcs = Rp 5.000 komisi</div>
+        </div>
+        <div class="glossary-item">
+          <div class="glossary-term">Laba</div>
+          <div class="glossary-def">Keuntungan bersih perusahaan setelah dikurangi modal dan komisi.</div>
+          <div class="glossary-ex">Laba = Omset − Modal − Komisi</div>
+        </div>
+        <div class="glossary-item">
+          <div class="glossary-term">Setor</div>
+          <div class="glossary-def">Uang yang diserahkan mitra ke koordinator, sudah dikurangi komisi dan pengeluaran.</div>
+          <div class="glossary-ex">Setor = Omset − Komisi − Pengeluaran</div>
+        </div>
+        <div class="glossary-item">
+          <div class="glossary-term">OUT / Distribusi</div>
+          <div class="glossary-def">Stok yang keluar dari freezer ke gerobak setiap pagi hari.</div>
+          <div class="glossary-ex">Baros 1 terima 300 pcs Mini pagi = OUT 300 pcs</div>
+        </div>
+        <div class="glossary-item">
+          <div class="glossary-term">Sisa</div>
+          <div class="glossary-def">Stok yang tidak terjual, dikembalikan ke freezer malam hari.</div>
+          <div class="glossary-ex">OUT 300, Sisa 50 → Terjual = 250 pcs</div>
+        </div>
+        <div class="glossary-item">
+          <div class="glossary-term">Harga Mitra</div>
+          <div class="glossary-def">Harga yang dibayar gerobak ke perusahaan (bukan harga jual ke konsumen).</div>
+          <div class="glossary-ex">Harga mitra Mini = Rp 2.250 (konsumen beli Rp 3.000)</div>
+        </div>
+        <div class="glossary-item">
+          <div class="glossary-term">Stok Opname (STO)</div>
+          <div class="glossary-def">Pengecekan fisik stok freezer — cocokkan hitungan fisik vs data sistem.</div>
+          <div class="glossary-ex">Sistem: 1000 pcs, fisik: 980 pcs → Selisih -20 pcs</div>
+        </div>
+        <div class="glossary-item">
+          <div class="glossary-term">Transfer Stok</div>
+          <div class="glossary-def">Perpindahan stok antar cabang milik perusahaan sendiri. Bukan penjualan.</div>
+          <div class="glossary-ex">Sukabumi kirim 500 Mini ke Cianjur = Transfer, bukan jual</div>
+        </div>
+      </div>
+
+      <div class="formula">
+        <span class="f-label">📊 Formula Keuangan yang Dipakai Sistem</span>
+        OMSET  = Terjual × Harga Mitra<br>
+        MODAL  = Terjual × HPP<br>
+        KOMISI = Terjual × Komisi per Produk<br>
+        LABA   = Omset − Modal − Komisi<br>
+        SETOR  = Omset − Komisi − Total Pengeluaran
+      </div>
+
+      <div class="formula" style="background:#eff6ff;border-color:#bfdbfe;color:#1e40af">
+        <span class="f-label" style="color:#2563eb">📦 Formula Stok Freezer</span>
+        STOK AKHIR = Stok Awal + Stok Masuk − OUT Distribusi − Pindah Stok (disetujui)
+      </div>
+    </div>
+  </div>
+
+  <!-- ALUR HARIAN -->
+  <div class="section" id="alur">
+    <div class="section-header">
+      <div class="section-icon" style="background:#f0fdf4">🔄</div>
+      <div>
+        <h2>Alur Kerja Harian</h2>
+        <p>Urutan input data yang benar setiap hari</p>
+      </div>
+    </div>
+    <div class="section-body">
+      <div class="flow">
+        <div class="flow-item">📦 Stok Masuk<br><small>dari supplier</small></div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-item">🚚 Distribusi OUT<br><small>pagi ke gerobak</small></div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-item">🛒 Gerobak Jualan<br><small>seharian</small></div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-item">📋 Laporan Harian<br><small>input sisa malam</small></div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-item">💰 Setor ke Koordinator<br><small>max jam 10 pagi</small></div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-item">🏦 Transfer ke Pusat<br><small>via Kas Harian</small></div>
+      </div>
+
+      <div class="note note-warning" style="margin-top:16px">
+        <span class="note-icon">⚠️</span>
+        <div class="note-body">
+          <strong>Aturan Tanggal Penting</strong>
+          Semua input transaksi hanya bisa untuk tanggal HARI INI. Data kemarin tidak bisa diubah — hanya bisa dilihat. Kalau ada kesalahan input, hubungi Admin Pusat.
+        </div>
+      </div>
+
+      <div class="note note-info" style="margin-top:8px">
+        <span class="note-icon">📅</span>
+        <div class="note-body">
+          <strong>Awal Bulan Baru</strong>
+          Di awal setiap bulan, Admin Pusat perlu Generate Stok Awal dari stok akhir bulan sebelumnya. Koordinator tidak perlu input manual stok awal.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HAK AKSES -->
+  <div class="section" id="akses">
+    <div class="section-header">
+      <div class="section-icon" style="background:#faf5ff">👤</div>
+      <div>
+        <h2>Hak Akses per Role</h2>
+        <p>Siapa bisa melakukan apa di sistem</p>
+      </div>
+    </div>
+    <div class="section-body">
+      <div class="role-grid">
+        <div class="role-card">
+          <div class="role-name">🔴 Owner</div>
+          <span class="badge badge-gray" style="font-size:11px;margin-bottom:8px">Read Only</span>
+          <div class="role-item can">✅ Lihat semua data semua wilayah</div>
+          <div class="role-item can">✅ Export Excel semua laporan</div>
+          <div class="role-item can">✅ Akses semua menu</div>
+          <div class="role-item cant">❌ Tidak bisa input/edit/hapus</div>
+          <div class="role-item cant">❌ Tidak bisa approve</div>
+        </div>
+        <div class="role-card">
+          <div class="role-name">🟠 Admin Pusat</div>
+          <span class="badge badge-red" style="font-size:11px;margin-bottom:8px">Full Access</span>
+          <div class="role-item can">✅ Semua fitur semua wilayah</div>
+          <div class="role-item can">✅ Kelola master data</div>
+          <div class="role-item can">✅ Input semua transaksi</div>
+          <div class="role-item can">✅ Approve pindah stok</div>
+          <div class="role-item can">✅ Lihat Activity Log</div>
+        </div>
+        <div class="role-card">
+          <div class="role-name">🟢 Koordinator</div>
+          <span class="badge badge-green" style="font-size:11px;margin-bottom:8px">Wilayah Sendiri</span>
+          <div class="role-item can">✅ Input stok, distribusi, laporan</div>
+          <div class="role-item can">✅ Approve pindah stok masuk ke wilayahnya</div>
+          <div class="role-item can">✅ Edit outlet wilayahnya</div>
+          <div class="role-item cant">❌ Hanya data wilayahnya sendiri</div>
+          <div class="role-item cant">❌ Tidak bisa kelola master data</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STOK MASUK -->
+  <div class="section" id="stok-masuk">
+    <div class="section-header">
+      <div class="section-icon" style="background:#f0fdf4">📦</div>
+      <div>
+        <h2>Stok Masuk</h2>
+        <p>Menu Stok → Stok Masuk</p>
+      </div>
+    </div>
+    <div class="section-body">
+      <p style="margin-bottom:16px;color:#374151">Mencatat semua produk yang masuk ke freezer — baik dari supplier maupun stok awal bulan.</p>
+
+      <table class="doc-table">
+        <tr><th>Jenis</th><th>Kapan</th><th>Keterangan</th></tr>
+        <tr><td><span class="badge badge-blue">Stok Awal</span></td><td>Awal bulan</td><td>Di-generate otomatis dari stok akhir bulan sebelumnya</td></tr>
+        <tr><td><span class="badge badge-green">Stok Masuk</span></td><td>Saat terima dari supplier</td><td>Input manual setiap ada kiriman dari Jaya Food dll</td></tr>
+      </table>
+
+      <div class="steps" style="margin-top:20px">
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-content">
+            <h4>Klik "+ Tambah Stok" di pojok kanan atas</h4>
+            <p>Tombol merah di halaman Stok Masuk.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-content">
+            <h4>Pilih Wilayah, Supplier, dan Tanggal</h4>
+            <p>Tanggal minimal hari ini — tidak bisa input tanggal kemarin.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-content">
+            <h4>Pilih Jenis: Stok Masuk</h4>
+            <p>Untuk kiriman reguler dari supplier, pilih "Stok Masuk". Jenis "Stok Awal" dibuat otomatis oleh sistem.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-content">
+            <h4>Input jumlah per produk</h4>
+            <p>Isi jumlah (pcs) untuk setiap produk yang diterima. HPP otomatis terisi dari master produk.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-content">
+            <h4>Klik "Simpan"</h4>
+            <p>Stok freezer langsung bertambah setelah disimpan.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="note note-danger">
+        <span class="note-icon">🚫</span>
+        <div class="note-body">
+          <strong>HPP tersimpan sebagai snapshot</strong>
+          Harga HPP disimpan saat transaksi terjadi. Kalau HPP di master produk diubah nanti, data stok masuk yang lama tidak ikut berubah. Ini disengaja untuk menjaga akurasi laporan historis.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DISTRIBUSI -->
+  <div class="section" id="distribusi">
+    <div class="section-header">
+      <div class="section-icon" style="background:#eff6ff">🚚</div>
+      <div>
+        <h2>Distribusi (OUT)</h2>
+        <p>Menu Stok → Distribusi</p>
+      </div>
+    </div>
+    <div class="section-body">
+      <p style="margin-bottom:16px;color:#374151">Mencatat stok yang keluar dari freezer ke gerobak setiap pagi. Ini adalah dasar dari perhitungan laporan harian.</p>
+
+      <div class="steps">
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-content">
+            <h4>Klik "+ Tambah Distribusi"</h4>
+            <p>Tombol di pojok kanan atas halaman Distribusi.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-content">
+            <h4>Pilih Outlet/Gerobak dan Tanggal</h4>
+            <p>Pilih gerobak tujuan. Setelah outlet dan tanggal dipilih, sistem otomatis tampilkan stok tersedia per produk.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-content">
+            <h4>Input jumlah OUT per produk</h4>
+            <p>Isi berapa pcs yang dikirim ke gerobak. <strong>Tidak bisa melebihi stok tersedia</strong> — sistem akan tolak jika melebihi.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-content">
+            <h4>Simpan</h4>
+            <p>Stok freezer langsung berkurang. Data ini akan muncul saat input Laporan Harian nanti.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="note note-warning">
+        <span class="note-icon">⚠️</span>
+        <div class="note-body">
+          <strong>Distribusi harus diinput sebelum Laporan Harian</strong>
+          Laporan Harian hanya bisa diisi kalau sudah ada data distribusi untuk outlet dan tanggal yang sama. Pastikan distribusi diinput dulu setiap pagi.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STOK FREEZER -->
+  <div class="section" id="stok-freezer">
+    <div class="section-header">
+      <div class="section-icon" style="background:#faf5ff">📊</div>
+      <div>
+        <h2>Stok Freezer</h2>
+        <p>Menu Stok → Stok Freezer</p>
+      </div>
+    </div>
+    <div class="section-body">
+      <p style="margin-bottom:16px;color:#374151">Menampilkan kondisi stok freezer saat ini secara real-time. Tidak ada input manual di sini — semua dihitung otomatis dari semua transaksi.</p>
+
+      <table class="doc-table">
+        <tr><th>Status</th><th>Arti</th><th>Tindakan</th></tr>
+        <tr><td><span class="badge badge-green">Aman</span></td><td>Stok cukup untuk operasional</td><td>Tidak perlu tindakan</td></tr>
+        <tr><td><span class="badge badge-yellow">Menipis</span></td><td>Stok mulai berkurang, perlu diperhatikan</td><td>Segera order ke supplier</td></tr>
+        <tr><td><span class="badge badge-red">Habis</span></td><td>Stok 0 atau minus</td><td>Stop distribusi, cek data transaksi</td></tr>
+      </table>
+
+      <div class="note note-info" style="margin-top:16px">
+        <span class="note-icon">ℹ️</span>
+        <div class="note-body">
+          <strong>Kenapa stok bisa minus?</strong>
+          Stok minus terjadi kalau ada distribusi yang dicatat tanpa stok masuk yang cukup, atau ada data yang belum diinput. Cek dulu stok masuk bulan ini sebelum panik.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STOK OPNAME -->
+  <div class="section" id="stok-opname">
+    <div class="section-header">
+      <div class="section-icon" style="background:#fffbeb">🔍</div>
+      <div>
+        <h2>Stok Opname (STO)</h2>
+        <p>Menu Stok → Stok Opname</p>
+      </div>
+    </div>
+    <div class="section-body">
+      <p style="margin-bottom:16px;color:#374151">Pengecekan fisik stok freezer. Sistem menampilkan stok menurut database, admin isi stok fisik hasil hitung langsung di freezer.</p>
+
+      <div class="steps">
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-content">
+            <h4>Hitung stok fisik di freezer</h4>
+            <p>Hitung fisik semua produk di freezer sebelum buka aplikasi.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-content">
+            <h4>Klik "+ Tambah Opname", pilih wilayah & tanggal</h4>
+            <p>Sistem otomatis tampilkan stok sistem per produk.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-content">
+            <h4>Isi kolom "Stok Fisik" sesuai hasil hitung</h4>
+            <p>Selisih (lebih/kurang/sesuai) dihitung otomatis.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-content">
+            <h4>Upload foto bukti (opsional tapi dianjurkan)</h4>
+            <p>Upload Foto Real kondisi freezer dan/atau Berita Acara opname.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-content">
+            <h4>Simpan</h4>
+            <p>STO tersimpan dan bisa dilihat laporannya kapan saja.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GENERATE STOK AWAL -->
+  <div class="section" id="generate-stok">
+    <div class="section-header">
+      <div class="section-icon" style="background:#FDF2F2">🔄</div>
+      <div>
+        <h2>Generate Stok Awal</h2>
+        <p>Menu Stok → Generate Stok Awal</p>
+      </div>
+    </div>
+    <div class="section-body">
+      <p style="margin-bottom:16px;color:#374151">Fitur otomatis untuk membuat stok awal bulan baru dari stok akhir bulan sebelumnya. Dilakukan sekali di awal bulan.</p>
+
+      <div class="steps">
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-content">
+            <h4>Pilih Wilayah dan Bulan Sumber</h4>
+            <p>Contoh: pilih Sukabumi, bulan Mei 2026 → akan generate stok awal Juni 2026.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-content">
+            <h4>Klik "Preview" untuk lihat hasilnya dulu</h4>
+            <p>Sistem tampilkan tabel: Produk | Stok Akhir Mei | Akan jadi Stok Awal Juni.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-content">
+            <h4>Konfirmasi Generate</h4>
+            <p>Klik "Generate Stok Awal" — sistem buat otomatis. Tidak bisa di-generate ulang kalau sudah ada.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="note note-danger">
+        <span class="note-icon">🚫</span>
+        <div class="note-body">
+          <strong>Hanya bisa di-generate sekali per wilayah per bulan</strong>
+          Sistem akan tolak jika stok awal untuk bulan dan wilayah tersebut sudah ada. Kalau perlu koreksi, hubungi Admin Pusat.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LAPORAN HARIAN -->
+  <div class="section" id="laporan-harian">
+    <div class="section-header">
+      <div class="section-icon" style="background:#f0fdf4">📋</div>
+      <div>
+        <h2>Laporan Harian</h2>
+        <p>Menu Transaksi → Laporan Harian</p>
+      </div>
+    </div>
+    <div class="section-body">
+      <p style="margin-bottom:16px;color:#374151">Fitur utama untuk input laporan malam hari. Koordinator isi sisa stok yang tidak terjual — sistem otomatis hitung omset, komisi, laba, dan total setor.</p>
+
+      <div class="steps">
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-content">
+            <h4>Klik "+ Input Laporan"</h4>
+            <p>Pastikan distribusi untuk outlet dan tanggal ini sudah diinput terlebih dahulu.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-content">
+            <h4>Pilih Outlet dan Tanggal</h4>
+            <p>Setelah dipilih, daftar produk yang didistribusikan muncul otomatis beserta jumlah OUT-nya.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-content">
+            <h4>Isi kolom "Sisa" untuk setiap produk</h4>
+            <p>Isi berapa pcs yang tidak terjual (dikembalikan ke freezer). Sisa tidak boleh lebih dari jumlah OUT.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-content">
+            <h4>Cek kalkulasi otomatis</h4>
+            <p>Sistem langsung hitung: Terjual = OUT − Sisa, Omset, Komisi, Laba, Total Setor.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-content">
+            <h4>Input Pengeluaran (kalau ada)</h4>
+            <p>Klik "+ Tambah" di bagian Pengeluaran untuk catat pengeluaran operasional (gas, plastik, dll).</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-content">
+            <h4>Simpan</h4>
+            <p>Total Setor otomatis = Omset − Komisi − Total Pengeluaran.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="note note-success">
+        <span class="note-icon">✅</span>
+        <div class="note-body">
+          <strong>Sistem Hitung Otomatis</strong>
+          Kamu tidak perlu hitung manual. Cukup isi sisa — semua kalkulasi keuangan (omset, komisi, laba, setor) dihitung otomatis dengan formula yang sudah diaudit dan diverifikasi.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- KAS HARIAN -->
+  <div class="section" id="kas-harian">
+    <div class="section-header">
+      <div class="section-icon" style="background:#eff6ff">💰</div>
+      <div>
+        <h2>Kas Harian</h2>
+        <p>Menu Transaksi → Kas Harian</p>
+      </div>
+    </div>
+    <div class="section-body">
+      <p style="margin-bottom:16px;color:#374151">Buku kas digital untuk mencatat semua uang masuk dan keluar. Running saldo dihitung otomatis per transaksi.</p>
+
+      <table class="doc-table">
+        <tr><th>Tipe</th><th>Contoh</th></tr>
+        <tr><td><span class="badge badge-green">Debit (Masuk)</span></td><td>Setoran dari outlet, pembayaran agen, transfer dari cabang</td></tr>
+        <tr><td><span class="badge badge-red">Kredit (Keluar)</span></td><td>Bayar supplier, operasional, gaji, biaya pengiriman</td></tr>
+      </table>
+
+      <div class="note note-warning" style="margin-top:16px">
+        <span class="note-icon">⚠️</span>
+        <div class="note-body">
+          <strong>Saldo Kas Harian tidak di-sort ulang</strong>
+          Berbeda dengan menu lain, Kas Harian tidak bisa di-sort karena running saldo harus dihitung urut dari awal. Gunakan filter tanggal untuk melihat periode tertentu.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PINDAH STOK -->
+  <div class="section" id="pindah-stok">
+    <div class="section-header">
+      <div class="section-icon" style="background:#fffbeb">🔄</div>
+      <div>
+        <h2>Pindah Stok</h2>
+        <p>Menu Transaksi → Pindah Stok</p>
+      </div>
+    </div>
+    <div class="section-body">
+      <p style="margin-bottom:16px;color:#374151">Mengelola perpindahan stok antar wilayah. Ada 2 tipe yang berbeda alurnya:</p>
+
+      <table class="doc-table">
+        <tr><th>Tipe</th><th>Kapan Dipakai</th><th>Alur Approval</th></tr>
+        <tr>
+          <td><span class="badge badge-blue">Transfer</span></td>
+          <td>Kirim stok ke cabang sendiri (Sukabumi → Cianjur)</td>
+          <td>Perlu approval koordinator tujuan + upload foto bukti</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-yellow">Penjualan</span></td>
+          <td>Jual ke agen/mitra luar, ada harga agen</td>
+          <td>Langsung disetujui, tidak perlu approval</td>
+        </tr>
+      </table>
+
+      <h4 style="margin:20px 0 12px;font-size:14px">Alur Transfer Stok:</h4>
+      <div class="flow">
+        <div class="flow-item">1. Admin Sukabumi<br>input transfer</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-item" style="background:#fffbeb;color:#92400e">2. Status: Menunggu<br>stok belum bergerak</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-item">3. Koordinator Cianjur<br>upload foto bukti</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-item">4. Koordinator Cianjur<br>klik Konfirmasi Terima</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-item" style="background:#f0fdf4;color:#166534">5. Status: Disetujui<br>stok Cianjur bertambah</div>
+      </div>
+
+      <div class="note note-danger" style="margin-top:16px">
+        <span class="note-icon">🚫</span>
+        <div class="note-body">
+          <strong>Wajib Upload Foto Sebelum Konfirmasi</strong>
+          Koordinator tujuan WAJIB upload minimal 1 foto bukti sebelum bisa klik "Konfirmasi Terima". Tombol konfirmasi akan disabled jika belum ada foto.
+        </div>
+      </div>
+
+      <div class="note note-info" style="margin-top:8px">
+        <span class="note-icon">📷</span>
+        <div class="note-body">
+          <strong>Tipe Foto yang Bisa Diupload</strong>
+          <ul style="margin-top:4px;padding-left:16px;font-size:13px">
+            <li>Foto Real — foto kondisi stok yang diterima</li>
+            <li>Berita Acara — dokumen berita acara tertulis</li>
+            <li>Video — rekaman singkat (max 3 video)</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- REKAP OMSET -->
+  <div class="section" id="rekap-omset">
+    <div class="section-header">
+      <div class="section-icon" style="background:#FDF2F2">📈</div>
+      <div>
+        <h2>Rekap Omset</h2>
+        <p>Menu Laporan → Rekap Omset</p>
+      </div>
+    </div>
+    <div class="section-body">
+      <p style="margin-bottom:16px;color:#374151">Laporan omset bulanan per outlet. Bisa filter per wilayah dan bulan.</p>
+
+      <table class="doc-table">
+        <tr><th>Informasi</th><th>Keterangan</th></tr>
+        <tr><td>Total Omset</td><td>Total penjualan semua outlet di bulan yang dipilih</td></tr>
+        <tr><td>Total Modal</td><td>Total HPP yang dikeluarkan</td></tr>
+        <tr><td>Total Komisi</td><td>Total komisi yang dibayarkan ke mitra</td></tr>
+        <tr><td>Total Laba</td><td>Keuntungan bersih = Omset − Modal − Komisi</td></tr>
+        <tr><td>Total Setor</td><td>Total uang yang disetor ke pusat</td></tr>
+        <tr><td>Top 5 Produk</td><td>Produk terlaris bulan ini berdasarkan jumlah terjual</td></tr>
+        <tr><td>Tren Harian</td><td>Grafik omset per hari dalam bulan tersebut</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- EXPORT REKAP BULANAN -->
+  <div class="section" id="export-bulanan">
+    <div class="section-header">
+      <div class="section-icon" style="background:#f0fdf4">📥</div>
+      <div>
+        <h2>Export Rekap Bulanan</h2>
+        <p>Menu Laporan → Rekap Omset → tombol "Export Rekap Bulanan"</p>
+      </div>
+    </div>
+    <div class="section-body">
+      <p style="margin-bottom:16px;color:#374151">Fitur unggulan — export semua data satu bulan dalam satu file Excel dengan 7 sheet lengkap.</p>
+
+      <table class="doc-table">
+        <tr><th>Sheet</th><th>Isi</th></tr>
+        <tr><td>REKAP STOK</td><td>Stok awal, masuk, keluar, akhir per produk</td></tr>
+        <tr><td>STOK MASUK</td><td>Semua transaksi stok masuk dari supplier</td></tr>
+        <tr><td>DISTRIBUSI</td><td>Semua distribusi ke outlet</td></tr>
+        <tr><td>PENJUALAN</td><td>Detail laporan harian per outlet per produk</td></tr>
+        <tr><td>KAS HARIAN</td><td>Semua transaksi kas bulan tersebut</td></tr>
+        <tr><td>REKAP OMSET</td><td>Rekap per outlet (omset, laba, setor)</td></tr>
+        <tr><td>RATA-RATA OUT</td><td>Rata-rata distribusi per outlet per produk</td></tr>
+      </table>
+
+      <div class="note note-success" style="margin-top:16px">
+        <span class="note-icon">✅</span>
+        <div class="note-body">
+          <strong>Format Siap Pakai</strong>
+          File Excel yang dihasilkan sudah diformat dengan pemisah angka yang benar dan header yang jelas — siap dikirim ke atasan atau diarsipkan.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ACTIVITY LOG -->
+  <div class="section" id="activity-log">
+    <div class="section-header">
+      <div class="section-icon" style="background:#f3f4f6">🕐</div>
+      <div>
+        <h2>Activity Log</h2>
+        <p>Menu Admin → Activity Log (hanya Admin Pusat)</p>
+      </div>
+    </div>
+    <div class="section-body">
+      <p style="margin-bottom:16px;color:#374151">Rekaman semua aktivitas di sistem — siapa melakukan apa, kapan, dan data apa yang berubah.</p>
+
+      <table class="doc-table">
+        <tr><th>Aksi</th><th>Keterangan</th></tr>
+        <tr><td><span class="badge badge-green">Create</span></td><td>Data baru ditambahkan</td></tr>
+        <tr><td><span class="badge badge-blue">Update</span></td><td>Data diubah — ada kolom Before vs After</td></tr>
+        <tr><td><span class="badge badge-red">Delete</span></td><td>Data dibatalkan/dihapus</td></tr>
+        <tr><td><span class="badge" style="background:#f0fdf4;color:#166534">Approve</span></td><td>Pindah stok disetujui</td></tr>
+        <tr><td><span class="badge badge-red">Reject</span></td><td>Pindah stok ditolak</td></tr>
+        <tr><td><span class="badge" style="background:#faf5ff;color:#7c3aed">Upload</span></td><td>File foto/video diupload</td></tr>
+        <tr><td><span class="badge badge-gray">Login/Logout</span></td><td>Aktivitas masuk/keluar sistem</td></tr>
+      </table>
+
+      <div class="note note-info" style="margin-top:16px">
+        <span class="note-icon">🔍</span>
+        <div class="note-body">
+          <strong>Cara Lihat Detail Perubahan</strong>
+          Klik tombol mata (👁) di kolom Detail untuk lihat data sebelum dan sesudah perubahan. Berguna untuk investigasi jika ada data yang tidak sesuai.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- KONTROL PENJUALAN -->
+  <div class="section" id="kontrol">
+    <div class="section-header">
+      <div class="section-icon" style="background:#f0fdf4">🎛️</div>
+      <div>
+        <h2>Kontrol Penjualan</h2>
+        <p>Menu Laporan → Kontrol Penjualan</p>
+      </div>
+    </div>
+    <div class="section-body">
+      <p style="margin-bottom:16px;color:#374151">Monitor keaktifan outlet — lihat outlet mana yang aktif laporan dan mana yang tidak.</p>
+
+      <table class="doc-table">
+        <tr><th>Status</th><th>Arti</th></tr>
+        <tr><td><span class="badge badge-green">Aktif</span></td><td>Laporan ≥ 50% hari dalam bulan ini</td></tr>
+        <tr><td><span class="badge badge-yellow">Jarang</span></td><td>Laporan < 50% hari dalam bulan ini</td></tr>
+        <tr><td><span class="badge badge-red">Tidak Lapor</span></td><td>Tidak ada laporan sama sekali bulan ini</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- FAQ -->
+  <div class="section" id="faq">
+    <div class="section-header">
+      <div class="section-icon" style="background:#fffbeb">❓</div>
+      <div>
+        <h2>FAQ — Pertanyaan yang Sering Muncul</h2>
+        <p>Jawaban untuk situasi yang umum terjadi</p>
+      </div>
+    </div>
+    <div class="section-body">
+
+      <div style="margin-bottom:16px">
+        <h4 style="font-size:14px;color:var(--red);margin-bottom:6px">❓ Saya salah input distribusi tadi, bagaimana cara membetulkannya?</h4>
+        <p style="font-size:13.5px;color:#374151">Kalau distribusi diinput hari ini, klik tombol "Batal" di halaman Distribusi. Setelah dibatalkan, bisa input ulang yang benar. Kalau distribusinya kemarin atau sebelumnya, hubungi Admin Pusat karena data lama tidak bisa diubah.</p>
+      </div>
+
+      <div style="margin-bottom:16px">
+        <h4 style="font-size:14px;color:var(--red);margin-bottom:6px">❓ Muncul pesan "Tidak ada distribusi untuk outlet ini" saat input Laporan Harian</h4>
+        <p style="font-size:13.5px;color:#374151">Artinya distribusi belum diinput untuk outlet dan tanggal tersebut. Input distribusi dulu di menu Stok → Distribusi, baru kembali ke Laporan Harian.</p>
+      </div>
+
+      <div style="margin-bottom:16px">
+        <h4 style="font-size:14px;color:var(--red);margin-bottom:6px">❓ Stok produk X minus di Stok Freezer, kenapa?</h4>
+        <p style="font-size:13.5px;color:#374151">Kemungkinan ada distribusi yang melebihi stok tersedia, atau stok masuk belum diinput. Cek halaman Stok Masuk untuk bulan ini dan pastikan semua kiriman dari supplier sudah dicatat.</p>
+      </div>
+
+      <div style="margin-bottom:16px">
+        <h4 style="font-size:14px;color:var(--red);margin-bottom:6px">❓ Tombol "Konfirmasi Terima" di Pindah Stok tidak bisa diklik</h4>
+        <p style="font-size:13.5px;color:#374151">Wajib upload minimal 1 foto bukti dulu sebelum bisa konfirmasi. Buka halaman detail pindah stok, upload foto di tab "Foto Real" atau "Berita Acara", baru tombol konfirmasi aktif.</p>
+      </div>
+
+      <div style="margin-bottom:16px">
+        <h4 style="font-size:14px;color:var(--red);margin-bottom:6px">❓ Tidak bisa input tanggal kemarin</h4>
+        <p style="font-size:13.5px;color:#374151">Ini disengaja sebagai proteksi data. Semua transaksi hanya bisa diinput untuk hari ini. Kalau ada data yang terlewat kemarin, hubungi Admin Pusat.</p>
+      </div>
+
+      <div style="margin-bottom:16px">
+        <h4 style="font-size:14px;color:var(--red);margin-bottom:6px">❓ Bagaimana cara input stok awal bulan baru?</h4>
+        <p style="font-size:13.5px;color:#374151">Gunakan menu Stok → Generate Stok Awal. Pilih wilayah dan bulan sebelumnya sebagai sumber, sistem otomatis buat stok awal bulan baru dari stok akhir bulan sebelumnya.</p>
+      </div>
+
+      <div style="margin-bottom:0">
+        <h4 style="font-size:14px;color:var(--red);margin-bottom:6px">❓ Data berubah tapi saya tidak mengubahnya</h4>
+        <p style="font-size:13.5px;color:#374151">Cek menu Admin → Activity Log. Semua perubahan data tercatat lengkap dengan user yang melakukan, waktu, dan data sebelum/sesudah perubahan.</p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- QUICK REFERENCE -->
+  <div class="quick-ref">
+    <h3>⚡ Quick Reference — Yang Perlu Diingat</h3>
+    <div class="quick-ref-grid">
+      <div class="quick-ref-item">
+        <div class="quick-ref-label">Urutan Input Harian</div>
+        <div class="quick-ref-value">Stok Masuk → Distribusi → Laporan Harian → Kas</div>
+      </div>
+      <div class="quick-ref-item">
+        <div class="quick-ref-label">Batas Waktu Input</div>
+        <div class="quick-ref-value">Hanya tanggal hari ini. Data kemarin = view only</div>
+      </div>
+      <div class="quick-ref-item">
+        <div class="quick-ref-label">Formula Setor</div>
+        <div class="quick-ref-value">Omset − Komisi − Pengeluaran</div>
+      </div>
+      <div class="quick-ref-item">
+        <div class="quick-ref-label">Awal Bulan</div>
+        <div class="quick-ref-value">Generate Stok Awal dari stok akhir bulan lalu</div>
+      </div>
+      <div class="quick-ref-item">
+        <div class="quick-ref-label">Transfer Stok</div>
+        <div class="quick-ref-value">Wajib upload foto sebelum Konfirmasi Terima</div>
+      </div>
+      <div class="quick-ref-item">
+        <div class="quick-ref-label">Export Bulanan</div>
+        <div class="quick-ref-value">Laporan → Rekap Omset → Export Rekap Bulanan</div>
+      </div>
+    </div>
+  </div>
+
+  <p style="text-align:center;color:#9ca3af;font-size:12px;margin-top:32px;padding-bottom:20px">
+    DIMSYS v1.0 · PT. Wijaya Kuliner Indonesia · Dokumentasi ini dibuat untuk keperluan internal
+  </p>
+
+</main>
+</div>
+
+<script>
+// Highlight active nav item
+const links = document.querySelectorAll('.sidenav a');
+links.forEach(link => {
+  link.addEventListener('click', function() {
+    links.forEach(l => l.classList.remove('active'));
+    this.classList.add('active');
+  });
+});
+
+// Update active on scroll
+const sections = document.querySelectorAll('.section[id]');
+window.addEventListener('scroll', () => {
+  let current = '';
+  sections.forEach(section => {
+    if (window.scrollY >= section.offsetTop - 100) {
+      current = section.getAttribute('id');
+    }
+  });
+  links.forEach(link => {
+    link.classList.remove('active');
+    if (link.getAttribute('href') === '#' + current) {
+      link.classList.add('active');
+    }
+  });
+});
+</script>
+
+</body>
+</html>

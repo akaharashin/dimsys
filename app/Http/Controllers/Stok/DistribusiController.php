@@ -20,8 +20,14 @@ class DistribusiController extends Controller
         $wilayahList = Wilayah::where('aktif', true)->orderBy('nama')->get();
         $outletList = Outlet::where('aktif', true)->orderBy('nama')->get();
 
+        $sort = in_array($request->sort, ['tanggal', 'outlet_id', 'created_at']) ? $request->sort : 'tanggal';
+        $dir  = $request->direction === 'asc' ? 'asc' : 'desc';
+
         $query = Distribusi::with(['outlet.wilayah', 'details.produk'])
-            ->orderByDesc('tanggal')->orderByDesc('created_at');
+            ->orderBy($sort, $dir);
+        if ($sort === 'tanggal') {
+            $query->orderBy('created_at', $dir);
+        }
 
         if (auth()->user()->hasRole('koordinator')) {
             $query->whereHas(

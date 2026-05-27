@@ -18,8 +18,14 @@ class LaporanHarianController extends Controller
         $wilayahList = \App\Models\Wilayah::where('aktif', true)->orderBy('nama')->get();
         $outletList = \App\Models\Outlet::where('aktif', true)->orderBy('nama')->get();
 
+        $sort = in_array($request->sort, ['tanggal', 'outlet_id', 'total_setor', 'created_at']) ? $request->sort : 'tanggal';
+        $dir  = $request->direction === 'asc' ? 'asc' : 'desc';
+
         $query = LaporanHarian::with(['outlet.wilayah', 'details'])
-            ->orderByDesc('tanggal')->orderByDesc('created_at');
+            ->orderBy($sort, $dir);
+        if ($sort === 'tanggal') {
+            $query->orderBy('created_at', $dir);
+        }
 
         if (auth()->user()->hasRole('koordinator')) {
             $query->whereHas(
@@ -134,6 +140,17 @@ class LaporanHarianController extends Controller
         }
 
         $totalSetor = $totalOmset - $totalKomisi - $totalPengeluaran;
+        // Validasi sisa tidak boleh melebihi jumlah_out
+        foreach ($distribusi->details as $d) {
+            $sisa = (int) $request->input('sisa_' . $d->produk_id, 0);
+            if ($sisa < 0) {
+                return back()->withErrors(['laporan' => 'Sisa ' . $d->produk->nama . ' tidak boleh negatif.'])->withInput();
+            }
+            if ($sisa > $d->jumlah_out) {
+                return back()->withErrors(['laporan' => 'Sisa ' . $d->produk->nama . ' (' . $sisa . ' pcs) tidak boleh lebih dari jumlah OUT (' . $d->jumlah_out . ' pcs).'])->withInput();
+            }
+        }
+
         // Cek apakah ada produk yang terjual dari distribusi
         $adaTerjual = false;
         foreach ($distribusi->details as $d) {

@@ -22,8 +22,14 @@ class PenjualanWilayahController extends Controller
     {
         $wilayahList = Wilayah::where('aktif', true)->orderBy('nama')->get();
 
+        $sort = in_array($request->sort, ['tanggal', 'tipe', 'status', 'created_at']) ? $request->sort : 'tanggal';
+        $dir  = $request->direction === 'asc' ? 'asc' : 'desc';
+
         $query = PenjualanWilayah::with(['wilayahAsal', 'wilayahTujuan', 'details'])
-            ->orderByDesc('tanggal')->orderByDesc('created_at');
+            ->orderBy($sort, $dir);
+        if ($sort === 'tanggal') {
+            $query->orderBy('created_at', $dir);
+        }
 
         // Koordinator hanya lihat pindah stok yang ditujukan ke wilayahnya (untuk approval)
         if (auth()->user()->hasRole('koordinator')) {

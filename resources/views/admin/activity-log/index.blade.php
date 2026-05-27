@@ -72,11 +72,33 @@
     <div class="bg-white rounded-xl shadow-sm overflow-x-auto">
         <table class="w-full text-sm">
             <thead class="text-gray-500 uppercase text-xs" style="position:sticky;top:0;background:#f9fafb;z-index:10;">
+                @php
+                    function sortUrl($col) {
+                        $d = request('sort') === $col && request('direction') === 'asc' ? 'desc' : 'asc';
+                        return request()->fullUrlWithQuery(['sort' => $col, 'direction' => $d]);
+                    }
+                    function sortIcon($col) {
+                        if (request('sort') !== $col) return 'fa-sort text-gray-300';
+                        return request('direction') === 'asc' ? 'fa-sort-up text-red-700' : 'fa-sort-down text-red-700';
+                    }
+                @endphp
                 <tr>
-                    <th class="px-4 py-3 text-left whitespace-nowrap">Waktu</th>
+                    <th class="px-4 py-3 text-left whitespace-nowrap">
+                        <a href="{{ sortUrl('created_at') }}" class="flex items-center gap-1 hover:text-red-700 transition-colors">
+                            Waktu <i class="fa-solid {{ sortIcon('created_at') }} text-xs"></i>
+                        </a>
+                    </th>
                     <th class="px-4 py-3 text-left">User</th>
-                    <th class="px-4 py-3 text-left">Aksi</th>
-                    <th class="px-4 py-3 text-left">Modul</th>
+                    <th class="px-4 py-3 text-left">
+                        <a href="{{ sortUrl('action') }}" class="flex items-center gap-1 hover:text-red-700 transition-colors">
+                            Aksi <i class="fa-solid {{ sortIcon('action') }} text-xs"></i>
+                        </a>
+                    </th>
+                    <th class="px-4 py-3 text-left">
+                        <a href="{{ sortUrl('module') }}" class="flex items-center gap-1 hover:text-red-700 transition-colors">
+                            Modul <i class="fa-solid {{ sortIcon('module') }} text-xs"></i>
+                        </a>
+                    </th>
                     <th class="px-4 py-3 text-left">Record</th>
                     <th class="px-4 py-3 text-center w-16">Detail</th>
                 </tr>

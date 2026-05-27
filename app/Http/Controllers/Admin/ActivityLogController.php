@@ -11,7 +11,10 @@ class ActivityLogController extends Controller
 {
     public function index(Request $request)
     {
-        $query = ActivityLog::with('user')->orderByDesc('created_at');
+        $sort = in_array($request->sort, ['created_at', 'action', 'module']) ? $request->sort : 'created_at';
+        $dir  = $request->direction === 'asc' ? 'asc' : 'desc';
+
+        $query = ActivityLog::with('user')->orderBy($sort, $dir);
 
         if ($request->filled('dari')) {
             $query->whereDate('created_at', '>=', $request->dari);

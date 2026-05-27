@@ -12,6 +12,7 @@ use App\Models\Supplier;
 use App\Models\Produk;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use App\Traits\LogsActivity;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -23,8 +24,14 @@ class StokMasukController extends Controller
         $wilayahList = Wilayah::where('aktif', true)->orderBy('nama')->get();
         $supplierList = Supplier::where('aktif', true)->orderBy('nama')->get();
 
+        $sort = in_array($request->sort, ['tanggal', 'jenis', 'created_at']) ? $request->sort : 'tanggal';
+        $dir  = $request->direction === 'asc' ? 'asc' : 'desc';
+
         $query = StokMasuk::with(['wilayah', 'supplier', 'details.produk'])
-            ->orderByDesc('tanggal')->orderByDesc('created_at');
+            ->orderBy($sort, $dir);
+        if ($sort === 'tanggal') {
+            $query->orderBy('created_at', $dir);
+        }
 
         if (auth()->user()->hasRole('koordinator')) {
             $query->where('wilayah_id', auth()->user()->wilayah_id);
@@ -274,36 +281,46 @@ class StokMasukController extends Controller
         }
 
         try {
-            $supplier = Supplier::where('aktif', true)->orderBy('created_at')->first();
+            $jumlahProduk = 0;
 
-            if (!$supplier) {
-                $supplier = Supplier::create([
-                    'nama'   => 'Internal',
-                    'aktif'  => true,
+            DB::transaction(function () use ($wilayahId, $nextMonth, $nextBulanLabel, $stokData, &$jumlahProduk) {
+                // Double-check dalam transaction dengan lock untuk cegah race condition
+                $alreadyExistsLocked = StokMasuk::where('jenis', 'awal')
+                    ->where('wilayah_id', $wilayahId)
+                    ->whereYear('tanggal', $nextMonth->year)
+                    ->whereMonth('tanggal', $nextMonth->month)
+                    ->lockForUpdate()
+                    ->first();
+
+                if ($alreadyExistsLocked) {
+                    throw new \Exception("Stok awal {$nextBulanLabel} untuk wilayah ini sudah ada.");
+                }
+
+                $supplier = Supplier::where('aktif', true)->orderBy('created_at')->first();
+                if (!$supplier) {
+                    $supplier = Supplier::create(['nama' => 'Internal', 'aktif' => true]);
+                }
+
+                $stokMasuk = StokMasuk::create([
+                    'wilayah_id'  => $wilayahId,
+                    'supplier_id' => $supplier->id,
+                    'tanggal'     => $nextMonth->format('Y-m-01'),
+                    'jenis'       => 'awal',
+                    'keterangan'  => 'Stok Awal ' . $nextBulanLabel . ' - Auto Generate',
+                    'created_by'  => auth()->id(),
                 ]);
-            }
 
-            $wilayah = Wilayah::find($wilayahId);
+                foreach ($stokData as $row) {
+                    StokMasukDetail::create([
+                        'stok_masuk_id' => $stokMasuk->id,
+                        'produk_id'     => $row['produk_id'],
+                        'jumlah'        => $row['stok_akhir'],
+                        'hpp'           => $row['hpp'],
+                    ]);
+                }
 
-            $stokMasuk = StokMasuk::create([
-                'wilayah_id'  => $wilayahId,
-                'supplier_id' => $supplier->id,
-                'tanggal'     => $nextMonth->format('Y-m-01'),
-                'jenis'       => 'awal',
-                'keterangan'  => 'Stok Awal ' . $nextBulanLabel . ' - Auto Generate',
-                'created_by'  => auth()->id(),
-            ]);
-
-            foreach ($stokData as $row) {
-                StokMasukDetail::create([
-                    'stok_masuk_id' => $stokMasuk->id,
-                    'produk_id'     => $row['produk_id'],
-                    'jumlah'        => $row['stok_akhir'],
-                    'hpp'           => $row['hpp'],
-                ]);
-            }
-
-            $jumlahProduk = count($stokData);
+                $jumlahProduk = count($stokData);
+            });
 
             return redirect()->route('stok.masuk.index', [
                 'dari'       => $nextMonth->format('Y-m-01'),
@@ -313,7 +330,7 @@ class StokMasukController extends Controller
             ])->with('success', "Stok awal {$nextBulanLabel} berhasil di-generate ({$jumlahProduk} produk).");
 
         } catch (\Exception $e) {
-            return back()->with('error', 'Gagal generate stok awal. Silakan coba lagi.');
+            return back()->with('error', $e->getMessage() ?: 'Gagal generate stok awal. Silakan coba lagi.');
         }
     }
 
