@@ -48,8 +48,13 @@ class DashboardController extends Controller
             ->get();
         $totalOutHariIni = $distribusiHariIni->sum(fn($d) => $d->details->sum('jumlah_out'));
 
-        // Outlet aktif
-        $totalOutlet = Outlet::where('aktif', true)->count();
+        // Outlet aktif yang punya distribusi dalam 30 hari terakhir (lebih realistis)
+        $batasOutletAktif = Carbon::now()->subDays(30)->format('Y-m-d');
+        $totalOutlet = Outlet::where('aktif', true)
+            ->whereHas('distribusi', function ($q) use ($batasOutletAktif) {
+                $q->where('tanggal', '>=', $batasOutletAktif);
+            })
+            ->count();
 
         // Outlet yang sudah lapor hari ini
         $outletSudahLapor = $laporanHariIni->count();

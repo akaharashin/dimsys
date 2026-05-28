@@ -8,6 +8,7 @@ use App\Http\Controllers\Master\ProdukController;
 use App\Http\Controllers\Master\OutletController;
 use App\Http\Controllers\Master\SupplierController;
 use App\Http\Controllers\Master\UserController;
+use App\Http\Controllers\Master\RekeningController;
 use App\Http\Controllers\Stok\StokMasukController;
 use App\Http\Controllers\Stok\DistribusiController;
 use App\Http\Controllers\Transaksi\LaporanHarianController;
@@ -54,6 +55,10 @@ Route::middleware(['auth'])->group(function () {
         Route::get('opname/stok-sistem', [StokOpnameController::class, 'getStokSistem'])->name('opname.stok-sistem');
         Route::post('opname/{id}/foto', [StokOpnameController::class, 'uploadFoto'])->name('opname.foto.upload');
         Route::delete('opname/foto/{fotoId}', [StokOpnameController::class, 'hapusFoto'])->name('opname.foto.hapus');
+        Route::middleware('role:admin_pusat|koordinator')->group(function () {
+            Route::post('opname/{opname}/koreksi', [StokOpnameController::class, 'terapkanKoreksi'])
+                ->name('opname.koreksi');
+        });
         Route::resource('opname', StokOpnameController::class);
 
         Route::middleware('role:admin_pusat|koordinator')->group(function () {
@@ -112,6 +117,9 @@ Route::middleware(['auth'])->group(function () {
         Route::post('user/{id}/restore', [UserController::class, 'restore'])
             ->name('user.restore');
         Route::resource('user', UserController::class)->except(['create', 'show', 'edit']);
+
+        Route::resource('rekening', RekeningController::class)
+            ->except(['create', 'show', 'edit']);
     });
 
     Route::prefix('api')->group(function () {

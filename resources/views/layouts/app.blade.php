@@ -71,6 +71,12 @@
                                 <i class="fa-solid fa-truck w-4 text-center"></i> Supplier
                             </a>
                             @if(auth()->user()->hasRole('admin_pusat'))
+                                <a href="{{ route('master.rekening.index') }}"
+                                    class="flex items-center gap-3 pl-5 pr-2 py-2.5 rounded-lg transition-all
+                                           {{ request()->routeIs('master.rekening.*') ? 'text-white shadow-sm font-medium' : 'text-gray-600 hover:bg-red-50 hover:text-red-700' }}"
+                                    @if(request()->routeIs('master.rekening.*')) style="background-color:#A51616" @endif>
+                                    <i class="fa-solid fa-vault w-4 text-center"></i> Rekening
+                                </a>
                                 <a href="{{ route('master.user.index') }}"
                                     class="flex items-center gap-3 pl-5 pr-2 py-2.5 rounded-lg transition-all
                                            {{ request()->routeIs('master.user.*') ? 'text-white shadow-sm font-medium' : 'text-gray-600 hover:bg-red-50 hover:text-red-700' }}"

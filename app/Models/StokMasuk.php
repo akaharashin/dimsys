@@ -9,7 +9,10 @@ class StokMasuk extends Model
 {
     use HasUuids, SoftDeletes;
     protected $table = 'stok_masuk';
-    protected $fillable = ['wilayah_id', 'supplier_id', 'tanggal', 'jenis', 'keterangan', 'created_by', 'updated_by', 'deleted_by'];
+    protected $fillable = [
+        'wilayah_id', 'supplier_id', 'tanggal', 'jenis', 'keterangan',
+        'stok_opname_id', 'created_by', 'updated_by', 'deleted_by',
+    ];
 
 
     public function wilayah()
@@ -24,5 +27,8 @@ class StokMasuk extends Model
     {
         return $this->hasMany(StokMasukDetail::class, 'stok_masuk_id');
     }
-    
+    public function stokOpname()
+    {
+        return $this->belongsTo(StokOpname::class, 'stok_opname_id');
+    }
 }

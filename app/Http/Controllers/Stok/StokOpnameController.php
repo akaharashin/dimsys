@@ -13,6 +13,9 @@ use App\Models\PenjualanWilayahDetail;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\Stok\StokOpnameExport;
+use App\Models\StokMasuk;
+use App\Models\Supplier;
+use Illuminate\Support\Facades\DB;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class StokOpnameController extends Controller
@@ -177,17 +180,102 @@ class StokOpnameController extends Controller
         return view('stok.opname.show', compact('stokOpname'));
     }
 
+    public function terapkanKoreksi(StokOpname $stokOpname)
+    {
+        if ($stokOpname->sudahDikoreksi()) {
+            return back()->with('error', 'Koreksi sudah pernah diterapkan untuk STO ini.');
+        }
+
+        if ($stokOpname->status !== 'final') {
+            return back()->with('error', 'STO harus final sebelum bisa diterapkan.');
+        }
+
+        $stokOpname->load('details', 'wilayah');
+
+        $adaSelisih = $stokOpname->details->where('selisih', '!=', 0)->count();
+        if ($adaSelisih === 0) {
+            return back()->with('error', 'Tidak ada selisih pada STO ini, koreksi tidak diperlukan.');
+        }
+
+        try {
+            DB::transaction(function () use ($stokOpname) {
+                $supplier = Supplier::where('aktif', true)->orderBy('created_at')->first();
+                if (!$supplier) {
+                    $supplier = Supplier::first()
+                        ?? Supplier::create(['nama' => 'Internal', 'aktif' => true]);
+                }
+
+                $tanggalLabel = \Carbon\Carbon::parse($stokOpname->tanggal)
+                    ->locale('id')->isoFormat('D MMMM Y');
+
+                $koreksi = StokMasuk::create([
+                    'wilayah_id'     => $stokOpname->wilayah_id,
+                    'supplier_id'    => $supplier->id,
+                    'tanggal'        => $stokOpname->tanggal,
+                    'jenis'          => 'koreksi',
+                    'keterangan'     => 'Koreksi STO ' . $tanggalLabel,
+                    'stok_opname_id' => $stokOpname->id,
+                    'created_by'     => auth()->id(),
+                ]);
+
+                foreach ($stokOpname->details as $d) {
+                    if ((int) $d->selisih === 0) continue;
+
+                    StokMasukDetail::create([
+                        'stok_masuk_id' => $koreksi->id,
+                        'produk_id'     => $d->produk_id,
+                        'jumlah'        => $d->selisih,
+                        'hpp'           => $d->hpp_snapshot,
+                    ]);
+                }
+
+                $this->logActivity(
+                    'update',
+                    'Stok Opname',
+                    $stokOpname,
+                    after: ['koreksi_diterapkan' => true],
+                    label: 'Terapkan Koreksi STO - ' . optional($stokOpname->wilayah)->nama
+                );
+            });
+
+            return back()->with('success', 'Koreksi stok berhasil diterapkan. Stok freezer sudah diperbarui.');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Gagal menerapkan koreksi. Silakan coba lagi.');
+        }
+    }
+
     public function destroy(StokOpname $stokOpname)
     {
-        $this->logActivity(
-            'delete', 'Stok Opname', $stokOpname,
-            before: $stokOpname->only(['id', 'wilayah_id', 'tanggal', 'keterangan', 'status']),
-            label: 'Stok Opname ' . optional($stokOpname->wilayah)->nama . ' - ' . $stokOpname->tanggal
-        );
-        $stokOpname->update(['deleted_by' => auth()->id()]);
-        $stokOpname->delete();
-        return redirect()->route('stok.opname.index')
-            ->with('success', 'Stok Opname dibatalkan.');
+        $koreksi = StokMasuk::where('stok_opname_id', $stokOpname->id)->first();
+        $adaKoreksi = (bool) $koreksi;
+
+        try {
+            DB::transaction(function () use ($stokOpname, $koreksi) {
+                if ($koreksi) {
+                    $koreksi->details()->delete();
+                    $koreksi->update(['deleted_by' => auth()->id()]);
+                    $koreksi->delete();
+                }
+
+                $stokOpname->update(['deleted_by' => auth()->id()]);
+                $stokOpname->delete();
+            });
+
+            $this->logActivity(
+                'delete', 'Stok Opname', $stokOpname,
+                before: $stokOpname->only(['id', 'wilayah_id', 'tanggal', 'keterangan', 'status']),
+                after: $adaKoreksi ? ['koreksi_dibatalkan' => true] : null,
+                label: 'Batalkan STO - ' . optional($stokOpname->wilayah)->nama . ' - ' . $stokOpname->tanggal
+            );
+
+            $pesan = $adaKoreksi
+                ? 'Stok Opname dibatalkan. Koreksi stok juga dibatalkan.'
+                : 'Stok Opname dibatalkan.';
+
+            return redirect()->route('stok.opname.index')->with('success', $pesan);
+        } catch (\Exception $e) {
+            return back()->with('error', 'Gagal membatalkan Stok Opname. Silakan coba lagi.');
+        }
     }
 
     public function uploadFoto(Request $request, $id)

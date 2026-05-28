@@ -124,17 +124,28 @@
                             Rp {{ number_format($so->details->sum('nilai_selisih')) }}
                         </td>
                         <td class="px-4 py-3 text-center">
-                            <span
-                                class="px-2 py-1 rounded-full text-xs {{ $so->status === 'final' ? 'bg-green-100 text-green-600' : 'bg-yellow-100 text-yellow-600' }}">
-                                {{ ucfirst($so->status) }}
-                            </span>
+                            <div class="flex flex-col items-center gap-1">
+                                <span
+                                    class="px-2 py-1 rounded-full text-xs {{ $so->status === 'final' ? 'bg-green-100 text-green-600' : 'bg-yellow-100 text-yellow-600' }}">
+                                    {{ ucfirst($so->status) }}
+                                </span>
+                                @if($so->sudahDikoreksi())
+                                    <span class="px-2 py-1 rounded-full text-xs bg-green-100 text-green-600">
+                                        Sudah Dikoreksi
+                                    </span>
+                                @elseif($so->status === 'final' && $so->details->where('selisih', '!=', 0)->count() > 0)
+                                    <span class="px-2 py-1 rounded-full text-xs bg-amber-100 text-amber-600">
+                                        Belum Dikoreksi
+                                    </span>
+                                @endif
+                            </div>
                         </td>
                         <td class="px-4 py-3 flex gap-2">
                             <a href="{{ route('stok.opname.show', $so) }}"
                                 class="inline-flex items-center gap-1 text-xs px-2.5 py-1.5 bg-blue-50 hover:bg-blue-100 rounded-md text-blue-600 font-medium"><i class="fa-solid fa-eye text-xs"></i> Detail</a>
                             @if(!auth()->user()->hasRole('owner') && \Carbon\Carbon::parse($so->tanggal)->isToday())
                             <form method="POST" action="{{ route('stok.opname.destroy', $so) }}"
-                                data-confirm="Yakin ingin membatalkan stok opname ini?">
+                                data-confirm="Yakin ingin membatalkan STO ini? Jika koreksi sudah diterapkan, stok freezer akan dikembalikan ke kondisi sebelum koreksi.">
                                 @csrf @method('DELETE')
                                 <button
                                     class="inline-flex items-center gap-1 text-xs px-2.5 py-1.5 bg-red-50 hover:bg-red-100 rounded-md text-red-600 font-medium"><i class="fa-solid fa-times text-xs"></i> Batal</button>

@@ -132,18 +132,36 @@
                     distribusiData = data;
 
                     if (!data.length) {
-                        container.innerHTML = '<p class="text-sm text-yellow-600">⚠️ Tidak ada data distribusi untuk outlet dan tanggal ini.</p>';
+                        container.innerHTML = '<p class="text-sm text-yellow-600">⚠️ Tidak ada distribusi hari ini maupun sisa stok dari laporan kemarin.</p>';
                         hitungSetor();
                         return;
                     }
 
                     let html = '<div class="grid grid-cols-1 md:grid-cols-2 gap-3">';
                     data.forEach(item => {
+                        const sisaKemarin = item.sisa_kemarin || 0;
+                        const distHari    = item.distribusi_hari || 0;
+                        let infoStok = '';
+                        if (sisaKemarin > 0 && distHari > 0) {
+                            infoStok = `<p class="text-xs text-amber-600 mt-0.5">
+                                Sisa kemarin: <span class="font-semibold">${sisaKemarin}</span>
+                                + Distribusi: <span class="font-semibold">${distHari}</span>
+                                = Total: <span class="font-semibold">${item.jumlah_out}</span> pcs
+                            </p>`;
+                        } else if (sisaKemarin > 0) {
+                            infoStok = `<p class="text-xs text-amber-600 mt-0.5">
+                                Sisa kemarin: <span class="font-semibold">${sisaKemarin}</span> pcs
+                            </p>`;
+                        } else {
+                            infoStok = `<p class="text-xs text-gray-400 mt-0.5">
+                                OUT: <span class="font-semibold text-amber-600">${item.jumlah_out} pcs</span>
+                            </p>`;
+                        }
                         html += `
                     <div class="flex items-center gap-3 p-3 border border-gray-100 rounded-lg">
                         <div class="flex-1">
                             <p class="text-sm font-medium text-gray-700">${item.produk_nama}</p>
-                            <p class="text-xs text-gray-400">OUT: <span class="font-semibold text-amber-600">${item.jumlah_out} pcs</span></p>
+                            ${infoStok}
                         </div>
                         <div class="text-center">
                             <p class="text-xs text-gray-400 mb-1">Sisa</p>

@@ -105,15 +105,49 @@ class LaporanHarianController extends Controller
             return back()->withErrors(['laporan' => 'Laporan untuk outlet dan tanggal ini sudah ada. Silakan pilih outlet atau tanggal yang berbeda.'])->withInput();
         }
 
-        // Ambil distribusi hari itu
+        // Bangun stok per produk: sisa kemarin + distribusi hari ini
+        $kemarin = \Carbon\Carbon::parse($request->tanggal)->subDay()->format('Y-m-d');
+
         $distribusi = Distribusi::with('details.produk')
             ->where('outlet_id', $request->outlet_id)
             ->where('tanggal', $request->tanggal)
             ->first();
-        // Sesudah - BENAR
-        if (!$distribusi) {
-            return back()->with('error', 'Tidak ada data distribusi untuk outlet dan tanggal ini. Pastikan distribusi sudah diinput terlebih dahulu.')->withInput();
+
+        $laporanKemarin = LaporanHarian::with('details.produk')
+            ->where('outlet_id', $request->outlet_id)
+            ->where('tanggal', $kemarin)
+            ->first();
+
+        // produkStok[produk_id] = ['produk' => Produk, 'jumlah_out' => int]
+        $produkStok = [];
+
+        if ($laporanKemarin) {
+            foreach ($laporanKemarin->details as $d) {
+                if ($d->sisa <= 0) continue;
+                $produkStok[$d->produk_id] = [
+                    'produk'     => $d->produk,
+                    'jumlah_out' => (int) $d->sisa,
+                ];
+            }
         }
+
+        if ($distribusi) {
+            foreach ($distribusi->details as $d) {
+                if (isset($produkStok[$d->produk_id])) {
+                    $produkStok[$d->produk_id]['jumlah_out'] += (int) $d->jumlah_out;
+                } else {
+                    $produkStok[$d->produk_id] = [
+                        'produk'     => $d->produk,
+                        'jumlah_out' => (int) $d->jumlah_out,
+                    ];
+                }
+            }
+        }
+
+        if (empty($produkStok)) {
+            return back()->with('error', 'Tidak ada distribusi hari ini maupun sisa stok dari laporan kemarin. Laporan tidak dapat disimpan.')->withInput();
+        }
+
         // Hitung total pengeluaran dari detail
         $totalPengeluaran = 0;
         $pengeluaranItems = [];
@@ -127,44 +161,31 @@ class LaporanHarianController extends Controller
             }
         }
 
-        // Hitung omset & komisi dari sisa
+        // Validasi sisa & hitung omset/komisi
         $totalOmset = 0;
         $totalKomisi = 0;
-        if ($distribusi) {
-            foreach ($distribusi->details as $d) {
-                $sisa = $request->input('sisa_' . $d->produk_id, 0);
-                $terjual = max(0, $d->jumlah_out - $sisa);
-                $totalOmset += $terjual * $d->produk->harga_mitra;
-                $totalKomisi += $terjual * $d->produk->komisi;
-            }
-        }
-
-        $totalSetor = $totalOmset - $totalKomisi - $totalPengeluaran;
-        // Validasi sisa tidak boleh melebihi jumlah_out
-        foreach ($distribusi->details as $d) {
-            $sisa = (int) $request->input('sisa_' . $d->produk_id, 0);
-            if ($sisa < 0) {
-                return back()->withErrors(['laporan' => 'Sisa ' . $d->produk->nama . ' tidak boleh negatif.'])->withInput();
-            }
-            if ($sisa > $d->jumlah_out) {
-                return back()->withErrors(['laporan' => 'Sisa ' . $d->produk->nama . ' (' . $sisa . ' pcs) tidak boleh lebih dari jumlah OUT (' . $d->jumlah_out . ' pcs).'])->withInput();
-            }
-        }
-
-        // Cek apakah ada produk yang terjual dari distribusi
         $adaTerjual = false;
-        foreach ($distribusi->details as $d) {
-            $sisa = $request->input('sisa_' . $d->produk_id, 0);
-            $terjual = max(0, $d->jumlah_out - $sisa);
-            if ($terjual > 0) {
-                $adaTerjual = true;
-                break;
+
+        foreach ($produkStok as $produkId => $row) {
+            $sisa = (int) $request->input('sisa_' . $produkId, 0);
+            if ($sisa < 0) {
+                return back()->withErrors(['laporan' => 'Sisa ' . $row['produk']->nama . ' tidak boleh negatif.'])->withInput();
             }
+            if ($sisa > $row['jumlah_out']) {
+                return back()->withErrors(['laporan' => 'Sisa ' . $row['produk']->nama . ' (' . $sisa . ' pcs) tidak boleh lebih dari stok tersedia (' . $row['jumlah_out'] . ' pcs).'])->withInput();
+            }
+            $terjual = max(0, $row['jumlah_out'] - $sisa);
+            if ($terjual > 0) $adaTerjual = true;
+            $totalOmset  += $terjual * $row['produk']->harga_mitra;
+            $totalKomisi += $terjual * $row['produk']->komisi;
         }
 
         if (!$adaTerjual) {
             return back()->with('error', 'Tidak ada produk yang terjual. Laporan tidak dapat disimpan.')->withInput();
         }
+
+        $totalSetor = $totalOmset - $totalKomisi - $totalPengeluaran;
+
         try {
             $laporan = LaporanHarian::create([
                 'outlet_id' => $request->outlet_id,
@@ -175,21 +196,18 @@ class LaporanHarianController extends Controller
                 'created_by' => auth()->id(),
             ]);
 
-            // Simpan detail produk
-            if ($distribusi) {
-                foreach ($distribusi->details as $d) {
-                    $sisa = $request->input('sisa_' . $d->produk_id, 0);
-                    $terjual = max(0, $d->jumlah_out - $sisa);
-                    LaporanHarianDetail::create([
-                        'laporan_id' => $laporan->id,
-                        'produk_id' => $d->produk_id,
-                        'sisa' => $sisa,
-                        'terjual' => $terjual,
-                        'omset' => $terjual * $d->produk->harga_mitra,
-                        'modal' => $terjual * $d->produk->hpp,
-                        'komisi' => $terjual * $d->produk->komisi,
-                    ]);
-                }
+            foreach ($produkStok as $produkId => $row) {
+                $sisa = (int) $request->input('sisa_' . $produkId, 0);
+                $terjual = max(0, $row['jumlah_out'] - $sisa);
+                LaporanHarianDetail::create([
+                    'laporan_id' => $laporan->id,
+                    'produk_id'  => $produkId,
+                    'sisa'       => $sisa,
+                    'terjual'    => $terjual,
+                    'omset'      => $terjual * $row['produk']->harga_mitra,
+                    'modal'      => $terjual * $row['produk']->hpp,
+                    'komisi'     => $terjual * $row['produk']->komisi,
+                ]);
             }
 
             // Simpan detail pengeluaran

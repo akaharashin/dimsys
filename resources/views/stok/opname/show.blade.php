@@ -3,11 +3,14 @@
 
 @section('content')
 @php
-    $user        = auth()->user();
-    $bolehHapus  = $user->hasRole('admin_pusat') || $user->hasRole('koordinator');
-    $fotoReal    = $stokOpname->getMedia('foto_real');
-    $beritaAcara = $stokOpname->getMedia('berita_acara');
-    $totalFoto   = $fotoReal->count() + $beritaAcara->count();
+    $user           = auth()->user();
+    $bolehHapus     = $user->hasRole('admin_pusat') || $user->hasRole('koordinator');
+    $bolehKoreksi   = $user->hasRole('admin_pusat') || $user->hasRole('koordinator');
+    $sudahKoreksi   = $stokOpname->sudahDikoreksi();
+    $adaSelisih     = $stokOpname->details->where('selisih', '!=', 0)->count() > 0;
+    $fotoReal       = $stokOpname->getMedia('foto_real');
+    $beritaAcara    = $stokOpname->getMedia('berita_acara');
+    $totalFoto      = $fotoReal->count() + $beritaAcara->count();
 @endphp
 
     <div class="flex items-center gap-3 mb-6">
@@ -45,6 +48,32 @@
             </div>
         @endif
     </div>
+
+    {{-- Status Koreksi --}}
+    @if($stokOpname->status === 'final' && !$sudahKoreksi && $adaSelisih && $bolehKoreksi)
+        <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4 flex items-center justify-between gap-3">
+            <div>
+                <p class="text-sm font-medium text-amber-800">Koreksi belum diterapkan ke sistem</p>
+                <p class="text-xs text-amber-600 mt-0.5">
+                    Terapkan koreksi agar stok freezer menyesuaikan hasil opname fisik.
+                </p>
+            </div>
+            <form method="POST" action="{{ route('stok.opname.koreksi', $stokOpname) }}"
+                data-confirm="Terapkan koreksi STO ini ke stok sistem? Stok freezer akan disesuaikan dengan hasil opname fisik. Tindakan ini tidak bisa dibatalkan.">
+                @csrf
+                <button type="submit"
+                    class="inline-flex items-center gap-2 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-sm font-medium rounded-lg">
+                    <i class="fa-solid fa-check-double"></i>
+                    Terapkan Koreksi ke Sistem
+                </button>
+            </form>
+        </div>
+    @elseif($sudahKoreksi)
+        <div class="bg-green-50 border border-green-200 rounded-xl p-4 mb-4 flex items-center gap-3">
+            <i class="fa-solid fa-circle-check text-green-500"></i>
+            <p class="text-sm text-green-700">Koreksi sudah diterapkan ke sistem stok.</p>
+        </div>
+    @endif
 
     {{-- Summary --}}
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">

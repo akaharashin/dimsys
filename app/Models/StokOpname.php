@@ -44,4 +44,14 @@ class StokOpname extends Model implements HasMedia
     {
         return $this->belongsTo(User::class, 'created_by');
     }
+
+    public function stokMasuk()
+    {
+        return $this->hasOne(StokMasuk::class, 'stok_opname_id');
+    }
+
+    public function sudahDikoreksi(): bool
+    {
+        return $this->stokMasuk()->exists();
+    }
 }

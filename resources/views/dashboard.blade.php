@@ -63,13 +63,16 @@
             <p class="text-xs text-gray-400 uppercase tracking-wide">Outlet Lapor Hari Ini</p>
             <div class="flex items-end gap-2 mt-1">
                 <p class="text-2xl font-bold text-gray-700">{{ $outletSudahLapor }}</p>
-                <p class="text-gray-400 text-sm mb-1">/ {{ $totalOutlet }} outlet</p>
+                <p class="text-gray-400 text-sm mb-1">/ {{ $totalOutlet }} outlet aktif</p>
             </div>
             @php $pct = $totalOutlet > 0 ? round($outletSudahLapor / $totalOutlet * 100) : 0; @endphp
             <div class="mt-2 w-full bg-gray-100 rounded-full h-1.5">
                 <div class="h-1.5 rounded-full" style="width: {{ $pct }}%; background-color:#A51616"></div>
             </div>
-            <p class="text-xs text-gray-400 mt-1">{{ $pct }}% sudah lapor</p>
+            <p class="text-xs text-gray-400 mt-1" title="Outlet dengan distribusi 30 hari terakhir">
+                {{ $pct }}% sudah lapor
+                <span class="text-gray-300">(outlet dengan distribusi 30 hari terakhir)</span>
+            </p>
         </div>
     </div>
 
