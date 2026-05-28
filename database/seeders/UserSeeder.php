@@ -11,54 +11,80 @@ class UserSeeder extends Seeder
     public function run(): void
     {
         $sukabumi = Wilayah::where('nama', 'Sukabumi')->first();
-        $cianjur = Wilayah::where('nama', 'Cianjur')->first();
+        $cianjur  = Wilayah::where('nama', 'Cianjur')->first();
+        $bogor    = Wilayah::where('nama', 'Bogor')->first();
 
-        // Owner
-        $owner = User::firstOrCreate(
-            ['email' => 'owner@dimsys.id'],
+        $users = [
             [
-                'name' => 'Owner',
-                'password' => Hash::make('password'),
-                'role' => 'owner',
+                'username'   => 'owner',
+                'name'       => 'Owner',
+                'email'      => 'owner@dimsys.id',
+                'password'   => 'passwordOW47',
+                'role'       => 'owner',
                 'wilayah_id' => $sukabumi?->id,
-            ]
-        );
-        $owner->assignRole('owner');
-
-        // Admin Pusat
-        $admin = User::firstOrCreate(
-            ['email' => 'admin@dimsys.id'],
+            ],
             [
-                'name' => 'Admin Pusat',
-                'password' => Hash::make('password'),
-                'role' => 'admin_pusat',
+                'username'   => 'admin',
+                'name'       => 'Admin Pusat',
+                'email'      => 'admin@dimsys.id',
+                'password'   => 'passwordAD82',
+                'role'       => 'admin_pusat',
                 'wilayah_id' => $sukabumi?->id,
-            ]
-        );
-        $admin->assignRole('admin_pusat');
-
-        // Koordinator Sukabumi
-        $koordinatorSku = User::firstOrCreate(
-            ['email' => 'koordinator.sukabumi@dimsys.id'],
+            ],
             [
-                'name' => 'Koordinator Sukabumi',
-                'password' => Hash::make('password'),
-                'role' => 'koordinator',
+                'username'   => 'koor.sukabumi',
+                'name'       => 'Koordinator Sukabumi',
+                'email'      => 'koordinator.sukabumi@dimsys.id',
+                'password'   => 'passwordSK31',
+                'role'       => 'koordinator',
                 'wilayah_id' => $sukabumi?->id,
-            ]
-        );
-        $koordinatorSku->assignRole('koordinator');
-
-        // Koordinator Cianjur
-        $koordinatorCjr = User::firstOrCreate(
-            ['email' => 'koordinator.cianjur@dimsys.id'],
+            ],
             [
-                'name' => 'Koordinator Cianjur',
-                'password' => Hash::make('password'),
-                'role' => 'koordinator',
+                'username'   => 'koor.cianjur',
+                'name'       => 'Koordinator Cianjur',
+                'email'      => 'koordinator.cianjur@dimsys.id',
+                'password'   => 'passwordCJ15',
+                'role'       => 'koordinator',
                 'wilayah_id' => $cianjur?->id,
-            ]
-        );
-        $koordinatorCjr->assignRole('koordinator');
+            ],
+            [
+                'username'   => 'koor.bogor',
+                'name'       => 'Koordinator Bogor',
+                'email'      => 'koordinator.bogor@dimsys.id',
+                'password'   => 'passwordBG73',
+                'role'       => 'koordinator',
+                'wilayah_id' => $bogor?->id,
+            ],
+        ];
+
+        foreach ($users as $u) {
+            $user = User::withTrashed()
+                ->where('email', $u['email'])
+                ->orWhere('username', $u['username'])
+                ->first();
+
+            if ($user) {
+                $user->update([
+                    'username'   => $u['username'],
+                    'name'       => $u['name'],
+                    'email'      => $u['email'],
+                    'password'   => Hash::make($u['password']),
+                    'role'       => $u['role'],
+                    'wilayah_id' => $u['wilayah_id'],
+                    'deleted_at' => null,
+                ]);
+            } else {
+                $user = User::create([
+                    'username'   => $u['username'],
+                    'name'       => $u['name'],
+                    'email'      => $u['email'],
+                    'password'   => Hash::make($u['password']),
+                    'role'       => $u['role'],
+                    'wilayah_id' => $u['wilayah_id'],
+                ]);
+            }
+
+            $user->syncRoles([$u['role']]);
+        }
     }
 }

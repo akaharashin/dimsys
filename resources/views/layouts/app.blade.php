@@ -70,6 +70,14 @@
                                 @if(request()->routeIs('master.supplier.*')) style="background-color:#A51616" @endif>
                                 <i class="fa-solid fa-truck w-4 text-center"></i> Supplier
                             </a>
+                            @if(auth()->user()->hasRole('admin_pusat'))
+                                <a href="{{ route('master.user.index') }}"
+                                    class="flex items-center gap-3 pl-5 pr-2 py-2.5 rounded-lg transition-all
+                                           {{ request()->routeIs('master.user.*') ? 'text-white shadow-sm font-medium' : 'text-gray-600 hover:bg-red-50 hover:text-red-700' }}"
+                                    @if(request()->routeIs('master.user.*')) style="background-color:#A51616" @endif>
+                                    <i class="fa-solid fa-users w-4 text-center"></i> User
+                                </a>
+                            @endif
                         </div>
                     </div>
                 @endif

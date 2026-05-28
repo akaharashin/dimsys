@@ -53,11 +53,12 @@
             <p class="mt-1">
                 @php
                     $statusClass = match($penjualanWilayah->status) {
-                        'menunggu'  => 'bg-yellow-100 text-yellow-700',
-                        'disetujui' => 'bg-green-100 text-green-600',
+                        'menunggu'  => 'text-amber-700 border border-amber-200',
+                        'disetujui' => 'bg-green-100 text-green-700',
                         'ditolak'   => 'bg-red-100 text-red-600',
                         default     => 'bg-gray-100 text-gray-600',
                     };
+                    $statusStyle = $penjualanWilayah->status === 'menunggu' ? 'background-color:#FFFDE7' : '';
                     $statusLabel = match($penjualanWilayah->status) {
                         'menunggu'  => 'Menunggu',
                         'disetujui' => 'Disetujui',
@@ -65,7 +66,7 @@
                         default     => ucfirst($penjualanWilayah->status),
                     };
                 @endphp
-                <span class="px-2 py-1 rounded-full text-xs {{ $statusClass }}">{{ $statusLabel }}</span>
+                <span class="px-2 py-1 rounded-full text-xs {{ $statusClass }}" @if($statusStyle) style="{{ $statusStyle }}" @endif>{{ $statusLabel }}</span>
             </p>
         </div>
         <div>

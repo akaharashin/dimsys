@@ -186,11 +186,11 @@
                         </td>
                         <td class="px-4 py-3">
                             @if($p->status === 'menunggu')
-                                <span class="px-2 py-1 rounded-full text-xs font-medium" style="background-color:#F5F028;color:#4a3f00">Menunggu</span>
+                                <span class="px-2 py-1 rounded-full text-xs text-amber-700 border border-amber-200" style="background-color:#FFFDE7">Menunggu</span>
                             @elseif($p->status === 'disetujui')
-                                <span class="px-2 py-1 rounded-full text-xs bg-green-100 text-green-600">Disetujui</span>
+                                <span class="px-2 py-1 rounded-full text-xs bg-green-100 text-green-700">Disetujui</span>
                             @else
-                                <span class="px-2 py-1 rounded-full text-xs bg-red-100 text-red-500">Ditolak</span>
+                                <span class="px-2 py-1 rounded-full text-xs bg-red-100 text-red-600">Ditolak</span>
                             @endif
                         </td>
                         <td class="px-4 py-3 text-gray-500">{{ $p->keterangan ?? '-' }}</td>

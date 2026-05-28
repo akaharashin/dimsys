@@ -28,38 +28,38 @@
     {{-- Hari Ini --}}
     <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Ringkasan Hari Ini</p>
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <div class="bg-white rounded-xl p-5 shadow-sm border-l-4 border-red-600">
+        <div class="bg-white rounded-xl p-5 shadow-sm border-l-4" style="border-color:#A51616">
             <p class="text-xs text-gray-400 uppercase tracking-wide">Omset</p>
             <p class="text-2xl font-bold mt-1" style="color:#A51616">Rp {{ number_format($omsetHariIni) }}</p>
         </div>
-        <div class="bg-white rounded-xl p-5 shadow-sm border-l-4 border-green-400">
+        <div class="bg-white rounded-xl p-5 shadow-sm border-l-4 border-green-500">
             <p class="text-xs text-gray-400 uppercase tracking-wide">Laba</p>
             <p class="text-2xl font-bold text-green-500 mt-1">Rp {{ number_format($labaHariIni) }}</p>
         </div>
-        <div class="bg-white rounded-xl p-5 shadow-sm border-l-4 border-blue-400">
+        <div class="bg-white rounded-xl p-5 shadow-sm border-l-4" style="border-color:#A51616">
             <p class="text-xs text-gray-400 uppercase tracking-wide">Total Setor</p>
-            <p class="text-2xl font-bold text-blue-500 mt-1">Rp {{ number_format($setorHariIni) }}</p>
+            <p class="text-2xl font-bold mt-1" style="color:#A51616">Rp {{ number_format($setorHariIni) }}</p>
         </div>
-        <div class="bg-white rounded-xl p-5 shadow-sm border-l-4 border-yellow-400">
+        <div class="bg-white rounded-xl p-5 shadow-sm border-l-4" style="border-color:#F5F028">
             <p class="text-xs text-gray-400 uppercase tracking-wide">Total OUT</p>
-            <p class="text-2xl font-bold text-purple-500 mt-1">{{ number_format($totalOutHariIni) }} pcs</p>
+            <p class="text-2xl font-bold text-gray-700 mt-1">{{ number_format($totalOutHariIni) }} pcs</p>
         </div>
     </div>
 
     {{-- Bulan Ini + Outlet --}}
     <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Bulan Ini</p>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div class="bg-white rounded-xl p-5 shadow-sm">
+        <div class="bg-white rounded-xl p-5 shadow-sm border-l-4" style="border-color:#A51616">
             <p class="text-xs text-gray-400 uppercase tracking-wide">Omset Bulan Ini</p>
             <p class="text-2xl font-bold mt-1" style="color:#A51616">Rp {{ number_format($omsetBulanIni) }}</p>
             <p class="text-xs text-gray-400 mt-2">{{ \Carbon\Carbon::now()->translatedFormat('F Y') }}</p>
         </div>
-        <div class="bg-white rounded-xl p-5 shadow-sm">
+        <div class="bg-white rounded-xl p-5 shadow-sm border-l-4 border-green-500">
             <p class="text-xs text-gray-400 uppercase tracking-wide">Laba Bulan Ini</p>
             <p class="text-2xl font-bold text-green-500 mt-1">Rp {{ number_format($labaBulanIni) }}</p>
             <p class="text-xs text-gray-400 mt-2">{{ \Carbon\Carbon::now()->translatedFormat('F Y') }}</p>
         </div>
-        <div class="bg-white rounded-xl p-5 shadow-sm">
+        <div class="bg-white rounded-xl p-5 shadow-sm border-l-4" style="border-color:#F5F028">
             <p class="text-xs text-gray-400 uppercase tracking-wide">Outlet Lapor Hari Ini</p>
             <div class="flex items-end gap-2 mt-1">
                 <p class="text-2xl font-bold text-gray-700">{{ $outletSudahLapor }}</p>
@@ -101,7 +101,7 @@
         @if(auth()->user()->hasRole(['admin_pusat']))
             <a href="{{ route('stok.masuk.index') }}"
                 class="bg-white rounded-xl p-4 shadow-sm hover:shadow-md hover:border-red-200 border border-transparent transition flex items-center gap-3">
-                <div class="w-9 h-9 bg-red-100 rounded-lg flex items-center justify-center text-red-700 text-lg">
+                <div class="w-9 h-9 bg-red-100 rounded-lg flex items-center justify-center text-lg" style="color:#A51616">
                     <i class="fa-solid fa-boxes-stacked"></i>
                 </div>
                 <div>
@@ -114,7 +114,7 @@
         @if(auth()->user()->hasRole(['admin_pusat', 'koordinator']))
             <a href="{{ route('stok.distribusi.index') }}"
                 class="bg-white rounded-xl p-4 shadow-sm hover:shadow-md hover:border-red-200 border border-transparent transition flex items-center gap-3">
-                <div class="w-9 h-9 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600 text-lg">
+                <div class="w-9 h-9 bg-red-50 rounded-lg flex items-center justify-center text-lg" style="color:#A51616">
                     <i class="fa-solid fa-truck-fast"></i>
                 </div>
                 <div>
@@ -124,7 +124,7 @@
             </a>
             <a href="{{ route('transaksi.laporan-harian.index') }}"
                 class="bg-white rounded-xl p-4 shadow-sm hover:shadow-md hover:border-red-200 border border-transparent transition flex items-center gap-3">
-                <div class="w-9 h-9 bg-green-100 rounded-lg flex items-center justify-center text-green-600 text-lg">
+                <div class="w-9 h-9 bg-amber-100 rounded-lg flex items-center justify-center text-amber-700 text-lg">
                     <i class="fa-solid fa-file-lines"></i>
                 </div>
                 <div>
@@ -137,7 +137,7 @@
         @if(auth()->user()->hasRole(['admin_pusat', 'koordinator', 'owner']))
             <a href="{{ route('stok.rekap') }}"
                 class="bg-white rounded-xl p-4 shadow-sm hover:shadow-md hover:border-red-200 border border-transparent transition flex items-center gap-3">
-                <div class="w-9 h-9 bg-purple-100 rounded-lg flex items-center justify-center text-purple-600 text-lg">
+                <div class="w-9 h-9 bg-amber-50 rounded-lg flex items-center justify-center text-amber-600 text-lg">
                     <i class="fa-solid fa-chart-pie"></i>
                 </div>
                 <div>
@@ -150,7 +150,7 @@
         @if(auth()->user()->hasRole('owner'))
             <a href="{{ route('laporan.omset') }}"
                 class="bg-white rounded-xl p-4 shadow-sm hover:shadow-md hover:border-red-200 border border-transparent transition flex items-center gap-3">
-                <div class="w-9 h-9 bg-red-100 rounded-lg flex items-center justify-center text-red-700 text-lg">
+                <div class="w-9 h-9 bg-red-100 rounded-lg flex items-center justify-center text-lg" style="color:#A51616">
                     <i class="fa-solid fa-chart-line"></i>
                 </div>
                 <div>
@@ -160,7 +160,7 @@
             </a>
             <a href="{{ route('laporan.kontrol') }}"
                 class="bg-white rounded-xl p-4 shadow-sm hover:shadow-md hover:border-red-200 border border-transparent transition flex items-center gap-3">
-                <div class="w-9 h-9 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600 text-lg">
+                <div class="w-9 h-9 bg-amber-100 rounded-lg flex items-center justify-center text-amber-700 text-lg">
                     <i class="fa-solid fa-sliders"></i>
                 </div>
                 <div>
@@ -170,7 +170,7 @@
             </a>
             <a href="{{ route('laporan.rata-rata-out') }}"
                 class="bg-white rounded-xl p-4 shadow-sm hover:shadow-md hover:border-red-200 border border-transparent transition flex items-center gap-3">
-                <div class="w-9 h-9 bg-green-100 rounded-lg flex items-center justify-center text-green-600 text-lg">
+                <div class="w-9 h-9 bg-red-50 rounded-lg flex items-center justify-center text-lg" style="color:#A51616">
                     <i class="fa-solid fa-ruler-horizontal"></i>
                 </div>
                 <div>

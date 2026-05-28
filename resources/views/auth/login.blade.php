@@ -36,9 +36,10 @@
                 @csrf
 
                 <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-600 mb-1">Email</label>
-                    <input type="email" name="email" value="{{ old('email') }}" required autofocus
-                        placeholder="contoh: admin@dimsys.id"
+                    <label class="block text-sm font-medium text-gray-600 mb-1">Username</label>
+                    <input type="text" name="username" value="{{ old('username') }}" required autofocus
+                        autocomplete="username"
+                        placeholder="Masukkan username Anda"
                         class="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-red-300 focus:border-transparent transition">
                 </div>
 

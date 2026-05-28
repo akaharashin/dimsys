@@ -7,6 +7,7 @@ use App\Http\Controllers\Master\WilayahController;
 use App\Http\Controllers\Master\ProdukController;
 use App\Http\Controllers\Master\OutletController;
 use App\Http\Controllers\Master\SupplierController;
+use App\Http\Controllers\Master\UserController;
 use App\Http\Controllers\Stok\StokMasukController;
 use App\Http\Controllers\Stok\DistribusiController;
 use App\Http\Controllers\Transaksi\LaporanHarianController;
@@ -101,6 +102,16 @@ Route::middleware(['auth'])->group(function () {
     // Admin — admin_pusat only
     Route::middleware('role:admin_pusat')->prefix('admin')->name('admin.')->group(function () {
         Route::get('activity-log', [ActivityLogController::class, 'index'])->name('activity-log');
+    });
+
+    // Master User — admin_pusat only
+    Route::middleware('role:admin_pusat')->prefix('master')->name('master.')->group(function () {
+        Route::get('user/export', [UserController::class, 'export'])->name('user.export');
+        Route::post('user/{user}/reset-password', [UserController::class, 'resetPassword'])
+            ->name('user.reset-password');
+        Route::post('user/{id}/restore', [UserController::class, 'restore'])
+            ->name('user.restore');
+        Route::resource('user', UserController::class)->except(['create', 'show', 'edit']);
     });
 
     Route::prefix('api')->group(function () {
