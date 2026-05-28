@@ -91,22 +91,22 @@ class DistribusiController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'outlet_id' => 'required|exists:outlet,id',
-            'tanggal' => 'required|date|date_equals:today',
-            'keterangan' => 'nullable|string|max:255',
-            'produk_id' => 'required|array|min:1',
-            'jumlah_out.*' => 'nullable|integer|min:0',
+            'outlet_id'    => 'required|exists:outlet,id',
+            'tanggal'      => 'required|date|date_equals:today',
+            'keterangan'   => 'nullable|string|max:255',
+            'jumlah_out'   => 'required|array',
+            'jumlah_out.*' => 'integer|min:0',
         ], [
-            'outlet_id.required' => 'Outlet wajib dipilih.',
-            'outlet_id.exists' => 'Outlet yang dipilih tidak valid.',
-            'tanggal.required' => 'Tanggal distribusi wajib diisi.',
-            'tanggal.date' => 'Format tanggal tidak valid.',
-            'tanggal.date_equals' => 'Tanggal transaksi harus hari ini.',
-            'keterangan.max' => 'Keterangan maksimal 255 karakter.',
-            'produk_id.required' => 'Minimal satu produk wajib dipilih.',
-            'produk_id.min' => 'Minimal satu produk wajib dipilih.',
+            'outlet_id.required'   => 'Outlet wajib dipilih.',
+            'outlet_id.exists'     => 'Outlet yang dipilih tidak valid.',
+            'tanggal.required'     => 'Tanggal distribusi wajib diisi.',
+            'tanggal.date'         => 'Format tanggal tidak valid.',
+            'tanggal.date_equals'  => 'Tanggal transaksi harus hari ini.',
+            'keterangan.max'       => 'Keterangan maksimal 255 karakter.',
+            'jumlah_out.required'  => 'Data produk wajib diisi. Pilih outlet terlebih dahulu.',
+            'jumlah_out.array'     => 'Format data produk tidak valid.',
             'jumlah_out.*.integer' => 'Jumlah produk harus berupa bilangan bulat.',
-            'jumlah_out.*.min' => 'Jumlah produk tidak boleh bernilai negatif.',
+            'jumlah_out.*.min'     => 'Jumlah produk tidak boleh bernilai negatif.',
         ]);
 
         // Ambil wilayah dari outlet
@@ -115,30 +115,31 @@ class DistribusiController extends Controller
 
         // Validasi stok per produk
         $stokErrors = [];
-        foreach ($request->produk_id as $i => $pid) {
-            $jumlah = $request->jumlah_out[$i] ?? 0;
-            if ($jumlah <= 0)
-                continue;
+        $adaProduk = false;
+        foreach ($request->jumlah_out as $pid => $jumlah) {
+            $jumlah = (int) $jumlah;
+            if ($jumlah <= 0) continue;
+            $adaProduk = true;
 
             $produk = \App\Models\Produk::find($pid);
+            if (!$produk) {
+                $stokErrors[] = "Produk tidak ditemukan (ID: {$pid}).";
+                continue;
+            }
 
-            // Hitung stok tersedia
             $masuk = \App\Models\StokMasukDetail::whereHas(
                 'stokMasuk',
-                fn($q) =>
-                $q->where('wilayah_id', $wilayahId)
+                fn($q) => $q->where('wilayah_id', $wilayahId)
             )->where('produk_id', $pid)->sum('jumlah');
 
             $sudahOut = \App\Models\DistribusiDetail::whereHas(
                 'distribusi',
-                fn($q) =>
-                $q->whereHas('outlet', fn($o) => $o->where('wilayah_id', $wilayahId))
+                fn($q) => $q->whereHas('outlet', fn($o) => $o->where('wilayah_id', $wilayahId))
             )->where('produk_id', $pid)->sum('jumlah_out');
 
             $keluarWilayah = \App\Models\PenjualanWilayahDetail::whereHas(
                 'penjualan',
-                fn($q) =>
-                $q->where('wilayah_asal_id', $wilayahId)->where('status', 'disetujui')
+                fn($q) => $q->where('wilayah_asal_id', $wilayahId)->where('status', 'disetujui')
             )->where('produk_id', $pid)->sum('jumlah');
 
             $stokTersedia = $masuk - $sudahOut - $keluarWilayah;
@@ -152,35 +153,26 @@ class DistribusiController extends Controller
             return back()->withErrors(['stok' => implode(' | ', $stokErrors)])->withInput();
         }
 
-        $adaProduk = false;
-        foreach ($request->produk_id as $i => $pid) {
-            if (($request->jumlah_out[$i] ?? 0) > 0) {
-                $adaProduk = true;
-                break;
-            }
-        }
-
         if (!$adaProduk) {
             return back()->with('error', 'Minimal satu produk harus memiliki jumlah OUT lebih dari 0.')->withInput();
         }
 
         try {
             $distribusi = Distribusi::create([
-                'outlet_id' => $request->outlet_id,
-                'tanggal' => $request->tanggal,
+                'outlet_id'  => $request->outlet_id,
+                'tanggal'    => $request->tanggal,
                 'keterangan' => $request->keterangan,
                 'created_by' => auth()->id(),
             ]);
 
-            foreach ($request->produk_id as $i => $pid) {
-                $jumlah = $request->jumlah_out[$i] ?? 0;
-                if ($jumlah > 0) {
-                    DistribusiDetail::create([
-                        'distribusi_id' => $distribusi->id,
-                        'produk_id' => $pid,
-                        'jumlah_out' => $jumlah,
-                    ]);
-                }
+            foreach ($request->jumlah_out as $pid => $jumlah) {
+                $jumlah = (int) $jumlah;
+                if ($jumlah <= 0) continue;
+                DistribusiDetail::create([
+                    'distribusi_id' => $distribusi->id,
+                    'produk_id'     => $pid,
+                    'jumlah_out'    => $jumlah,
+                ]);
             }
 
             $this->logActivity(

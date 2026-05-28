@@ -90,16 +90,15 @@
                         const stokClass = item.stok_tersedia <= 0 ? 'text-red-500' : 'text-green-600';
                         html += `
                     <div class="flex items-center gap-3 p-3 border border-gray-100 rounded-lg">
-                        <input type="hidden" name="produk_id[]" value="${item.produk_id}">
                         <div class="flex-1">
                             <p class="text-sm font-medium text-gray-700">${item.produk_nama}</p>
                             <p class="text-xs mt-1">Stok tersedia: <span class="font-semibold ${stokClass}">${item.stok_tersedia} pcs</span></p>
                         </div>
                         <div class="w-28">
-                            <input type="number" name="jumlah_out[]" value="0"
+                            <input type="number" name="jumlah_out[${item.produk_id}]" value="0"
                                 min="0" max="${item.stok_tersedia}"
                                 ${item.stok_tersedia <= 0 ? 'disabled' : ''}
-                                class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-center focus:outline-none focus:ring-2 focus:ring-red-300 ${item.stok_tersedia <= 0 ? 'bg-gray-100 cursor-not-allowed' : ''}">
+                                class="jumlah-input w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-center focus:outline-none focus:ring-2 focus:ring-red-300 ${item.stok_tersedia <= 0 ? 'bg-gray-100 cursor-not-allowed' : ''}">
                         </div>
                         <span class="text-xs text-gray-400 w-6">pcs</span>
                     </div>`;
@@ -122,7 +121,7 @@
                     errors.push('Outlet wajib dipilih.');
                 if (!document.querySelector('[name="tanggal"]').value)
                     errors.push('Tanggal wajib diisi.');
-                var jumlahInputs = document.querySelectorAll('[name="jumlah_out[]"]');
+                var jumlahInputs = document.querySelectorAll('.jumlah-input');
                 if (jumlahInputs.length === 0) {
                     errors.push('Pilih outlet terlebih dahulu untuk memuat data produk.');
                 } else {
