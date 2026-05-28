@@ -7,6 +7,24 @@
         <h2 class="text-2xl font-bold text-gray-700">Rekap Stok</h2>
     </div>
 
+    <div class="mb-4 px-4 py-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-700">
+        <i class="fa-solid fa-circle-info mr-1"></i>
+        Rekap Stok menampilkan <strong>mutasi stok dalam periode bulan yang dipilih</strong>.
+    </div>
+
+    @php
+        $bulanDipilih = \Carbon\Carbon::parse($bulan . '-01')->startOfMonth();
+        $bulanBerjalan = \Carbon\Carbon::today()->startOfMonth();
+    @endphp
+    @if($bulanDipilih->ne($bulanBerjalan))
+        <div class="bg-yellow-50 border border-yellow-200 px-4 py-3 rounded-lg text-sm text-yellow-700 mb-4">
+            <i class="fa-solid fa-triangle-exclamation mr-1"></i>
+            Anda melihat data bulan <strong>{{ $bulanDipilih->locale('id')->isoFormat('MMMM Y') }}</strong>.
+            Untuk posisi stok terkini, gunakan menu
+            <a href="{{ route('stok.rekap') }}" class="underline font-semibold">Stok Freezer</a>.
+        </div>
+    @endif
+
     {{-- Filter --}}
     <div class="bg-white rounded-xl shadow-sm p-4 mb-6">
         <form method="GET" action="{{ route('laporan.stok') }}" class="flex flex-wrap items-end gap-3">
@@ -71,9 +89,9 @@
                     <th class="px-4 py-3 text-center w-10">No</th>
                     <th class="px-4 py-3 text-left">Produk</th>
                     <th class="px-4 py-3 text-right">Stok Awal</th>
-                    <th class="px-4 py-3 text-right">Masuk</th>
-                    <th class="px-4 py-3 text-right">Terjual</th>
-                    <th class="px-4 py-3 text-right">Sisa</th>
+                    <th class="px-4 py-3 text-right">Masuk Bulan Ini</th>
+                    <th class="px-4 py-3 text-right">Terjual Bulan Ini</th>
+                    <th class="px-4 py-3 text-right">Estimasi Sisa Akhir Bulan</th>
                     <th class="px-4 py-3 text-right">HPP</th>
                     <th class="px-4 py-3 text-right">Nilai Sisa</th>
                 </tr>

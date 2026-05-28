@@ -5,6 +5,15 @@
 
     <div class="flex items-center justify-between mb-6">
         <h2 class="text-2xl font-bold text-gray-700">Rekap Stok Freezer</h2>
+        <span class="text-xs text-gray-500">
+            Per: {{ \Carbon\Carbon::today()->locale('id')->isoFormat('D MMMM Y') }}
+        </span>
+    </div>
+
+    <div class="mb-4 px-4 py-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-700">
+        <i class="fa-solid fa-circle-info mr-1"></i>
+        Stok Freezer menampilkan posisi stok <strong>SAAT INI</strong> secara kumulatif
+        (semua transaksi dari awal hingga hari ini).
     </div>
 
     {{-- Filter --}}

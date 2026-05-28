@@ -54,8 +54,14 @@
                     <label class="block text-sm text-gray-600 mb-1">Sub Kategori <span
                             class="text-gray-400 text-xs">(opsional)</span></label>
                     <input type="text" name="sub_kategori" value="{{ old('sub_kategori') }}"
-                        placeholder="Detail kategori..."
+                        list="list-sub-kategori"
+                        placeholder="Pilih atau ketik sub kategori..."
                         class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300">
+                    <datalist id="list-sub-kategori">
+                        <option value="Agen">
+                        <option value="Mitra">
+                        <option value="Umum">
+                    </datalist>
                 </div>
                 <div>
                     <label class="block text-sm text-gray-600 mb-1">Jumlah (Rp)</label>
@@ -106,7 +112,7 @@
         const kategoriOptions = {
             debit: [
                 'Setoran Outlet',
-                'Pembayaran Agen',
+                'Pembayaran',
                 'Transfer Masuk',
                 'Lain-lain Masuk',
             ],

@@ -43,8 +43,11 @@
 
         <div>
             <label class="block text-sm text-gray-600 mb-1">Bulan Sumber <span class="text-gray-400">(stok akhir bulan ini yang dihitung)</span></label>
-            <input type="month" id="bulan" value="{{ $defaultBulan }}"
+            <input type="month" id="bulan" value="{{ $defaultBulan }}" max="{{ now()->format('Y-m') }}"
                 class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300">
+            <p class="text-xs text-gray-400 mt-1">
+                Generate stok awal bulan berikutnya dapat dilakukan mulai tanggal 25 bulan berjalan.
+            </p>
         </div>
 
         <div>
@@ -73,6 +76,13 @@
         class="mb-4 px-4 py-3 bg-yellow-50 border border-yellow-200 text-yellow-700 rounded-lg text-sm">
         <i class="fa-solid fa-triangle-exclamation mr-1"></i>
         Stok awal <strong id="lbl-exists-bulan"></strong> untuk wilayah ini <strong>sudah ada</strong>. Generate akan dibatalkan.
+    </div>
+
+    {{-- Warning: bulan tujuan tidak valid --}}
+    <div id="warning-invalid" style="display:none"
+        class="mb-4 px-4 py-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
+        <i class="fa-solid fa-circle-xmark mr-1"></i>
+        <span id="lbl-invalid-reason"></span>
     </div>
 
     {{-- Tabel Preview --}}
@@ -137,6 +147,7 @@
             '<tr><td colspan="7" class="px-4 py-8 text-center text-gray-400"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Memuat data...</td></tr>';
         document.getElementById('btn-generate').style.display = 'none';
         document.getElementById('warning-exists').style.display = 'none';
+        document.getElementById('warning-invalid').style.display = 'none';
 
         fetch(previewUrl + '?wilayah_id=' + wilayahId + '&bulan=' + bulan)
             .then(function(r) { return r.json(); })
@@ -178,7 +189,11 @@
 
         document.getElementById('preview-table-body').innerHTML = rows;
 
-        if (res.already_exists) {
+        if (res.invalid_reason) {
+            document.getElementById('warning-invalid').style.display = '';
+            document.getElementById('lbl-invalid-reason').textContent = res.invalid_reason;
+            document.getElementById('btn-generate').style.display = 'none';
+        } else if (res.already_exists) {
             document.getElementById('warning-exists').style.display = '';
             document.getElementById('lbl-exists-bulan').textContent = res.bulan_tujuan_label;
             document.getElementById('btn-generate').style.display = 'none';

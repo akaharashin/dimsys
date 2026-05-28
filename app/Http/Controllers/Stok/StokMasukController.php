@@ -226,6 +226,23 @@ class StokMasukController extends Controller
         $bulanIndo = ['', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
                           'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
 
+        // ─── Validasi bulan tujuan ───────────────────────────────
+        $today = Carbon::today();
+        $bulanTujuan = $nextMonth->copy()->startOfMonth();
+        $bulanBerjalan = $today->copy()->startOfMonth();
+        $maxBulan = $bulanBerjalan->copy()->addMonth();
+        $nextBulanLabel = $bulanIndo[$nextMonth->month] . ' ' . $nextMonth->year;
+        $invalidReason = null;
+
+        if ($bulanTujuan->gt($maxBulan)) {
+            $invalidReason = "Tidak dapat generate stok awal untuk {$nextBulanLabel}. " .
+                "Generate stok awal hanya boleh dilakukan maksimal 1 bulan ke depan.";
+        } elseif ($bulanTujuan->gt($bulanBerjalan) && $today->day < 25) {
+            $bulanSebelumnya = $bulanTujuan->copy()->subMonth();
+            $bulanSebelumnyaLabel = $bulanIndo[$bulanSebelumnya->month] . ' ' . $bulanSebelumnya->year;
+            $invalidReason = "Generate stok awal {$nextBulanLabel} baru bisa dilakukan mulai tanggal 25 {$bulanSebelumnyaLabel}.";
+        }
+
         return response()->json([
             'wilayah_id'          => $wilayahId,
             'bulan'               => $bulan,
@@ -233,6 +250,7 @@ class StokMasukController extends Controller
             'bulan_tujuan_label'  => $bulanIndo[$nextMonth->month] . ' ' . $nextMonth->year,
             'tanggal_tujuan'      => $nextMonth->format('Y-m-01'),
             'already_exists'      => $alreadyExists,
+            'invalid_reason'      => $invalidReason,
             'wilayah_nama'        => $wilayah->nama,
             'data'                => $data,
         ]);
@@ -261,6 +279,25 @@ class StokMasukController extends Controller
         $bulanIndo = ['', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
                           'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
         $nextBulanLabel = $bulanIndo[$nextMonth->month] . ' ' . $nextMonth->year;
+
+        // ─── Validasi bulan tujuan ───────────────────────────────
+        $today = Carbon::today();
+        $bulanTujuan = $nextMonth->copy()->startOfMonth();
+        $bulanBerjalan = $today->copy()->startOfMonth();
+        $maxBulan = $bulanBerjalan->copy()->addMonth();
+
+        if ($bulanTujuan->gt($maxBulan)) {
+            return back()->with('error',
+                "Tidak dapat generate stok awal untuk {$nextBulanLabel}. " .
+                "Generate stok awal hanya boleh dilakukan maksimal 1 bulan ke depan.");
+        }
+
+        if ($bulanTujuan->gt($bulanBerjalan) && $today->day < 25) {
+            $bulanSebelumnya = $bulanTujuan->copy()->subMonth();
+            $bulanSebelumnyaLabel = $bulanIndo[$bulanSebelumnya->month] . ' ' . $bulanSebelumnya->year;
+            return back()->with('error',
+                "Generate stok awal {$nextBulanLabel} baru bisa dilakukan mulai tanggal 25 {$bulanSebelumnyaLabel}.");
+        }
 
         // Cek apakah stok awal bulan tujuan sudah ada
         $alreadyExists = StokMasuk::where('jenis', 'awal')
