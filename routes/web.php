@@ -55,6 +55,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('opname/stok-sistem', [StokOpnameController::class, 'getStokSistem'])->name('opname.stok-sistem');
         Route::post('opname/{id}/foto', [StokOpnameController::class, 'uploadFoto'])->name('opname.foto.upload');
         Route::delete('opname/foto/{fotoId}', [StokOpnameController::class, 'hapusFoto'])->name('opname.foto.hapus');
+        Route::delete('opname/{stokOpname}/batalkan-jika-kosong', [StokOpnameController::class, 'batalkanJikaKosong'])
+            ->name('opname.batalkan-jika-kosong');
         Route::middleware('role:admin_pusat|koordinator')->group(function () {
             Route::post('opname/{opname}/koreksi', [StokOpnameController::class, 'terapkanKoreksi'])
                 ->name('opname.koreksi');
@@ -82,6 +84,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('laporan-harian/export', [LaporanHarianController::class, 'export'])->name('laporan-harian.export');
         Route::resource('laporan-harian', LaporanHarianController::class);
         Route::get('kas/export', [KasController::class, 'export'])->name('kas.export');
+        Route::post('kas/setoran', [KasController::class, 'storeSetoran'])->name('kas.setoran.store');
         Route::resource('kas', KasController::class);
         Route::get('penjualan-wilayah/export', [PenjualanWilayahController::class, 'export'])->name('penjualan-wilayah.export');
         Route::post('penjualan-wilayah/{penjualanWilayah}/approve', [PenjualanWilayahController::class, 'approve'])->name('penjualan-wilayah.approve');
@@ -125,6 +128,8 @@ Route::middleware(['auth'])->group(function () {
     Route::prefix('api')->group(function () {
         Route::get('distribusi', [DistribusiApiController::class, 'getByOutletTanggal'])->name('api.distribusi');
         Route::get('stok-tersedia', [\App\Http\Controllers\Api\StokApiController::class, 'getStokTersedia'])->name('api.stok-tersedia');
+        Route::get('setoran-outlet', [KasController::class, 'getSetoranOutlet'])->name('api.setoran-outlet');
+        Route::get('cek-sto-existing', [StokOpnameController::class, 'cekStoExisting'])->name('api.cek-sto-existing');
     });
 
 });

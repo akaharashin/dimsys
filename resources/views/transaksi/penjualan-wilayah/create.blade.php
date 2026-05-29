@@ -239,7 +239,17 @@
                 }
             });
 
-            if (errors.length === 0) return;
+            if (errors.length === 0) {
+                // Lulus validasi → disable tombol untuk cegah double-submit
+                var btn = document.getElementById('btn-submit');
+                if (btn && !btn.disabled) {
+                    btn.disabled = true;
+                    btn.classList.add('bg-gray-400', 'cursor-not-allowed');
+                    btn.classList.remove('bg-red-700', 'hover:bg-red-800');
+                    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>Menyimpan...';
+                }
+                return;
+            }
             e.preventDefault();
             var html = '<ul style="text-align:left;padding-left:20px;margin:0">' +
                 errors.map(function (err) { return '<li>' + err + '</li>'; }).join('') + '</ul>';

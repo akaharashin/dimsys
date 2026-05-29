@@ -16,11 +16,17 @@
             </div>
             <div>
                 <p class="text-gray-400 text-xs uppercase">Wilayah</p>
-                <p class="font-medium text-gray-700 mt-1">{{ $masuk->wilayah->nama }}</p>
+                <p class="font-medium text-gray-700 mt-1">{{ $masuk->wilayah?->nama ?? '-' }}</p>
             </div>
             <div>
                 <p class="text-gray-400 text-xs uppercase">Supplier</p>
-                <p class="font-medium text-gray-700 mt-1">{{ $masuk->supplier->nama }}</p>
+                <p class="font-medium text-gray-700 mt-1">
+                    @if($masuk->jenis === 'koreksi')
+                        <span class="text-amber-600 text-sm">Koreksi STO</span>
+                    @else
+                        {{ $masuk->supplier?->nama ?? '-' }}
+                    @endif
+                </p>
             </div>
             <div>
                 <p class="text-gray-400 text-xs uppercase">Keterangan</p>

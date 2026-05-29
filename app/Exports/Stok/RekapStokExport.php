@@ -27,7 +27,9 @@ class RekapStokExport implements FromCollection, WithHeadings, WithTitle, WithSt
             $r['masuk'],
             $r['out_gerobak'],
             $r['keluar_wilayah'],
-            $r['stok_akhir'],
+            $r['stok_freezer'],
+            $r['stok_gerobak'],
+            $r['stok_total'],
             $r['hpp_rata'],
             $r['nilai_stok'],
             ucfirst($r['status']),
@@ -41,7 +43,9 @@ class RekapStokExport implements FromCollection, WithHeadings, WithTitle, WithSt
             'Total Masuk (pcs)',
             'OUT Gerobak (pcs)',
             'Keluar Wilayah (pcs)',
-            'Stok Akhir (pcs)',
+            'Stok Freezer (pcs)',
+            'Stok Gerobak (pcs)',
+            'Total (pcs)',
             'HPP Rata-rata',
             'Nilai Stok',
             'Status',
@@ -57,6 +61,8 @@ class RekapStokExport implements FromCollection, WithHeadings, WithTitle, WithSt
             'E' => '#,##0',
             'F' => '#,##0',
             'G' => '#,##0',
+            'H' => '#,##0',
+            'I' => '#,##0',
         ];
     }
 

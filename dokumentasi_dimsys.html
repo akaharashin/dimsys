@@ -435,12 +435,14 @@ html { scroll-behavior: smooth; }
 <nav class="sidenav">
   <div class="sidenav-logo">
     <h1>DIMSYS</h1>
-    <p>Dokumentasi Pengguna v1.0</p>
+    <p>Dokumentasi Pengguna v1.1</p>
+    <p style="font-size:10px;color:#9ca3af;margin-top:1px">Update: 29 Mei 2026</p>
   </div>
 
   <div class="sidenav-section">Pendahuluan</div>
   <a href="#login"><span class="dot"></span> Akun Login</a>
   <a href="#mulai"><span class="dot"></span> Memulai</a>
+  <a href="#dashboard"><span class="dot"></span> Dashboard</a>
   <a href="#istilah"><span class="dot"></span> Kamus Istilah</a>
   <a href="#alur"><span class="dot"></span> Alur Harian</a>
   <a href="#akses"><span class="dot"></span> Hak Akses</a>
@@ -450,6 +452,8 @@ html { scroll-behavior: smooth; }
   <a href="#produk"><span class="dot"></span> Produk</a>
   <a href="#outlet"><span class="dot"></span> Outlet / Gerobak</a>
   <a href="#supplier"><span class="dot"></span> Supplier</a>
+  <a href="#user"><span class="dot"></span> User</a>
+  <a href="#rekening"><span class="dot"></span> Rekening</a>
 
   <div class="sidenav-section">Stok</div>
   <a href="#stok-masuk"><span class="dot"></span> Stok Masuk</a>
@@ -470,6 +474,9 @@ html { scroll-behavior: smooth; }
   <a href="#rata-out"><span class="dot"></span> Rata-rata OUT</a>
   <a href="#export-bulanan"><span class="dot"></span> Export Rekap Bulanan</a>
 
+  <div class="sidenav-section">Teknis</div>
+  <a href="#upload-media"><span class="dot"></span> Upload Media</a>
+
   <div class="sidenav-section">Admin</div>
   <a href="#activity-log"><span class="dot"></span> Activity Log</a>
   <a href="#faq"><span class="dot"></span> FAQ</a>
@@ -482,7 +489,7 @@ html { scroll-behavior: smooth; }
   <div class="doc-header">
     <h1>📋 Dokumentasi DIMSYS</h1>
     <p>Panduan lengkap penggunaan Sistem Manajemen Distribusi Dimsum IN untuk admin dan koordinator wilayah.</p>
-    <span class="badge">PT. Wijaya Kuliner Indonesia · Versi 1.0 · Mei 2026</span>
+    <span class="badge">PT. Wijaya Kuliner Indonesia · Versi 1.1 · Update 29 Mei 2026</span>
   </div>
 
   <!-- AKUN LOGIN -->
@@ -501,6 +508,14 @@ html { scroll-behavior: smooth; }
         <div class="note-body">
           <strong>Khusus untuk Trial / Testing</strong>
           Akun-akun di bawah adalah akun demo dengan data real Mei 2026 Sukabumi. Gunakan untuk memahami flow sistem sebelum go live.
+        </div>
+      </div>
+
+      <div class="note note-info" style="margin-bottom:12px">
+        <span class="note-icon">👤</span>
+        <div class="note-body">
+          <strong>Login pakai USERNAME (bukan email)</strong>
+          Field login di halaman masuk adalah <strong>username</strong>. Email hanya opsional di profil user dan tidak dipakai untuk autentikasi.
         </div>
       </div>
 
@@ -593,16 +608,23 @@ html { scroll-behavior: smooth; }
       </div>
     </div>
     <div class="toc">
-      <a href="#istilah" class="toc-item"><span class="toc-num">1</span> Kamus Istilah — Penjelasan istilah keuangan & operasional</a>
-      <a href="#alur" class="toc-item"><span class="toc-num">2</span> Alur Kerja Harian — Urutan input data setiap hari</a>
-      <a href="#akses" class="toc-item"><span class="toc-num">3</span> Hak Akses — Siapa bisa akses apa</a>
-      <a href="#stok-masuk" class="toc-item"><span class="toc-num">4</span> Stok Masuk — Input stok dari supplier</a>
-      <a href="#distribusi" class="toc-item"><span class="toc-num">5</span> Distribusi — OUT stok ke gerobak</a>
-      <a href="#laporan-harian" class="toc-item"><span class="toc-num">6</span> Laporan Harian — Input sisa & hitung omset otomatis</a>
-      <a href="#kas-harian" class="toc-item"><span class="toc-num">7</span> Kas Harian — Catat uang masuk & keluar</a>
-      <a href="#pindah-stok" class="toc-item"><span class="toc-num">8</span> Pindah Stok — Transfer antar wilayah</a>
-      <a href="#rekap-omset" class="toc-item"><span class="toc-num">9</span> Laporan & Export — Rekap bulanan & export Excel</a>
-      <a href="#faq" class="toc-item"><span class="toc-num">10</span> FAQ — Pertanyaan yang sering muncul</a>
+      <a href="#dashboard" class="toc-item"><span class="toc-num">1</span> Dashboard — Ringkasan harian & bulanan</a>
+      <a href="#istilah" class="toc-item"><span class="toc-num">2</span> Kamus Istilah — Penjelasan istilah keuangan & operasional</a>
+      <a href="#alur" class="toc-item"><span class="toc-num">3</span> Alur Kerja Harian — Urutan input data setiap hari</a>
+      <a href="#akses" class="toc-item"><span class="toc-num">4</span> Hak Akses — Siapa bisa akses apa</a>
+      <a href="#user" class="toc-item"><span class="toc-num">5</span> Master User — Kelola akun pengguna</a>
+      <a href="#rekening" class="toc-item"><span class="toc-num">6</span> Master Rekening — Kelola rekening kas/bank</a>
+      <a href="#stok-masuk" class="toc-item"><span class="toc-num">7</span> Stok Masuk — Input stok dari supplier</a>
+      <a href="#distribusi" class="toc-item"><span class="toc-num">8</span> Distribusi — OUT stok ke gerobak</a>
+      <a href="#stok-freezer" class="toc-item"><span class="toc-num">9</span> Stok Freezer — Freezer + Gerobak + Total</a>
+      <a href="#stok-opname" class="toc-item"><span class="toc-num">10</span> Stok Opname — Hitung fisik + koreksi otomatis</a>
+      <a href="#generate-stok" class="toc-item"><span class="toc-num">11</span> Generate Stok Awal — Awal bulan baru</a>
+      <a href="#laporan-harian" class="toc-item"><span class="toc-num">12</span> Laporan Harian — Input sisa & hitung omset otomatis</a>
+      <a href="#kas-harian" class="toc-item"><span class="toc-num">13</span> Kas Harian — Catat uang + mode Setoran Outlet</a>
+      <a href="#pindah-stok" class="toc-item"><span class="toc-num">14</span> Pindah Stok — Transfer antar wilayah</a>
+      <a href="#upload-media" class="toc-item"><span class="toc-num">15</span> Upload Media — Batas foto/video</a>
+      <a href="#rekap-omset" class="toc-item"><span class="toc-num">16</span> Laporan & Export — Rekap bulanan & export Excel</a>
+      <a href="#faq" class="toc-item"><span class="toc-num">17</span> FAQ — Pertanyaan yang sering muncul</a>
     </div>
 
     <div style="padding: 0 24px 24px">
@@ -611,6 +633,58 @@ html { scroll-behavior: smooth; }
         <div class="note-body">
           <strong>Tips Membaca</strong>
           Gunakan sidebar kiri untuk navigasi cepat. Setiap bagian bisa dibaca mandiri — tidak harus urut. Kalau kamu sudah paham flow bisnis DimsumIN, langsung lompat ke bagian yang relevan.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div class="section" id="dashboard">
+    <div class="section-header">
+      <div class="section-icon" style="background:#FDF2F2">📊</div>
+      <div>
+        <h2>Dashboard</h2>
+        <p>Menu Utama — halaman pertama saat login</p>
+      </div>
+    </div>
+    <div class="section-body">
+      <p style="margin-bottom:16px;color:#374151">Ringkasan harian & bulanan: omset, laba, total setor, distribusi OUT, outlet aktif, dan tren bulan berjalan. Data refresh real-time setiap halaman dibuka.</p>
+
+      <table class="doc-table">
+        <tr><th>Card</th><th>Isi</th></tr>
+        <tr><td>Omset Hari Ini</td><td>Total penjualan semua outlet hari ini</td></tr>
+        <tr><td>Laba Hari Ini</td><td>Omset − Modal − Komisi (hari ini)</td></tr>
+        <tr><td>Total Setor</td><td>Total uang setoran ke pusat hari ini</td></tr>
+        <tr><td>Total OUT</td><td>Total distribusi (pcs) hari ini</td></tr>
+        <tr><td>Outlet Lapor</td><td>Berapa outlet sudah input laporan harian / total outlet aktif</td></tr>
+        <tr><td>Tren Bulan Ini</td><td>Grafik batang omset harian sepanjang bulan berjalan</td></tr>
+        <tr><td>Laporan Terbaru</td><td>10 laporan harian terakhir (Tanggal, Outlet, Terjual, Omset, Laba, Setor)</td></tr>
+      </table>
+
+      <div class="note note-info" style="margin-top:16px">
+        <span class="note-icon">👁️</span>
+        <div class="note-body">
+          <strong>Tampilan Berbeda per Role</strong>
+          <ul style="margin-top:4px;padding-left:16px;font-size:13px">
+            <li><strong>Owner & Admin Pusat:</strong> melihat data semua wilayah</li>
+            <li><strong>Koordinator:</strong> hanya melihat data wilayahnya sendiri (kartu Wilayah di header pun otomatis terkunci ke wilayah masing-masing)</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="note note-info" style="margin-top:8px">
+        <span class="note-icon">🏪</span>
+        <div class="note-body">
+          <strong>Definisi Outlet Aktif</strong>
+          Outlet aktif = outlet yang punya distribusi dalam <strong>30 hari terakhir</strong>. Outlet yang sudah lama tidak dapat distribusi tidak ikut dihitung sebagai denominator "outlet lapor hari ini".
+        </div>
+      </div>
+
+      <div class="note note-warning" style="margin-top:8px">
+        <span class="note-icon">📦</span>
+        <div class="note-body">
+          <strong>Notifikasi Pindah Stok Menunggu</strong>
+          Jika ada pindah stok yang masuk ke wilayah kamu dan masih berstatus menunggu, akan muncul banner kuning di atas dashboard — klik untuk langsung ke daftar yang perlu di-approve.
         </div>
       </div>
     </div>
@@ -779,6 +853,93 @@ html { scroll-behavior: smooth; }
     </div>
   </div>
 
+  <!-- MASTER USER -->
+  <div class="section" id="user">
+    <div class="section-header">
+      <div class="section-icon" style="background:#FDF2F2">👥</div>
+      <div>
+        <h2>Master User</h2>
+        <p>Menu Master → User · hanya Admin Pusat</p>
+      </div>
+    </div>
+    <div class="section-body">
+      <p style="margin-bottom:16px;color:#374151">Kelola akun pengguna sistem: tambah user baru, edit profil, reset password, dan aktif/non-aktifkan akun.</p>
+
+      <table class="doc-table">
+        <tr><th>Field</th><th>Wajib</th><th>Keterangan</th></tr>
+        <tr><td>Nama</td><td><span class="badge badge-red">Ya</span></td><td>Nama lengkap user</td></tr>
+        <tr><td>Username</td><td><span class="badge badge-red">Ya</span></td><td>Dipakai untuk login (huruf kecil, tanpa spasi). Harus unik.</td></tr>
+        <tr><td>Email</td><td><span class="badge badge-gray">Tidak</span></td><td>Opsional, untuk notifikasi/koordinasi</td></tr>
+        <tr><td>No HP</td><td><span class="badge badge-gray">Tidak</span></td><td>Dianjurkan terutama untuk Koordinator</td></tr>
+        <tr><td>Role</td><td><span class="badge badge-red">Ya</span></td><td>Owner / Admin Pusat / Koordinator</td></tr>
+        <tr><td>Wilayah</td><td><span class="badge badge-red">Ya*</span></td><td>*Wajib untuk Koordinator. Owner/Admin Pusat boleh kosong (default Sukabumi).</td></tr>
+      </table>
+
+      <div class="steps" style="margin-top:20px">
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-content">
+            <h4>Tambah User Baru</h4>
+            <p>Klik "+ Tambah User", isi field di atas, klik Simpan. Password awal dibuat acak — gunakan tombol Reset Password untuk set ulang.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-content">
+            <h4>Reset Password</h4>
+            <p>Klik ikon kunci di baris user → masukkan password baru → konfirmasi. User akan pakai password baru di login berikutnya.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-content">
+            <h4>Non-aktifkan User</h4>
+            <p>Set field <strong>Aktif: Tidak</strong> di edit user. User non-aktif tidak bisa login, tapi data historis (laporan, distribusi, dll) yang dia buat tetap utuh.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="note note-danger" style="margin-top:16px">
+        <span class="note-icon">🛡️</span>
+        <div class="note-body">
+          <strong>Proteksi Akun Penting</strong>
+          Sistem menolak menonaktifkan <strong>Owner terakhir</strong> dan <strong>Admin Pusat terakhir</strong> — minimal 1 akun masing-masing role wajib aktif agar sistem tetap bisa dikelola.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MASTER REKENING -->
+  <div class="section" id="rekening">
+    <div class="section-header">
+      <div class="section-icon" style="background:#eff6ff">🏦</div>
+      <div>
+        <h2>Master Rekening</h2>
+        <p>Menu Master → Rekening · hanya Admin Pusat</p>
+      </div>
+    </div>
+    <div class="section-body">
+      <p style="margin-bottom:16px;color:#374151">Kelola rekening kas & bank yang dipakai untuk pencatatan Kas Harian. Setiap transaksi Kas Harian dicatat ke rekening tertentu, dan saldo berjalan dihitung otomatis.</p>
+
+      <table class="doc-table">
+        <tr><th>Field</th><th>Keterangan</th></tr>
+        <tr><td>Nama Rekening</td><td>Contoh: "Kas Tunai Pusat", "BCA Operasional", "BRI Cianjur"</td></tr>
+        <tr><td>Tipe</td><td>Kas (tunai) atau Bank</td></tr>
+        <tr><td>Wilayah</td><td>Opsional. Rekening per wilayah hanya muncul untuk koordinator wilayah tersebut.</td></tr>
+        <tr><td>Saldo Awal</td><td><strong>Penting:</strong> titik mulai perhitungan saldo. Setelah ini diset, semua transaksi Kas Harian menambah/mengurangi dari nilai ini.</td></tr>
+        <tr><td>Aktif</td><td>Ya/Tidak. Rekening tidak aktif tidak muncul di dropdown pilihan saat input kas.</td></tr>
+      </table>
+
+      <div class="note note-warning" style="margin-top:16px">
+        <span class="note-icon">⚠️</span>
+        <div class="note-body">
+          <strong>Saldo Awal Sebaiknya Diset Sekali di Awal</strong>
+          Saldo awal adalah baseline perhitungan running saldo Kas Harian. Hindari mengubah saldo awal setelah ada banyak transaksi — karena akan menggeser semua saldo berjalan ke depannya.
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- STOK MASUK -->
   <div class="section" id="stok-masuk">
     <div class="section-header">
@@ -908,20 +1069,43 @@ html { scroll-behavior: smooth; }
       </div>
     </div>
     <div class="section-body">
-      <p style="margin-bottom:16px;color:#374151">Menampilkan kondisi stok freezer saat ini secara real-time. Tidak ada input manual di sini — semua dihitung otomatis dari semua transaksi.</p>
+      <p style="margin-bottom:16px;color:#374151">Menampilkan kondisi stok perusahaan saat ini secara real-time. Tidak ada input manual di sini — semua dihitung otomatis dari semua transaksi.</p>
 
       <table class="doc-table">
-        <tr><th>Status</th><th>Arti</th><th>Tindakan</th></tr>
-        <tr><td><span class="badge badge-green">Aman</span></td><td>Stok cukup untuk operasional</td><td>Tidak perlu tindakan</td></tr>
-        <tr><td><span class="badge badge-yellow">Menipis</span></td><td>Stok mulai berkurang, perlu diperhatikan</td><td>Segera order ke supplier</td></tr>
-        <tr><td><span class="badge badge-red">Habis</span></td><td>Stok 0 atau minus</td><td>Stop distribusi, cek data transaksi</td></tr>
+        <tr><th>Kolom</th><th>Arti</th></tr>
+        <tr><td><span class="badge badge-blue">Stok Freezer</span></td><td>Stok yang masih di freezer wilayah (belum didistribusikan ke gerobak)</td></tr>
+        <tr><td><span class="badge badge-yellow">Stok Gerobak</span></td><td>Sisa belum terjual di semua gerobak wilayah (akumulasi distribusi − terjual)</td></tr>
+        <tr><td><span class="badge badge-red">Total Perusahaan</span></td><td>Freezer + Gerobak — total fisik stok yang masih milik perusahaan</td></tr>
       </table>
 
+      <div class="formula" style="background:#eff6ff;border-color:#bfdbfe;color:#1e40af;margin-top:16px">
+        <span class="f-label" style="color:#2563eb">📦 Formula Stok Freezer (sejak stok awal bulan terakhir)</span>
+        STOK FREEZER = Stok Masuk (awal + masuk + koreksi) − Distribusi OUT − Pindah Stok (disetujui)<br>
+        STOK GEROBAK = Total Distribusi OUT − Total Terjual (running balance, kumulatif)<br>
+        TOTAL        = Freezer + Gerobak
+      </div>
+
       <div class="note note-info" style="margin-top:16px">
+        <span class="note-icon">💡</span>
+        <div class="note-body">
+          <strong>Beda Stok Freezer vs Rekap Stok (Laporan)</strong>
+          Menu <strong>Stok Freezer</strong> menampilkan posisi <strong>SAAT INI</strong> kumulatif (real-time). Menu <strong>Laporan → Rekap Stok</strong> menampilkan mutasi <strong>PER BULAN</strong> yang dipilih (snapshot historis).
+        </div>
+      </div>
+
+      <div class="note note-warning" style="margin-top:8px">
+        <span class="note-icon">📋</span>
+        <div class="note-body">
+          <strong>Status: Aman / Menipis / Habis</strong>
+          Status dihitung dari <strong>Total Perusahaan</strong> (bukan freezer saja). Habis: ≤ 0 · Menipis: ≤ 50 · Aman: &gt; 50 pcs.
+        </div>
+      </div>
+
+      <div class="note note-info" style="margin-top:8px">
         <span class="note-icon">ℹ️</span>
         <div class="note-body">
           <strong>Kenapa stok bisa minus?</strong>
-          Stok minus terjadi kalau ada distribusi yang dicatat tanpa stok masuk yang cukup, atau ada data yang belum diinput. Cek dulu stok masuk bulan ini sebelum panik.
+          Stok minus terjadi kalau ada distribusi yang dicatat tanpa stok masuk yang cukup, atau ada data yang belum diinput. Cek dulu stok masuk dan laporan harian sebelum panik.
         </div>
       </div>
     </div>
@@ -937,43 +1121,96 @@ html { scroll-behavior: smooth; }
       </div>
     </div>
     <div class="section-body">
-      <p style="margin-bottom:16px;color:#374151">Pengecekan fisik stok freezer. Sistem menampilkan stok menurut database, admin isi stok fisik hasil hitung langsung di freezer.</p>
+      <p style="margin-bottom:16px;color:#374151">Pengecekan fisik stok. Sistem menampilkan <strong>Stok Sistem = Freezer + Sisa Gerobak</strong>. Saat opname, hitung TOTAL fisik yang masih milik perusahaan — termasuk sisa belum terjual di setiap gerobak.</p>
 
-      <div class="steps">
+      <div class="note note-success" style="margin-bottom:16px">
+        <span class="note-icon">📐</span>
+        <div class="note-body">
+          <strong>Konsep Penting: Sisa Gerobak Masih Milik Perusahaan</strong>
+          Saat opname fisik, yang dihitung = stok di <strong>freezer</strong> DAN <strong>sisa di semua gerobak</strong>. Belum terjual = belum jadi omset = stok masih milik perusahaan. Form STO menampilkan 3 kolom: <strong>Stok Freezer</strong>, <strong>Stok Gerobak</strong>, dan <strong>Stok Sistem (Total)</strong>.
+        </div>
+      </div>
+
+      <div class="formula" style="background:#fffbeb;border-color:#fde68a;color:#92400e">
+        <span class="f-label" style="color:#b45309">🔍 Formula Stok Sistem STO</span>
+        STOK SISTEM = Stok Freezer + Stok Gerobak<br>
+        SELISIH    = Stok Fisik − Stok Sistem
+      </div>
+
+      <div class="steps" style="margin-top:20px">
         <div class="step">
           <div class="step-num"></div>
           <div class="step-content">
-            <h4>Hitung stok fisik di freezer</h4>
-            <p>Hitung fisik semua produk di freezer sebelum buka aplikasi.</p>
+            <h4>Hitung stok fisik (freezer + semua gerobak)</h4>
+            <p>Hitung fisik semua produk di freezer dan di setiap gerobak. Total fisik = freezer + sisa gerobak.</p>
           </div>
         </div>
         <div class="step">
           <div class="step-num"></div>
           <div class="step-content">
             <h4>Klik "+ Tambah Opname", pilih wilayah & tanggal</h4>
-            <p>Sistem otomatis tampilkan stok sistem per produk.</p>
+            <p>Sistem otomatis tampilkan breakdown 3 kolom: Freezer, Gerobak, dan Stok Sistem (Total).</p>
           </div>
         </div>
         <div class="step">
           <div class="step-num"></div>
           <div class="step-content">
-            <h4>Isi kolom "Stok Fisik" sesuai hasil hitung</h4>
-            <p>Selisih (lebih/kurang/sesuai) dihitung otomatis.</p>
+            <h4>Isi kolom "Stok Fisik" sesuai total hasil hitung</h4>
+            <p>Selisih = Fisik − Stok Sistem dihitung otomatis. Selisih nilai (Rp) juga otomatis pakai HPP snapshot saat itu.</p>
           </div>
         </div>
         <div class="step">
           <div class="step-num"></div>
           <div class="step-content">
-            <h4>Upload foto bukti (opsional tapi dianjurkan)</h4>
-            <p>Upload Foto Real kondisi freezer dan/atau Berita Acara opname.</p>
+            <h4>Upload bukti media (WAJIB minimal 1)</h4>
+            <p>Wajib upload minimal 1 file — foto atau video — sebelum bisa Simpan. Lihat detail batas di bagian Upload Media.</p>
           </div>
         </div>
         <div class="step">
           <div class="step-num"></div>
           <div class="step-content">
-            <h4>Simpan</h4>
-            <p>STO tersimpan dan bisa dilihat laporannya kapan saja.</p>
+            <h4>Simpan STO</h4>
+            <p>STO tersimpan dengan status <strong>Final</strong>. Bisa lihat detail, tambah media menyusul, atau terapkan koreksi.</p>
           </div>
+        </div>
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-content">
+            <h4>Terapkan Koreksi ke Sistem (opsional)</h4>
+            <p>Di halaman detail STO, klik <strong>"Terapkan Koreksi ke Sistem"</strong>. Sistem akan membuat record koreksi otomatis yang menyesuaikan stok freezer dengan hasil fisik. Setelah dikoreksi: <strong>Stok Sistem = Stok Fisik</strong>.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="note note-warning" style="margin-top:16px">
+        <span class="note-icon">🚫</span>
+        <div class="note-body">
+          <strong>Tidak Boleh STO Ganda Setelah Dikoreksi</strong>
+          Jika sudah ada STO untuk wilayah + tanggal yang sama dan koreksinya <strong>SUDAH DITERAPKAN</strong>, sistem akan tolak STO baru. Kalau perlu opname ulang: batalkan STO lama dulu, koreksi otomatis rollback.
+        </div>
+      </div>
+
+      <div class="note note-info" style="margin-top:8px">
+        <span class="note-icon">⚠️</span>
+        <div class="note-body">
+          <strong>Peringatan untuk STO Ganda Belum Dikoreksi</strong>
+          Jika sudah ada STO untuk wilayah + tanggal sama tapi BELUM dikoreksi, kamu masih bisa membuat STO baru — tapi sistem akan minta konfirmasi via dialog. Pastikan tidak duplikasi.
+        </div>
+      </div>
+
+      <div class="note note-success" style="margin-top:8px">
+        <span class="note-icon">↩️</span>
+        <div class="note-body">
+          <strong>Batalkan STO = Rollback Koreksi</strong>
+          Tombol <strong>Batalkan</strong> di halaman detail STO menghapus STO + koreksi terkait (kalau sudah diterapkan). Stok freezer otomatis kembali ke kondisi sebelum koreksi. Aman dipakai kalau perlu opname ulang.
+        </div>
+      </div>
+
+      <div class="note note-info" style="margin-top:8px">
+        <span class="note-icon">📷</span>
+        <div class="note-body">
+          <strong>Tambah Media Menyusul dari Halaman Detail</strong>
+          Setelah STO tersimpan, di halaman detail ada section <strong>"Tambah Media"</strong> — bisa upload foto/video tambahan kapan saja selama belum mencapai batas (5 foto per koleksi, 3 video). Berguna untuk melengkapi bukti yang lupa diupload saat simpan awal.
         </div>
       </div>
     </div>
@@ -989,37 +1226,59 @@ html { scroll-behavior: smooth; }
       </div>
     </div>
     <div class="section-body">
-      <p style="margin-bottom:16px;color:#374151">Fitur otomatis untuk membuat stok awal bulan baru dari stok akhir bulan sebelumnya. Dilakukan sekali di awal bulan.</p>
+      <p style="margin-bottom:16px;color:#374151">Fitur otomatis untuk membuat stok awal bulan baru dari stok akhir bulan sebelumnya. Dilakukan sekali di awal bulan oleh Admin Pusat (atau koordinator wilayah masing-masing).</p>
 
       <div class="steps">
         <div class="step">
           <div class="step-num"></div>
           <div class="step-content">
             <h4>Pilih Wilayah dan Bulan Sumber</h4>
-            <p>Contoh: pilih Sukabumi, bulan Mei 2026 → akan generate stok awal Juni 2026.</p>
+            <p>Contoh: pilih Sukabumi, bulan Mei 2026 → akan generate stok awal 1 Juni 2026.</p>
           </div>
         </div>
         <div class="step">
           <div class="step-num"></div>
           <div class="step-content">
-            <h4>Klik "Preview" untuk lihat hasilnya dulu</h4>
-            <p>Sistem tampilkan tabel: Produk | Stok Akhir Mei | Akan jadi Stok Awal Juni.</p>
+            <h4>Klik "Preview Stok" untuk lihat breakdown</h4>
+            <p>Preview tampilkan tabel dengan 10 kolom — yang penting: <strong>Freezer</strong> (akhir bulan sumber), <strong>Gerobak</strong> (sisa kumulatif), <strong>Total</strong>, dan <strong>→ Stok Awal</strong> bulan baru. Koreksi STO bulan sumber juga ikut diperhitungkan.</p>
           </div>
         </div>
         <div class="step">
           <div class="step-num"></div>
           <div class="step-content">
             <h4>Konfirmasi Generate</h4>
-            <p>Klik "Generate Stok Awal" — sistem buat otomatis. Tidak bisa di-generate ulang kalau sudah ada.</p>
+            <p>Klik "Generate Stok Awal" — sistem membuat record stok awal otomatis untuk wilayah & bulan tujuan. Tidak bisa di-generate ulang kalau sudah ada.</p>
           </div>
         </div>
       </div>
 
-      <div class="note note-danger">
+      <div class="note note-info" style="margin-top:16px">
+        <span class="note-icon">📐</span>
+        <div class="note-body">
+          <strong>Yang Di-generate: Freezer Saja, Bukan Total</strong>
+          Stok awal bulan baru = <strong>komponen Freezer akhir bulan sumber</strong>. Komponen <strong>Gerobak</strong> TIDAK digenerate ulang — sisa belum terjual di gerobak otomatis terbawa ke bulan baru sebagai running balance.
+        </div>
+      </div>
+
+      <div class="formula" style="background:#eff6ff;border-color:#bfdbfe;color:#1e40af;margin-top:8px">
+        <span class="f-label" style="color:#2563eb">📦 Formula Stok Akhir Bulan Sumber (yang jadi stok awal bulan baru)</span>
+        STOK FREEZER AKHIR = Stok Awal Bulan Sumber + Stok Masuk + Koreksi STO − Distribusi OUT − Pindah Stok (disetujui)<br>
+        STOK AWAL BULAN BARU = Stok Freezer Akhir
+      </div>
+
+      <div class="note note-warning" style="margin-top:16px">
+        <span class="note-icon">📅</span>
+        <div class="note-body">
+          <strong>Hanya Bisa Generate Mulai Tanggal 25 Bulan Berjalan</strong>
+          Sistem akan tolak generate stok awal bulan depan kalau sekarang masih sebelum tanggal 25. Tujuannya: pastikan transaksi bulan ini sudah hampir lengkap sebelum dikunci jadi stok awal.
+        </div>
+      </div>
+
+      <div class="note note-danger" style="margin-top:8px">
         <span class="note-icon">🚫</span>
         <div class="note-body">
-          <strong>Hanya bisa di-generate sekali per wilayah per bulan</strong>
-          Sistem akan tolak jika stok awal untuk bulan dan wilayah tersebut sudah ada. Kalau perlu koreksi, hubungi Admin Pusat.
+          <strong>Hanya Bisa Di-generate Sekali per Wilayah per Bulan</strong>
+          Sistem tolak jika stok awal untuk bulan dan wilayah tersebut sudah ada. Kalau perlu koreksi setelah generate, lakukan via Stok Opname.
         </div>
       </div>
     </div>
@@ -1037,26 +1296,34 @@ html { scroll-behavior: smooth; }
     <div class="section-body">
       <p style="margin-bottom:16px;color:#374151">Fitur utama untuk input laporan malam hari. Koordinator isi sisa stok yang tidak terjual — sistem otomatis hitung omset, komisi, laba, dan total setor.</p>
 
+      <div class="note note-info" style="margin-bottom:16px">
+        <span class="note-icon">🛒</span>
+        <div class="note-body">
+          <strong>Bisa Input Walau Tidak Ada Distribusi Hari Ini</strong>
+          Laporan harian bisa diisi jika outlet punya <strong>distribusi hari ini</strong> ATAU ada <strong>sisa dari laporan kemarin</strong> (stok masih di gerobak). Sisa kemarin TIDAK kembali ke freezer — tetap di gerobak untuk dijual hari ini.
+        </div>
+      </div>
+
       <div class="steps">
         <div class="step">
           <div class="step-num"></div>
           <div class="step-content">
             <h4>Klik "+ Input Laporan"</h4>
-            <p>Pastikan distribusi untuk outlet dan tanggal ini sudah diinput terlebih dahulu.</p>
+            <p>Outlet bisa dipilih jika ada distribusi hari ini atau sisa dari laporan kemarin.</p>
           </div>
         </div>
         <div class="step">
           <div class="step-num"></div>
           <div class="step-content">
             <h4>Pilih Outlet dan Tanggal</h4>
-            <p>Setelah dipilih, daftar produk yang didistribusikan muncul otomatis beserta jumlah OUT-nya.</p>
+            <p>Setelah dipilih, daftar produk muncul otomatis dengan: <strong>Sisa Kemarin</strong> + <strong>OUT Hari Ini</strong> = <strong>Total Tersedia</strong>.</p>
           </div>
         </div>
         <div class="step">
           <div class="step-num"></div>
           <div class="step-content">
             <h4>Isi kolom "Sisa" untuk setiap produk</h4>
-            <p>Isi berapa pcs yang tidak terjual (dikembalikan ke freezer). Sisa tidak boleh lebih dari jumlah OUT.</p>
+            <p>Isi berapa pcs yang tidak terjual (masih di gerobak). Sisa tidak boleh lebih dari Total Tersedia. Sisa ini akan otomatis jadi "sisa kemarin" di laporan besok.</p>
           </div>
         </div>
         <div class="step">
@@ -1102,7 +1369,7 @@ html { scroll-behavior: smooth; }
       </div>
     </div>
     <div class="section-body">
-      <p style="margin-bottom:16px;color:#374151">Buku kas digital untuk mencatat semua uang masuk dan keluar. Running saldo dihitung otomatis per transaksi.</p>
+      <p style="margin-bottom:16px;color:#374151">Buku kas digital untuk mencatat semua uang masuk dan keluar per rekening. Running saldo dihitung otomatis (mulai dari Saldo Awal rekening).</p>
 
       <table class="doc-table">
         <tr><th>Tipe</th><th>Contoh</th></tr>
@@ -1110,10 +1377,49 @@ html { scroll-behavior: smooth; }
         <tr><td><span class="badge badge-red">Kredit (Keluar)</span></td><td>Bayar supplier, operasional, gaji, biaya pengiriman</td></tr>
       </table>
 
-      <div class="note note-warning" style="margin-top:16px">
+      <h4 style="margin:24px 0 10px;font-size:14px;color:var(--red)">Mode Input</h4>
+      <p style="margin-bottom:12px;color:#374151">Form input kas punya 2 tab di bagian atas:</p>
+
+      <table class="doc-table">
+        <tr><th>Tab</th><th>Kapan Dipakai</th></tr>
+        <tr>
+          <td><span class="badge badge-gray">Kas Manual</span></td>
+          <td>Input transaksi bebas (debit/kredit) — pengeluaran operasional, transfer, dll. Pilih kategori dari dropdown.</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-red">Setoran dari Outlet</span></td>
+          <td>Auto-tarik total setor dari Laporan Harian. Cukup pilih outlet + tanggal, sistem ambil angka setor otomatis. Bisa tambah baris pengeluaran operasional agen yang mengurangi setor (token listrik, mess, dll).</td>
+        </tr>
+      </table>
+
+      <div class="note note-success" style="margin-top:16px">
+        <span class="note-icon">⚡</span>
+        <div class="note-body">
+          <strong>Tab "Setoran dari Outlet" Hemat Waktu</strong>
+          Tidak perlu hitung manual lagi. Pilih outlet → pilih tanggal → angka setor langsung muncul dari Laporan Harian. Tambah baris pengeluaran operasional agen (mis. "Token Listrik Rp 50.000") di bawah, sistem hitung Setor Bersih real-time.
+        </div>
+      </div>
+
+      <div class="note note-danger" style="margin-top:8px">
+        <span class="note-icon">🛡️</span>
+        <div class="note-body">
+          <strong>Proteksi Double-Setoran Outlet</strong>
+          Sistem MENOLAK input setoran outlet kalau setoran untuk <strong>outlet + tanggal yang sama sudah ada</strong> di kas. Warning merah otomatis muncul di form. Kalau perlu input ulang, batalkan dulu setoran lama.
+        </div>
+      </div>
+
+      <div class="note note-info" style="margin-top:8px">
+        <span class="note-icon">🏷️</span>
+        <div class="note-body">
+          <strong>Sub Kategori: Agen / Mitra / Umum</strong>
+          Field <strong>Sub Kategori</strong> di Kas Manual berbentuk <em>combobox</em> — bisa pilih opsi cepat <strong>Agen / Mitra / Umum</strong> atau ketik manual sub-kategori lain. Berguna untuk filter laporan kas.
+        </div>
+      </div>
+
+      <div class="note note-warning" style="margin-top:8px">
         <span class="note-icon">⚠️</span>
         <div class="note-body">
-          <strong>Saldo Kas Harian tidak di-sort ulang</strong>
+          <strong>Saldo Kas Harian Tidak Di-sort Ulang</strong>
           Berbeda dengan menu lain, Kas Harian tidak bisa di-sort karena running saldo harus dihitung urut dari awal. Gunakan filter tanggal untuk melihat periode tertentu.
         </div>
       </div>
@@ -1170,12 +1476,80 @@ html { scroll-behavior: smooth; }
       <div class="note note-info" style="margin-top:8px">
         <span class="note-icon">📷</span>
         <div class="note-body">
-          <strong>Tipe Foto yang Bisa Diupload</strong>
+          <strong>Tipe Bukti yang Bisa Diupload</strong>
           <ul style="margin-top:4px;padding-left:16px;font-size:13px">
-            <li>Foto Real — foto kondisi stok yang diterima</li>
-            <li>Berita Acara — dokumen berita acara tertulis</li>
-            <li>Video — rekaman singkat (max 3 video)</li>
+            <li><strong>Foto Real</strong> — foto kondisi stok yang diterima</li>
+            <li><strong>Berita Acara</strong> — dokumen berita acara tertulis</li>
+            <li><strong>Video</strong> — rekaman singkat (lihat batas detail di bagian Upload Media)</li>
           </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- UPLOAD MEDIA -->
+  <div class="section" id="upload-media">
+    <div class="section-header">
+      <div class="section-icon" style="background:#faf5ff">📸</div>
+      <div>
+        <h2>Upload Media (Foto & Video)</h2>
+        <p>Catatan teknis untuk Stok Opname & Pindah Stok</p>
+      </div>
+    </div>
+    <div class="section-body">
+      <p style="margin-bottom:16px;color:#374151">Sistem mendukung upload foto dan video sebagai bukti. Berlaku di <strong>Stok Opname</strong> (form create & detail) dan <strong>Pindah Stok</strong> (halaman detail).</p>
+
+      <table class="doc-table">
+        <tr><th>Tipe</th><th>Format</th><th>Batas Ukuran</th><th>Batas Jumlah</th></tr>
+        <tr>
+          <td><span class="badge" style="background:#FDF2F2;color:#A51616">Foto Real</span></td>
+          <td>JPG / PNG / WebP</td>
+          <td>10 MB per foto</td>
+          <td>Maks 5 per transaksi</td>
+        </tr>
+        <tr>
+          <td><span class="badge" style="background:#FDF2F2;color:#A51616">Berita Acara</span></td>
+          <td>JPG / PNG / WebP</td>
+          <td>10 MB per foto</td>
+          <td>Maks 5 per transaksi</td>
+        </tr>
+        <tr>
+          <td><span class="badge" style="background:#fffbeb;color:#92400e">Video</span></td>
+          <td>MP4 / MOV / AVI / WebM</td>
+          <td><strong>100 MB per video</strong></td>
+          <td>Maks 3 per transaksi</td>
+        </tr>
+      </table>
+
+      <div class="note note-info" style="margin-top:16px">
+        <span class="note-icon">💡</span>
+        <div class="note-body">
+          <strong>Saran Video: Klip Pendek 30-60 Detik</strong>
+          Gunakan klip pendek (cukup 30-60 detik). Video panjang bisa lambat diupload — terutama dari koneksi seluler.
+        </div>
+      </div>
+
+      <div class="note note-warning" style="margin-top:8px">
+        <span class="note-icon">⚠️</span>
+        <div class="note-body">
+          <strong>Sistem Cek Ukuran Sebelum Upload</strong>
+          Kalau pilih video &gt; 100 MB, sistem langsung tolak di browser (sebelum kirim ke server) — hemat kuota dan waktu. Pesan akan menyebut nama file dan ukurannya.
+        </div>
+      </div>
+
+      <div class="note note-success" style="margin-top:8px">
+        <span class="note-icon">📊</span>
+        <div class="note-body">
+          <strong>Progress Bar Real-time</strong>
+          Saat upload, muncul overlay loading dengan progress bar persen per file. Untuk video besar, status menampilkan "Menyimpan media ke server..." setelah transfer 100%. <strong>Jangan tutup atau refresh halaman</strong> sampai proses selesai.
+        </div>
+      </div>
+
+      <div class="note note-info" style="margin-top:8px">
+        <span class="note-icon">↩️</span>
+        <div class="note-body">
+          <strong>Otomatis Batalkan STO Jika SEMUA Media Gagal</strong>
+          Khusus form Stok Opname: kalau semua upload media gagal (mis. koneksi putus), sistem otomatis membatalkan STO yang baru dibuat — tidak ada STO "yatim" tanpa bukti. Sebagian sukses = STO tetap tersimpan, sisa media bisa diupload susulan dari halaman detail.
         </div>
       </div>
     </div>
@@ -1334,9 +1708,39 @@ html { scroll-behavior: smooth; }
         <p style="font-size:13.5px;color:#374151">Gunakan menu Stok → Generate Stok Awal. Pilih wilayah dan bulan sebelumnya sebagai sumber, sistem otomatis buat stok awal bulan baru dari stok akhir bulan sebelumnya.</p>
       </div>
 
-      <div style="margin-bottom:0">
+      <div style="margin-bottom:16px">
         <h4 style="font-size:14px;color:var(--red);margin-bottom:6px">❓ Data berubah tapi saya tidak mengubahnya</h4>
         <p style="font-size:13.5px;color:#374151">Cek menu Admin → Activity Log. Semua perubahan data tercatat lengkap dengan user yang melakukan, waktu, dan data sebelum/sesudah perubahan.</p>
+      </div>
+
+      <div style="margin-bottom:16px">
+        <h4 style="font-size:14px;color:var(--red);margin-bottom:6px">❓ Login pakai apa — username atau email?</h4>
+        <p style="font-size:13.5px;color:#374151">Pakai <strong>username</strong>. Email hanya opsional di profil dan tidak dipakai untuk login. Kalau lupa password, hubungi Admin Pusat untuk reset.</p>
+      </div>
+
+      <div style="margin-bottom:16px">
+        <h4 style="font-size:14px;color:var(--red);margin-bottom:6px">❓ Saat STO, kenapa Stok Sistem lebih besar dari isi freezer?</h4>
+        <p style="font-size:13.5px;color:#374151">Karena Stok Sistem = <strong>Freezer + Sisa Gerobak</strong>. Sisa di gerobak yang belum terjual juga masih milik perusahaan. Saat opname fisik, hitung total — freezer DAN sisa di setiap gerobak.</p>
+      </div>
+
+      <div style="margin-bottom:16px">
+        <h4 style="font-size:14px;color:var(--red);margin-bottom:6px">❓ Video saya gagal diupload — kenapa?</h4>
+        <p style="font-size:13.5px;color:#374151">Cek ukuran: maksimal <strong>100 MB</strong>. Format yang didukung: MP4, MOV, AVI, WebM. Saran gunakan klip pendek 30-60 detik. Sistem akan tampilkan pesan spesifik (nama file + alasan) jika gagal.</p>
+      </div>
+
+      <div style="margin-bottom:16px">
+        <h4 style="font-size:14px;color:var(--red);margin-bottom:6px">❓ STO yang sudah dikoreksi mau diulang, bisa?</h4>
+        <p style="font-size:13.5px;color:#374151">Tidak bisa langsung — sistem tolak STO baru di wilayah+tanggal sama yang sudah dikoreksi. <strong>Batalkan</strong> STO lama dulu (koreksi otomatis rollback), baru buat STO baru.</p>
+      </div>
+
+      <div style="margin-bottom:16px">
+        <h4 style="font-size:14px;color:var(--red);margin-bottom:6px">❓ Setoran outlet sudah pernah dicatat tapi muncul lagi di form, kenapa?</h4>
+        <p style="font-size:13.5px;color:#374151">Sistem akan otomatis tampilkan warning merah dan disable tombol Simpan kalau setoran untuk outlet+tanggal yang sama sudah ada. Cek kas dulu sebelum input ulang — kemungkinan sudah pernah dicatat oleh user lain.</p>
+      </div>
+
+      <div style="margin-bottom:0">
+        <h4 style="font-size:14px;color:var(--red);margin-bottom:6px">❓ Bisa input laporan harian kalau tidak ada distribusi hari ini?</h4>
+        <p style="font-size:13.5px;color:#374151">Bisa, asalkan outlet masih punya <strong>sisa kemarin</strong> (stok masih di gerobak). Form akan menampilkan: Sisa Kemarin + OUT Hari Ini = Total Tersedia.</p>
       </div>
 
     </div>
@@ -1359,7 +1763,7 @@ html { scroll-behavior: smooth; }
         <div class="quick-ref-value">Omset − Komisi − Pengeluaran</div>
       </div>
       <div class="quick-ref-item">
-        <div class="quick-ref-label">Awal Bulan</div>
+        <div class="quick-ref-label">Awal Bulan (mulai tgl 25)</div>
         <div class="quick-ref-value">Generate Stok Awal dari stok akhir bulan lalu</div>
       </div>
       <div class="quick-ref-item">
@@ -1370,11 +1774,23 @@ html { scroll-behavior: smooth; }
         <div class="quick-ref-label">Export Bulanan</div>
         <div class="quick-ref-value">Laporan → Rekap Omset → Export Rekap Bulanan</div>
       </div>
+      <div class="quick-ref-item">
+        <div class="quick-ref-label">Stok Sistem (STO)</div>
+        <div class="quick-ref-value">Freezer + Sisa Gerobak (bukan freezer saja)</div>
+      </div>
+      <div class="quick-ref-item">
+        <div class="quick-ref-label">Batas Video</div>
+        <div class="quick-ref-value">100 MB · MP4/MOV/AVI/WebM · klip 30-60 detik</div>
+      </div>
+      <div class="quick-ref-item">
+        <div class="quick-ref-label">Login</div>
+        <div class="quick-ref-value">Pakai username, bukan email</div>
+      </div>
     </div>
   </div>
 
   <p style="text-align:center;color:#9ca3af;font-size:12px;margin-top:32px;padding-bottom:20px">
-    DIMSYS v1.0 · PT. Wijaya Kuliner Indonesia · Dokumentasi ini dibuat untuk keperluan internal
+    DIMSYS v1.1 · Update 29 Mei 2026 · PT. Wijaya Kuliner Indonesia · Dokumentasi ini dibuat untuk keperluan internal
   </p>
 
 </main>

@@ -10,11 +10,12 @@ use App\Models\Produk;
 use App\Models\StokMasukDetail;
 use App\Models\DistribusiDetail;
 use App\Models\PenjualanWilayahDetail;
+use App\Models\LaporanHarianDetail;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\Stok\StokOpnameExport;
 use App\Models\StokMasuk;
-use App\Models\Supplier;
 use Illuminate\Support\Facades\DB;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
@@ -70,84 +71,184 @@ class StokOpnameController extends Controller
     public function getStokSistem(Request $request)
     {
         $wilayahId = $request->wilayah_id;
+        $tanggal   = $request->tanggal ?: Carbon::today()->format('Y-m-d');
         $produkList = Produk::where('aktif', true)->orderBy('nama')->get();
 
-        $stokSistem = $produkList->map(function ($produk) use ($wilayahId) {
-            $masuk = StokMasukDetail::whereHas(
-                'stokMasuk',
-                fn($q) =>
-                $q->where('wilayah_id', $wilayahId)
-            )->where('produk_id', $produk->id)->sum('jumlah');
+        // Cutoff freezer: stok_awal terakhir di wilayah ini yang tanggal <= tgl STO.
+        // Mencegah double-count saat sudah pernah generate stok awal multi-bulan.
+        // Gerobak tetap ALL-TIME (running balance).
+        $cutoff = StokMasuk::where('wilayah_id', $wilayahId)
+            ->where('jenis', 'awal')
+            ->whereDate('tanggal', '<=', $tanggal)
+            ->orderByDesc('tanggal')
+            ->value('tanggal');
 
-            $out = DistribusiDetail::whereHas(
-                'distribusi',
-                fn($q) =>
+        $stokSistem = $produkList->map(function ($produk) use ($wilayahId, $tanggal, $cutoff) {
+            // Stok masuk ke freezer wilayah sejak cutoff (semua jenis: awal/masuk/koreksi)
+            $masuk = StokMasukDetail::whereHas('stokMasuk', function ($q) use ($wilayahId, $tanggal, $cutoff) {
+                $q->where('wilayah_id', $wilayahId)
+                  ->whereDate('tanggal', '<=', $tanggal);
+                if ($cutoff) $q->whereDate('tanggal', '>=', $cutoff);
+            })->where('produk_id', $produk->id)->sum('jumlah');
+
+            // Distribusi keluar dari freezer ke gerobak sejak cutoff
+            $distribusiOutFreezer = DistribusiDetail::whereHas('distribusi', function ($q) use ($wilayahId, $tanggal, $cutoff) {
                 $q->whereHas('outlet', fn($o) => $o->where('wilayah_id', $wilayahId))
+                  ->whereDate('tanggal', '<=', $tanggal);
+                if ($cutoff) $q->whereDate('tanggal', '>=', $cutoff);
+            })->where('produk_id', $produk->id)->sum('jumlah_out');
+
+            // Transfer ke wilayah lain sejak cutoff
+            $keluarWilayah = PenjualanWilayahDetail::whereHas('penjualan', function ($q) use ($wilayahId, $tanggal, $cutoff) {
+                $q->where('wilayah_asal_id', $wilayahId)
+                  ->where('status', 'disetujui')
+                  ->whereDate('tanggal', '<=', $tanggal);
+                if ($cutoff) $q->whereDate('tanggal', '>=', $cutoff);
+            })->where('produk_id', $produk->id)->sum('jumlah');
+
+            // Gerobak: ALL-TIME sampai tanggal STO (running balance)
+            $distribusiOutAll = DistribusiDetail::whereHas('distribusi', fn($q) =>
+                $q->whereHas('outlet', fn($o) => $o->where('wilayah_id', $wilayahId))
+                  ->whereDate('tanggal', '<=', $tanggal)
             )->where('produk_id', $produk->id)->sum('jumlah_out');
 
-            $keluarWilayah = PenjualanWilayahDetail::whereHas(
-                'penjualan',
-                fn($q) =>
-                $q->where('wilayah_asal_id', $wilayahId)->where('status', 'disetujui')
-            )->where('produk_id', $produk->id)->sum('jumlah');
+            $terjualGerobak = LaporanHarianDetail::whereHas('laporan', fn($q) =>
+                $q->whereHas('outlet', fn($o) => $o->where('wilayah_id', $wilayahId))
+                  ->whereDate('tanggal', '<=', $tanggal)
+            )->where('produk_id', $produk->id)->sum('terjual');
+
+            // Stok freezer wilayah sejak cutoff
+            $stokFreezer = $masuk - $distribusiOutFreezer - $keluarWilayah;
+            // Sisa gerobak (ALL-TIME running balance)
+            $stokGerobak = $distribusiOutAll - $terjualGerobak;
+
+            $stokSistemTotal = $stokFreezer + $stokGerobak;
 
             return [
-                'produk_id' => $produk->id,
-                'nama' => $produk->nama,
-                'hpp' => $produk->hpp,
-                'stok_sistem' => $masuk - $out - $keluarWilayah,
+                'produk_id'    => $produk->id,
+                'nama'         => $produk->nama,
+                'hpp'          => $produk->hpp,
+                'stok_freezer' => (int) $stokFreezer,
+                'stok_gerobak' => (int) $stokGerobak,
+                'stok_sistem'  => (int) $stokSistemTotal,
             ];
-        })->filter(fn($s) => $s['stok_sistem'] != 0);
+        })->filter(fn($s) => $s['stok_freezer'] != 0 || $s['stok_gerobak'] != 0);
 
         return response()->json($stokSistem->values());
+    }
+
+    public function cekStoExisting(Request $request)
+    {
+        $wilayahId = $request->wilayah_id;
+        $tanggal   = $request->tanggal;
+
+        if (!$wilayahId || !$tanggal) {
+            return response()->json([
+                'ada_sto_belum_koreksi' => false,
+                'ada_sto_sudah_koreksi' => false,
+            ]);
+        }
+
+        $adaSudahKoreksi = StokOpname::where('wilayah_id', $wilayahId)
+            ->whereDate('tanggal', $tanggal)
+            ->whereHas('stokMasuk')
+            ->exists();
+
+        $adaBelumKoreksi = StokOpname::where('wilayah_id', $wilayahId)
+            ->whereDate('tanggal', $tanggal)
+            ->whereDoesntHave('stokMasuk')
+            ->exists();
+
+        return response()->json([
+            'ada_sto_belum_koreksi' => $adaBelumKoreksi,
+            'ada_sto_sudah_koreksi' => $adaSudahKoreksi,
+        ]);
     }
 
     public function store(Request $request)
     {
         $request->validate([
-            'wilayah_id' => 'required|exists:wilayah,id',
-            'tanggal' => 'required|date|date_equals:today',
-            'keterangan' => 'nullable|string|max:255',
-            'produk_id' => 'required|array|min:1',
-            'stok_fisik' => 'required|array',
+            'wilayah_id'   => 'required|exists:wilayah,id',
+            'tanggal'      => 'required|date|date_equals:today',
+            'keterangan'   => 'nullable|string|max:255',
+            'produk_id'    => 'required|array|min:1',
+            'stok_fisik'   => 'required|array',
+            'jumlah_media' => 'required|integer|min:1',
         ], [
-            'wilayah_id.required' => 'Wilayah wajib dipilih.',
-            'wilayah_id.exists' => 'Wilayah yang dipilih tidak valid.',
-            'tanggal.required' => 'Tanggal stok opname wajib diisi.',
-            'tanggal.date' => 'Format tanggal tidak valid.',
-            'tanggal.date_equals' => 'Tanggal transaksi harus hari ini.',
-            'keterangan.max' => 'Keterangan maksimal 255 karakter.',
-            'produk_id.required' => 'Data produk wajib diisi.',
-            'produk_id.min' => 'Minimal satu produk wajib diisi.',
-            'stok_fisik.required' => 'Data stok fisik wajib diisi.',
+            'wilayah_id.required'   => 'Wilayah wajib dipilih.',
+            'wilayah_id.exists'     => 'Wilayah yang dipilih tidak valid.',
+            'tanggal.required'      => 'Tanggal stok opname wajib diisi.',
+            'tanggal.date'          => 'Format tanggal tidak valid.',
+            'tanggal.date_equals'   => 'Tanggal transaksi harus hari ini.',
+            'keterangan.max'        => 'Keterangan maksimal 255 karakter.',
+            'produk_id.required'    => 'Data produk wajib diisi.',
+            'produk_id.min'         => 'Minimal satu produk wajib diisi.',
+            'stok_fisik.required'   => 'Data stok fisik wajib diisi.',
+            'jumlah_media.required' => 'Wajib upload minimal 1 foto atau video bukti opname.',
+            'jumlah_media.min'      => 'Wajib upload minimal 1 foto atau video bukti opname.',
         ]);
 
-        try {
-            $stokOpname = StokOpname::create([
-                'wilayah_id' => $request->wilayah_id,
-                'tanggal' => $request->tanggal,
-                'keterangan' => $request->keterangan,
-                'status' => 'final',
-                'created_by' => auth()->id(),
-            ]);
+        // Blok keras: STO sebelumnya di wilayah+tanggal yg sama sudah dikoreksi.
+        // Koreksi kedua akan dobel/menimpa stok freezer.
+        $stoSudahKoreksi = StokOpname::where('wilayah_id', $request->wilayah_id)
+            ->whereDate('tanggal', $request->tanggal)
+            ->whereHas('stokMasuk')
+            ->exists();
 
-            foreach ($request->produk_id as $i => $pid) {
-                $stokSistem = $request->stok_sistem[$i] ?? 0;
-                $stokFisik = $request->stok_fisik[$i] ?? 0;
-                $selisih = $stokFisik - $stokSistem;
-                $produk = Produk::find($pid);
-                $hpp = $produk->hpp;
-
-                StokOpnameDetail::create([
-                    'stok_opname_id' => $stokOpname->id,
-                    'produk_id' => $pid,
-                    'stok_sistem' => $stokSistem,
-                    'stok_fisik' => $stokFisik,
-                    'selisih' => $selisih,
-                    'hpp_snapshot' => $hpp,
-                    'nilai_selisih' => $selisih * $hpp,
-                ]);
+        if ($stoSudahKoreksi) {
+            $pesan = 'Sudah ada STO untuk wilayah & tanggal ini yang koreksinya telah diterapkan. Batalkan STO tersebut dulu jika ingin opname ulang.';
+            if ($request->expectsJson()) {
+                return response()->json(['error' => $pesan], 409);
             }
+            return back()->with('error', $pesan)->withInput();
+        }
+
+        // Idempotency guard: cegah double-submit dalam 30 detik terakhir.
+        // Pemicu: upload video lambat → user klik berulang → STO duplikat.
+        $duplikat = StokOpname::where('wilayah_id', $request->wilayah_id)
+            ->whereDate('tanggal', $request->tanggal)
+            ->where('created_by', auth()->id())
+            ->where('created_at', '>=', now()->subSeconds(30))
+            ->exists();
+
+        if ($duplikat) {
+            $pesan = 'STO untuk wilayah & tanggal ini baru saja disimpan. Cek daftar STO sebelum menyimpan ulang.';
+            if ($request->expectsJson()) {
+                return response()->json(['error' => $pesan], 409);
+            }
+            return back()->with('error', $pesan)->withInput();
+        }
+
+        try {
+            $stokOpname = DB::transaction(function () use ($request) {
+                $sto = StokOpname::create([
+                    'wilayah_id' => $request->wilayah_id,
+                    'tanggal'    => $request->tanggal,
+                    'keterangan' => $request->keterangan,
+                    'status'     => 'final',
+                    'created_by' => auth()->id(),
+                ]);
+
+                foreach ($request->produk_id as $i => $pid) {
+                    $stokSistem = $request->stok_sistem[$i] ?? 0;
+                    $stokFisik  = $request->stok_fisik[$i] ?? 0;
+                    $selisih    = $stokFisik - $stokSistem;
+                    $produk     = Produk::find($pid);
+                    $hpp        = $produk->hpp;
+
+                    StokOpnameDetail::create([
+                        'stok_opname_id' => $sto->id,
+                        'produk_id'      => $pid,
+                        'stok_sistem'    => $stokSistem,
+                        'stok_fisik'     => $stokFisik,
+                        'selisih'        => $selisih,
+                        'hpp_snapshot'   => $hpp,
+                        'nilai_selisih'  => $selisih * $hpp,
+                    ]);
+                }
+
+                return $sto;
+            });
 
             $this->logActivity(
                 'create', 'Stok Opname', $stokOpname,
@@ -157,10 +258,13 @@ class StokOpnameController extends Controller
 
             if ($request->expectsJson()) {
                 return response()->json([
-                    'success'    => true,
-                    'id'         => $stokOpname->id,
-                    'redirect'   => route('stok.opname.show', $stokOpname),
-                    'upload_url' => route('stok.opname.foto.upload', $stokOpname->id),
+                    'success'      => true,
+                    'id'           => $stokOpname->id,
+                    'redirect'     => route('stok.opname.index'),
+                    'show_url'     => route('stok.opname.show', $stokOpname),
+                    'upload_url'   => route('stok.opname.foto.upload', $stokOpname->id),
+                    'cancel_url'   => route('stok.opname.batalkan-jika-kosong', $stokOpname->id),
+                    'flash_message'=> 'Stok Opname berhasil disimpan.',
                 ]);
             }
 
@@ -199,18 +303,12 @@ class StokOpnameController extends Controller
 
         try {
             DB::transaction(function () use ($stokOpname) {
-                $supplier = Supplier::where('aktif', true)->orderBy('created_at')->first();
-                if (!$supplier) {
-                    $supplier = Supplier::first()
-                        ?? Supplier::create(['nama' => 'Internal', 'aktif' => true]);
-                }
-
                 $tanggalLabel = \Carbon\Carbon::parse($stokOpname->tanggal)
                     ->locale('id')->isoFormat('D MMMM Y');
 
                 $koreksi = StokMasuk::create([
                     'wilayah_id'     => $stokOpname->wilayah_id,
-                    'supplier_id'    => $supplier->id,
+                    'supplier_id'    => null,
                     'tanggal'        => $stokOpname->tanggal,
                     'jenis'          => 'koreksi',
                     'keterangan'     => 'Koreksi STO ' . $tanggalLabel,
@@ -241,6 +339,58 @@ class StokOpnameController extends Controller
             return back()->with('success', 'Koreksi stok berhasil diterapkan. Stok freezer sudah diperbarui.');
         } catch (\Exception $e) {
             return back()->with('error', 'Gagal menerapkan koreksi. Silakan coba lagi.');
+        }
+    }
+
+    /**
+     * Batalkan STO yang baru dibuat jika seluruh upload media gagal (0 media tersimpan).
+     * Hanya boleh dipanggil untuk STO yang:
+     *   - Dibuat oleh user yang sama
+     *   - Dibuat < 10 menit terakhir (mencegah misuse untuk hapus STO lama)
+     *   - Belum punya media sama sekali
+     *   - Belum dikoreksi (tidak punya stok_masuk relasi)
+     */
+    public function batalkanJikaKosong(Request $request, StokOpname $stokOpname)
+    {
+        if ($stokOpname->created_by !== auth()->id()) {
+            return response()->json(['error' => 'Anda tidak berhak membatalkan STO ini.'], 403);
+        }
+
+        if ($stokOpname->created_at < now()->subMinutes(10)) {
+            return response()->json(['error' => 'STO sudah lebih dari 10 menit, gunakan tombol Batalkan di halaman detail.'], 422);
+        }
+
+        $jumlahMedia = $stokOpname->getMedia('foto_real')->count()
+            + $stokOpname->getMedia('berita_acara')->count()
+            + $stokOpname->getMedia('video')->count();
+
+        if ($jumlahMedia > 0) {
+            return response()->json(['error' => 'STO ini sudah punya media, tidak bisa dibatalkan via endpoint ini.'], 422);
+        }
+
+        if ($stokOpname->sudahDikoreksi()) {
+            return response()->json(['error' => 'STO ini sudah dikoreksi, tidak bisa dibatalkan.'], 422);
+        }
+
+        try {
+            DB::transaction(function () use ($stokOpname) {
+                $stokOpname->update(['deleted_by' => auth()->id()]);
+                $stokOpname->delete();
+            });
+
+            $this->logActivity(
+                'delete', 'Stok Opname', $stokOpname,
+                before: $stokOpname->only(['id', 'wilayah_id', 'tanggal', 'keterangan', 'status']),
+                after: ['alasan' => 'Auto-rollback: semua upload media gagal'],
+                label: 'Auto-Rollback STO - ' . optional($stokOpname->wilayah)->nama . ' - ' . $stokOpname->tanggal
+            );
+
+            return response()->json([
+                'success' => true,
+                'message' => 'STO dibatalkan karena tidak ada bukti media yang berhasil diupload.',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Gagal membatalkan STO. Silakan coba lagi.'], 500);
         }
     }
 
@@ -287,82 +437,108 @@ class StokOpnameController extends Controller
             return response()->json(['error' => 'Anda tidak berhak mengupload foto.'], 403);
         }
 
-        $request->validate([
-            'foto' => 'required|file|mimes:jpeg,jpg,png,webp|max:10240',
-            'tipe' => 'required|in:foto_real,berita_acara',
-        ], [
-            'foto.required' => 'File foto wajib dipilih.',
-            'foto.file'     => 'File tidak valid.',
-            'foto.mimes'    => 'Format file harus JPG, PNG, atau WebP.',
-            'foto.max'      => 'Ukuran file maksimal 10 MB.',
-            'tipe.required' => 'Tipe foto wajib dipilih.',
-            'tipe.in'       => 'Tipe foto tidak valid.',
-        ]);
+        $tipe = $request->input('tipe');
+
+        if ($tipe === 'video') {
+            if ($stokOpname->getMedia('video')->count() >= 3) {
+                return response()->json(['error' => 'Maksimal 3 video per STO.'], 422);
+            }
+            $namaUpload = $request->file('foto')?->getClientOriginalName() ?? 'video';
+            $request->validate([
+                'foto' => 'required|file|mimes:mp4,mov,avi,webm|max:102400',
+                'tipe' => 'required|in:foto_real,berita_acara,video',
+            ], [
+                'foto.required' => 'File video wajib dipilih.',
+                'foto.mimes'    => 'Format tidak didukung. Gunakan MP4, MOV, AVI, atau WebM.',
+                'foto.max'      => 'Ukuran video maksimal 100 MB. File "' . $namaUpload . '" terlalu besar.',
+            ]);
+        } else {
+            if ($stokOpname->getMedia($tipe)->count() >= 5) {
+                return response()->json(['error' => 'Maksimal 5 foto per koleksi.'], 422);
+            }
+            $request->validate([
+                'foto' => 'required|file|mimes:jpeg,jpg,png,webp|max:10240',
+                'tipe' => 'required|in:foto_real,berita_acara,video',
+            ], [
+                'foto.required' => 'File foto wajib dipilih.',
+                'foto.file'     => 'File tidak valid.',
+                'foto.mimes'    => 'Format file harus JPG, PNG, atau WebP.',
+                'foto.max'      => 'Ukuran file maksimal 10 MB.',
+                'tipe.required' => 'Tipe foto wajib dipilih.',
+                'tipe.in'       => 'Tipe foto tidak valid.',
+            ]);
+        }
 
         $file     = $request->file('foto');
-        $tipe     = $request->input('tipe');
         $namaAsli = $file->getClientOriginalName();
 
-        if ($stokOpname->getMedia($tipe)->count() >= 5) {
-            return response()->json(['error' => 'Maksimal 5 foto per koleksi.'], 422);
-        }
+        if ($tipe === 'video') {
+            // Simpan video langsung tanpa FFmpeg compress — sama pola dengan foto.
+            $ext      = strtolower($file->getClientOriginalExtension() ?: 'mp4');
+            $namaFile = 'video_' . uniqid() . '_' . time() . '.' . $ext;
 
-        $namaFile    = 'foto_' . uniqid() . '_' . time() . '.jpg';
-        $tmpPath     = sys_get_temp_dir() . DIRECTORY_SEPARATOR . $namaFile;
-        $sourceImage = null;
-        $mime        = $file->getMimeType();
-
-        if ($mime === 'image/jpeg' || $mime === 'image/jpg') {
-            $sourceImage = imagecreatefromjpeg($file->getPathname());
-        } elseif ($mime === 'image/png') {
-            $sourceImage = imagecreatefrompng($file->getPathname());
-        } elseif ($mime === 'image/webp') {
-            $sourceImage = imagecreatefromwebp($file->getPathname());
+            $media = $stokOpname->addMedia($file->getRealPath())
+                ->usingFileName($namaFile)
+                ->usingName($namaAsli)
+                ->toMediaCollection('video');
         } else {
-            return response()->json(['error' => 'Format tidak didukung. Gunakan JPG, PNG, atau WebP.'], 422);
-        }
+            $namaFile    = 'foto_' . uniqid() . '_' . time() . '.jpg';
+            $tmpPath     = sys_get_temp_dir() . DIRECTORY_SEPARATOR . $namaFile;
+            $sourceImage = null;
+            $mime        = $file->getMimeType();
 
-        if (!$sourceImage) {
-            return response()->json(['error' => 'Gagal membaca file gambar.'], 422);
-        }
-
-        $lebar   = imagesx($sourceImage);
-        $tinggi  = imagesy($sourceImage);
-        $maxSize = 1920;
-
-        if ($lebar > $maxSize || $tinggi > $maxSize) {
-            if ($lebar > $tinggi) {
-                $lebarBaru  = $maxSize;
-                $tinggiBaru = (int) round($tinggi * ($maxSize / $lebar));
+            if ($mime === 'image/jpeg' || $mime === 'image/jpg') {
+                $sourceImage = imagecreatefromjpeg($file->getPathname());
+            } elseif ($mime === 'image/png') {
+                $sourceImage = imagecreatefrompng($file->getPathname());
+            } elseif ($mime === 'image/webp') {
+                $sourceImage = imagecreatefromwebp($file->getPathname());
             } else {
-                $tinggiBaru = $maxSize;
-                $lebarBaru  = (int) round($lebar * ($maxSize / $tinggi));
+                return response()->json(['error' => 'Format tidak didukung. Gunakan JPG, PNG, atau WebP.'], 422);
             }
-            $resized = imagecreatetruecolor($lebarBaru, $tinggiBaru);
-            imagecopyresampled($resized, $sourceImage, 0, 0, 0, 0, $lebarBaru, $tinggiBaru, $lebar, $tinggi);
+
+            if (!$sourceImage) {
+                return response()->json(['error' => 'Gagal membaca file gambar.'], 422);
+            }
+
+            $lebar   = imagesx($sourceImage);
+            $tinggi  = imagesy($sourceImage);
+            $maxSize = 1920;
+
+            if ($lebar > $maxSize || $tinggi > $maxSize) {
+                if ($lebar > $tinggi) {
+                    $lebarBaru  = $maxSize;
+                    $tinggiBaru = (int) round($tinggi * ($maxSize / $lebar));
+                } else {
+                    $tinggiBaru = $maxSize;
+                    $lebarBaru  = (int) round($lebar * ($maxSize / $tinggi));
+                }
+                $resized = imagecreatetruecolor($lebarBaru, $tinggiBaru);
+                imagecopyresampled($resized, $sourceImage, 0, 0, 0, 0, $lebarBaru, $tinggiBaru, $lebar, $tinggi);
+                imagedestroy($sourceImage);
+                $sourceImage = $resized;
+            }
+
+            imagejpeg($sourceImage, $tmpPath, 75);
             imagedestroy($sourceImage);
-            $sourceImage = $resized;
+
+            $media = $stokOpname->addMedia($tmpPath)
+                ->usingFileName($namaFile)
+                ->usingName($namaAsli)
+                ->toMediaCollection($tipe);
         }
-
-        imagejpeg($sourceImage, $tmpPath, 75);
-        imagedestroy($sourceImage);
-
-        $media = $stokOpname->addMedia($tmpPath)
-            ->usingFileName($namaFile)
-            ->usingName($namaAsli)
-            ->toMediaCollection($tipe);
 
         $this->logActivity(
-            'upload', 'Stok Opname - Foto', $stokOpname,
+            'upload', 'Stok Opname - Media', $stokOpname,
             label: 'Upload ' . $tipe . ' - ' . optional($stokOpname->wilayah)->nama . ' - ' . $stokOpname->tanggal
         );
 
         return response()->json([
             'success'   => true,
             'id'        => $media->id,
-            'url'       => asset('storage/' . $media->id . '/' . $media->file_name),
+            'url'       => $media->getUrl(),
             'ukuran_kb' => (int) ceil($media->size / 1024),
-            'nama_asli' => $namaAsli,
+            'nama_asli' => $media->file_name,
         ]);
     }
 

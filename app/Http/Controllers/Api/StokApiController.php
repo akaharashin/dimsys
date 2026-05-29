@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Outlet;
 use App\Models\Produk;
+use App\Models\StokMasuk;
 use App\Models\StokMasukDetail;
 use App\Models\DistribusiDetail;
 use App\Models\PenjualanWilayahDetail;
@@ -25,18 +26,27 @@ class StokApiController extends Controller
 
         $produkList = Produk::where('aktif', true)->orderBy('nama')->get();
 
-        $result = $produkList->map(function ($produk) use ($wilayahId) {
-            $masuk = StokMasukDetail::whereHas('stokMasuk', fn($q) =>
-                $q->where('wilayah_id', $wilayahId)
-            )->where('produk_id', $produk->id)->sum('jumlah');
+        // Cutoff freezer (lihat catatan di RekapStokController)
+        $cutoff = StokMasuk::where('wilayah_id', $wilayahId)
+            ->where('jenis', 'awal')
+            ->orderByDesc('tanggal')
+            ->value('tanggal');
 
-            $sudahOut = DistribusiDetail::whereHas('distribusi', fn($q) =>
-                $q->whereHas('outlet', fn($o) => $o->where('wilayah_id', $wilayahId))
-            )->where('produk_id', $produk->id)->sum('jumlah_out');
+        $result = $produkList->map(function ($produk) use ($wilayahId, $cutoff) {
+            $masuk = StokMasukDetail::whereHas('stokMasuk', function ($q) use ($wilayahId, $cutoff) {
+                $q->where('wilayah_id', $wilayahId);
+                if ($cutoff) $q->whereDate('tanggal', '>=', $cutoff);
+            })->where('produk_id', $produk->id)->sum('jumlah');
 
-            $keluarWilayah = PenjualanWilayahDetail::whereHas('penjualan', fn($q) =>
-                $q->where('wilayah_asal_id', $wilayahId)->where('status', 'disetujui')
-            )->where('produk_id', $produk->id)->sum('jumlah');
+            $sudahOut = DistribusiDetail::whereHas('distribusi', function ($q) use ($wilayahId, $cutoff) {
+                $q->whereHas('outlet', fn($o) => $o->where('wilayah_id', $wilayahId));
+                if ($cutoff) $q->whereDate('tanggal', '>=', $cutoff);
+            })->where('produk_id', $produk->id)->sum('jumlah_out');
+
+            $keluarWilayah = PenjualanWilayahDetail::whereHas('penjualan', function ($q) use ($wilayahId, $cutoff) {
+                $q->where('wilayah_asal_id', $wilayahId)->where('status', 'disetujui');
+                if ($cutoff) $q->whereDate('tanggal', '>=', $cutoff);
+            })->where('produk_id', $produk->id)->sum('jumlah');
 
             $stokTersedia = $masuk - $sudahOut - $keluarWilayah;
 

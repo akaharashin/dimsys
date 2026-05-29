@@ -19,7 +19,7 @@
 {{-- Form Parameter --}}
 <div class="bg-white rounded-xl shadow-sm p-6 mb-4">
     <h3 class="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-4">Parameter Generate</h3>
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 
         @if(auth()->user()->hasRole('koordinator'))
             <div>
@@ -42,20 +42,22 @@
         @endif
 
         <div>
-            <label class="block text-sm text-gray-600 mb-1">Bulan Sumber <span class="text-gray-400">(stok akhir bulan ini yang dihitung)</span></label>
+            <label class="block text-sm text-gray-600 mb-1">Bulan Sumber</label>
             <input type="month" id="bulan" value="{{ $defaultBulan }}" max="{{ now()->format('Y-m') }}"
                 class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300">
-            <p class="text-xs text-gray-400 mt-1">
-                Generate stok awal bulan berikutnya dapat dilakukan mulai tanggal 25 bulan berjalan.
-            </p>
         </div>
+    </div>
 
-        <div>
-            <button type="button" onclick="loadPreview()"
-                class="w-full px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm font-medium">
-                <i class="fa-solid fa-eye mr-1"></i> Preview Stok
-            </button>
-        </div>
+    <p class="text-xs text-gray-400 mt-3">
+        <i class="fa-solid fa-circle-info mr-1"></i>
+        Stok akhir bulan sumber akan jadi stok awal bulan berikutnya. Generate untuk bulan baru hanya dapat dilakukan mulai tanggal 25 bulan berjalan.
+    </p>
+
+    <div class="mt-4 flex justify-end">
+        <button type="button" onclick="loadPreview()"
+            class="px-5 py-2 bg-red-700 hover:bg-red-800 text-white rounded-lg text-sm font-medium">
+            <i class="fa-solid fa-eye mr-1"></i> Preview Stok
+        </button>
     </div>
 </div>
 
@@ -85,6 +87,13 @@
         <span id="lbl-invalid-reason"></span>
     </div>
 
+    {{-- Catatan komposisi --}}
+    <div class="mb-3 px-4 py-3 bg-amber-50 border border-amber-200 text-amber-800 rounded-lg text-xs">
+        <i class="fa-solid fa-lightbulb mr-1"></i>
+        <strong>Komposisi stok:</strong> kolom <strong>Freezer</strong> akan menjadi <strong>Stok Awal</strong> bulan baru.
+        Kolom <strong>Gerobak</strong> tidak digenerate ulang — sisa belum terjual di gerobak otomatis terbawa ke bulan baru (running balance).
+    </div>
+
     {{-- Tabel Preview --}}
     <div class="bg-white rounded-xl shadow-sm overflow-x-auto mb-4">
         <table class="w-full text-sm">
@@ -94,14 +103,17 @@
                     <th class="px-4 py-3 text-left">Produk</th>
                     <th class="px-4 py-3 text-right">Stok Awal</th>
                     <th class="px-4 py-3 text-right">Masuk</th>
+                    <th class="px-4 py-3 text-right">Koreksi</th>
                     <th class="px-4 py-3 text-right">OUT</th>
-                    <th class="px-4 py-3 text-right">Stok Akhir <span id="th-bulan" class="normal-case font-normal"></span></th>
+                    <th class="px-4 py-3 text-right text-blue-700">Freezer <span id="th-bulan" class="normal-case font-normal"></span></th>
+                    <th class="px-4 py-3 text-right text-yellow-700">Gerobak</th>
+                    <th class="px-4 py-3 text-right" style="color:#A51616">Total</th>
                     <th class="px-4 py-3 text-right text-green-600">→ Stok Awal <span id="th-bulan-tujuan" class="normal-case font-normal"></span></th>
                 </tr>
             </thead>
             <tbody id="preview-table-body" class="divide-y divide-gray-100">
                 <tr>
-                    <td colspan="7" class="px-4 py-8 text-center text-gray-400">Klik "Preview Stok" untuk melihat data.</td>
+                    <td colspan="10" class="px-4 py-8 text-center text-gray-400">Klik "Preview Stok" untuk melihat data.</td>
                 </tr>
             </tbody>
         </table>
@@ -144,7 +156,7 @@
         // Show area + loading
         document.getElementById('preview-area').style.display = '';
         document.getElementById('preview-table-body').innerHTML =
-            '<tr><td colspan="7" class="px-4 py-8 text-center text-gray-400"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Memuat data...</td></tr>';
+            '<tr><td colspan="10" class="px-4 py-8 text-center text-gray-400"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Memuat data...</td></tr>';
         document.getElementById('btn-generate').style.display = 'none';
         document.getElementById('warning-exists').style.display = 'none';
         document.getElementById('warning-invalid').style.display = 'none';
@@ -154,7 +166,7 @@
             .then(function(res) { renderPreview(res); })
             .catch(function() {
                 document.getElementById('preview-table-body').innerHTML =
-                    '<tr><td colspan="7" class="px-4 py-8 text-center text-red-500">Gagal memuat data. Silakan coba lagi.</td></tr>';
+                    '<tr><td colspan="10" class="px-4 py-8 text-center text-red-500">Gagal memuat data. Silakan coba lagi.</td></tr>';
             });
     }
 
@@ -171,17 +183,23 @@
 
         var rows = '';
         if (res.data.length === 0) {
-            rows = '<tr><td colspan="7" class="px-4 py-8 text-center text-gray-400">Tidak ada produk dengan stok akhir > 0 pada bulan ini.</td></tr>';
+            rows = '<tr><td colspan="10" class="px-4 py-8 text-center text-gray-400">Tidak ada produk dengan stok akhir > 0 pada bulan ini.</td></tr>';
         } else {
             res.data.forEach(function(r, i) {
+                var korCls = r.koreksi > 0 ? 'text-green-600' : (r.koreksi < 0 ? 'text-red-600' : 'text-gray-400');
+                var korStr = r.koreksi === 0 ? '0' : (r.koreksi > 0 ? '+' + r.koreksi.toLocaleString('id') : r.koreksi.toLocaleString('id'));
+                var gerCls = r.stok_gerobak < 0 ? 'text-red-600' : 'text-yellow-700';
                 rows += '<tr class="hover:bg-gray-50">' +
                     '<td class="px-4 py-3 text-center text-gray-400 text-xs">' + (i + 1) + '</td>' +
                     '<td class="px-4 py-3 font-medium text-gray-700">' + r.produk_nama + '</td>' +
                     '<td class="px-4 py-3 text-right text-gray-500">' + r.stok_awal.toLocaleString('id') + '</td>' +
                     '<td class="px-4 py-3 text-right text-gray-500">' + r.masuk.toLocaleString('id') + '</td>' +
+                    '<td class="px-4 py-3 text-right ' + korCls + '">' + korStr + '</td>' +
                     '<td class="px-4 py-3 text-right text-gray-500">' + r.out.toLocaleString('id') + '</td>' +
-                    '<td class="px-4 py-3 text-right font-medium text-gray-700">' + r.stok_akhir.toLocaleString('id') + '</td>' +
-                    '<td class="px-4 py-3 text-right font-bold text-green-600">' + r.stok_akhir.toLocaleString('id') + '</td>' +
+                    '<td class="px-4 py-3 text-right font-medium text-blue-700">' + r.stok_freezer.toLocaleString('id') + '</td>' +
+                    '<td class="px-4 py-3 text-right font-medium ' + gerCls + '">' + r.stok_gerobak.toLocaleString('id') + '</td>' +
+                    '<td class="px-4 py-3 text-right font-bold" style="color:#A51616">' + r.stok_total.toLocaleString('id') + '</td>' +
+                    '<td class="px-4 py-3 text-right font-bold text-green-600">' + r.stok_freezer.toLocaleString('id') + '</td>' +
                 '</tr>';
             });
             document.getElementById('lbl-jumlah-produk').textContent = res.data.length + ' produk';

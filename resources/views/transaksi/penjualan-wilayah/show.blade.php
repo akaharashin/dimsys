@@ -218,9 +218,14 @@
                 </div>
                 @if($bolehUpload)
                 <button onclick="hapusFile({{ $foto->id }}, this)"
-                    class="absolute top-1 right-1 w-6 h-6 bg-red-500 text-white rounded-full text-xs
-                           opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center hover:bg-red-600">
-                    ×
+                    aria-label="Hapus"
+                    class="absolute top-2 right-2 w-7 h-7 rounded-full flex items-center justify-center
+                           text-white text-sm leading-none shadow-md z-10
+                           opacity-0 group-hover:opacity-100 transition-opacity"
+                    style="background-color:#A51616"
+                    onmouseover="this.style.backgroundColor='#7c1010'"
+                    onmouseout="this.style.backgroundColor='#A51616'">
+                    <i class="fa-solid fa-xmark"></i>
                 </button>
                 @endif
             </div>
@@ -246,9 +251,14 @@
                 </div>
                 @if($bolehUpload)
                 <button onclick="hapusFile({{ $foto->id }}, this)"
-                    class="absolute top-1 right-1 w-6 h-6 bg-red-500 text-white rounded-full text-xs
-                           opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center hover:bg-red-600">
-                    ×
+                    aria-label="Hapus"
+                    class="absolute top-2 right-2 w-7 h-7 rounded-full flex items-center justify-center
+                           text-white text-sm leading-none shadow-md z-10
+                           opacity-0 group-hover:opacity-100 transition-opacity"
+                    style="background-color:#A51616"
+                    onmouseover="this.style.backgroundColor='#7c1010'"
+                    onmouseout="this.style.backgroundColor='#A51616'">
+                    <i class="fa-solid fa-xmark"></i>
                 </button>
                 @endif
             </div>
@@ -289,9 +299,14 @@
                 </div>
                 @if($bolehUpload)
                 <button onclick="hapusFile({{ $vid->id }}, this)"
-                    class="absolute top-1 right-1 w-6 h-6 bg-red-500 text-white rounded-full text-xs
-                           opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center hover:bg-red-600">
-                    ×
+                    aria-label="Hapus"
+                    class="absolute top-2 right-2 w-7 h-7 rounded-full flex items-center justify-center
+                           text-white text-sm leading-none shadow-md z-10
+                           opacity-0 group-hover:opacity-100 transition-opacity"
+                    style="background-color:#A51616"
+                    onmouseover="this.style.backgroundColor='#7c1010'"
+                    onmouseout="this.style.backgroundColor='#A51616'">
+                    <i class="fa-solid fa-xmark"></i>
                 </button>
                 @endif
             </div>
@@ -380,6 +395,7 @@ var videosData = @json($videos->map(fn($v) => asset('storage/' . $v->id . '/' . 
 var currentTab    = 'foto_real';
 var currentIdx    = 0;
 var selectedFiles = [];
+var MAX_VIDEO_BYTES = 100 * 1024 * 1024; // 100 MB — konsisten dengan validasi server
 var objectUrls    = [];
 
 var totalFoto  = {{ $totalFoto }};
@@ -419,7 +435,7 @@ function switchTab(tab) {
         if (tab === 'video') {
             inputEl.accept   = 'video/*';
             inputEl.multiple = true;
-            if (labelEl)  labelEl.textContent  = 'Pilih Video (maks. ' + Math.max(0, maxVideo - totalVideo) + ' lagi · MP4 MOV AVI WebM)';
+            if (labelEl)  labelEl.textContent  = 'Pilih Video (maks. ' + Math.max(0, maxVideo - totalVideo) + ' lagi · MP4/MOV/AVI/WebM · maks. 100 MB · klip 30-60 detik)';
             if (titleEl)  titleEl.textContent  = 'Upload Video';
         } else {
             inputEl.accept   = 'image/*';
@@ -520,7 +536,14 @@ document.addEventListener('DOMContentLoaded', function() {
     var inputEl = document.getElementById('upload-input');
     if (inputEl) {
         inputEl.addEventListener('change', function() {
+            var ditolakBesar = [];
+            // Snapshot sebelum reset value (FileList akan ter-clear oleh value='')
             Array.from(this.files).forEach(function(f) {
+                // Pre-check ukuran video — tolak sebelum masuk antrian
+                if (f.type.startsWith('video/') && f.size > MAX_VIDEO_BYTES) {
+                    ditolakBesar.push(f);
+                    return;
+                }
                 selectedFiles.push(f);
                 if (f.type.startsWith('video/')) {
                     objectUrls.push(URL.createObjectURL(f));
@@ -529,6 +552,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
             this.value = '';
+
+            if (ditolakBesar.length > 0) {
+                var daftar = ditolakBesar.map(function(f) {
+                    return '"' + f.name + '" (' + (f.size / 1024 / 1024).toFixed(1) + ' MB)';
+                }).join(', ');
+                showAlert('error', 'Video Terlalu Besar',
+                    daftar + ' melebihi batas 100 MB. Silakan pilih/potong video lebih kecil.');
+            }
+
             renderPreviews();
         });
     }
@@ -567,7 +599,7 @@ function renderPreviews() {
         var isVideo = file.type.startsWith('video/');
         var sizeMB  = file.size / 1024 / 1024;
 
-        // Kartu: TIDAK overflow:hidden agar tombol X (top:-8px) tidak terpotong
+        // Kartu preview file (sebelum upload)
         var card = document.createElement('div');
         card.style.cssText = 'position:relative;border-radius:8px;border:1px solid #f3f4f6;';
 
@@ -604,7 +636,7 @@ function renderPreviews() {
 
         var sizeEl = document.createElement('p');
         sizeEl.className   = 'text-xs text-gray-400 mt-0.5';
-        sizeEl.textContent = (sizeMB >= 1 ? sizeMB.toFixed(1) + ' MB' : Math.ceil(file.size / 1024) + ' KB') + ' (sebelum compress)';
+        sizeEl.textContent = (sizeMB >= 1 ? sizeMB.toFixed(1) + ' MB' : Math.ceil(file.size / 1024) + ' KB');
 
         info.appendChild(nameEl);
         info.appendChild(sizeEl);
@@ -618,11 +650,14 @@ function renderPreviews() {
 
         card.appendChild(info);
 
-        // Tombol X: keluar dari pojok gambar (top:-8px, right:-8px), 20×20px
+        // Tombol X simetris di pojok kanan atas (28×28, merah brand)
         var xBtn = document.createElement('button');
         xBtn.type = 'button';
-        xBtn.style.cssText = 'position:absolute;top:-8px;right:-8px;width:20px;height:20px;background:#ef4444;color:white;border:none;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;z-index:10;line-height:1;padding:0;';
-        xBtn.innerHTML = '&times;';
+        xBtn.setAttribute('aria-label', 'Hapus');
+        xBtn.style.cssText = 'position:absolute;top:8px;right:8px;width:28px;height:28px;background:#A51616;color:#fff;border:none;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;line-height:1;padding:0;z-index:10;box-shadow:0 2px 6px rgba(0,0,0,0.25);';
+        xBtn.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+        xBtn.onmouseover = function() { xBtn.style.background = '#7c1010'; };
+        xBtn.onmouseout  = function() { xBtn.style.background = '#A51616'; };
         xBtn.onclick = (function(i) { return function() { removeFromQueue(i); }; })(idx);
         card.appendChild(xBtn);
 
@@ -691,30 +726,37 @@ function startUpload() {
             };
 
             xhr.onload = function() {
-                try {
-                    var data = JSON.parse(xhr.responseText);
-                    if (data.error) {
-                        btn.disabled = false;
-                        prog.style.display = 'none';
-                        showAlert('error', 'Gagal Upload', data.error);
-                        return;
-                    }
+                var data = null;
+                try { data = JSON.parse(xhr.responseText || '{}'); } catch (e) { data = null; }
+
+                if (xhr.status >= 200 && xhr.status < 300 && data && data.success) {
                     i++;
                     if (barFill) barFill.style.width = '0%';
                     uploadNext();
-                } catch (ex) {
-                    btn.disabled = false;
-                    prog.style.display = 'none';
-                    showAlert('error', 'Error', 'Terjadi kesalahan. Coba lagi.');
+                    return;
                 }
+
+                var msg = (data && data.error) || ('Upload gagal (HTTP ' + xhr.status + ').');
+                if (xhr.status === 422 && data && data.errors) {
+                    msg = Object.values(data.errors).flat().join('\n');
+                }
+                btn.disabled = false;
+                prog.style.display = 'none';
+                showAlert('error', 'Gagal Upload — ' + file.name, msg);
             };
 
             xhr.onerror = function() {
                 btn.disabled = false;
                 prog.style.display = 'none';
-                showAlert('error', 'Error Jaringan', 'Terjadi kesalahan jaringan saat upload video.');
+                showAlert('error', 'Error Jaringan — ' + file.name, 'Koneksi jaringan terputus saat upload.');
+            };
+            xhr.ontimeout = function() {
+                btn.disabled = false;
+                prog.style.display = 'none';
+                showAlert('error', 'Upload Timeout — ' + file.name, 'Upload timeout. File mungkin terlalu besar atau koneksi lambat.');
             };
 
+            xhr.timeout = 600000;
             xhr.send(fd);
         } else {
             statusEl.textContent = 'Mengupload foto ' + (i + 1) + '/' + selectedFiles.length + ': ' + file.name;
@@ -725,21 +767,29 @@ function startUpload() {
                 headers: { 'X-CSRF-TOKEN': csrfToken },
                 body: fd,
             })
-            .then(function(r) { return r.json(); })
-            .then(function(data) {
-                if (data.error) {
-                    btn.disabled = false;
-                    prog.style.display = 'none';
-                    showAlert('error', 'Gagal Upload', data.error);
+            .then(function(r) {
+                return r.json().catch(function() { return null; }).then(function(data) {
+                    return { ok: r.ok, status: r.status, data: data };
+                });
+            })
+            .then(function(res) {
+                if (res.ok && res.data && res.data.success) {
+                    i++;
+                    uploadNext();
                     return;
                 }
-                i++;
-                uploadNext();
+                var msg = (res.data && res.data.error) || ('Upload gagal (HTTP ' + res.status + ').');
+                if (res.status === 422 && res.data && res.data.errors) {
+                    msg = Object.values(res.data.errors).flat().join('\n');
+                }
+                btn.disabled = false;
+                prog.style.display = 'none';
+                showAlert('error', 'Gagal Upload — ' + file.name, msg);
             })
             .catch(function() {
                 btn.disabled = false;
                 prog.style.display = 'none';
-                showAlert('error', 'Error', 'Terjadi kesalahan saat upload foto.');
+                showAlert('error', 'Error Jaringan — ' + file.name, 'Terjadi kesalahan jaringan saat upload.');
             });
         }
     }
@@ -749,21 +799,38 @@ function startUpload() {
 
 // ── Hapus file yang sudah tersimpan ──────────────────────────────────────────
 function hapusFile(fileId, btn) {
-    if (!confirm('Yakin ingin menghapus file ini?')) return;
+    var doDelete = function() {
+        fetch(hapusBase + '/' + fileId, {
+            method: 'DELETE',
+            headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.success) {
+                window.location.reload();
+            } else {
+                showAlert('error', 'Gagal Menghapus', data.error || 'Gagal menghapus file.');
+            }
+        })
+        .catch(function() { showAlert('error', 'Error Jaringan', 'Terjadi kesalahan. Coba lagi.'); });
+    };
 
-    fetch(hapusBase + '/' + fileId, {
-        method: 'DELETE',
-        headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
-    })
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-        if (data.success) {
-            window.location.reload();
-        } else {
-            showAlert('error', 'Gagal', data.error || 'Gagal menghapus file.');
-        }
-    })
-    .catch(function() { showAlert('error', 'Error', 'Terjadi kesalahan. Coba lagi.'); });
+    if (typeof Swal !== 'undefined') {
+        Swal.fire({
+            title: 'Hapus File?',
+            text: 'File bukti ini akan dihapus permanen.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#A51616',
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: 'Ya, Hapus',
+            cancelButtonText: 'Batal',
+        }).then(function(result) {
+            if (result.isConfirmed) doDelete();
+        });
+    } else if (confirm('Yakin ingin menghapus file ini?')) {
+        doDelete();
+    }
 }
 
 // ── Helper alert ──────────────────────────────────────────────────────────────

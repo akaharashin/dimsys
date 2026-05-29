@@ -90,6 +90,7 @@
                     <th class="px-4 py-3 text-left">Produk</th>
                     <th class="px-4 py-3 text-right">Stok Awal</th>
                     <th class="px-4 py-3 text-right">Masuk Bulan Ini</th>
+                    <th class="px-4 py-3 text-right">Koreksi STO</th>
                     <th class="px-4 py-3 text-right">Terjual Bulan Ini</th>
                     <th class="px-4 py-3 text-right">Estimasi Sisa Akhir Bulan</th>
                     <th class="px-4 py-3 text-right">HPP</th>
@@ -103,6 +104,9 @@
                         <td class="px-4 py-3 font-medium text-gray-700">{{ $r['produk']->nama }}</td>
                         <td class="px-4 py-3 text-right text-gray-600">{{ number_format($r['stok_awal']) }}</td>
                         <td class="px-4 py-3 text-right text-green-600">{{ number_format($r['masuk']) }}</td>
+                        <td class="px-4 py-3 text-right {{ $r['koreksi'] > 0 ? 'text-green-600' : ($r['koreksi'] < 0 ? 'text-red-600' : 'text-gray-400') }}">
+                            {{ $r['koreksi'] > 0 ? '+' : '' }}{{ number_format($r['koreksi']) }}
+                        </td>
                         <td class="px-4 py-3 text-right text-yellow-600">{{ number_format($r['terjual']) }}</td>
                         <td class="px-4 py-3 text-right font-medium {{ $r['sisa'] < 0 ? 'text-red-600' : 'text-gray-700' }}">
                             {{ number_format($r['sisa']) }}
@@ -112,7 +116,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="8" class="px-4 py-8 text-center text-gray-400">Tidak ada data stok.</td>
+                        <td colspan="9" class="px-4 py-8 text-center text-gray-400">Tidak ada data stok.</td>
                     </tr>
                 @endforelse
             </tbody>
@@ -122,6 +126,7 @@
                         <td colspan="2" class="px-4 py-3 text-gray-600">Total</td>
                         <td class="px-4 py-3 text-right text-gray-700">{{ number_format($rekap->sum('stok_awal')) }}</td>
                         <td class="px-4 py-3 text-right text-green-600">{{ number_format($rekap->sum('masuk')) }}</td>
+                        <td class="px-4 py-3 text-right {{ $rekap->sum('koreksi') > 0 ? 'text-green-600' : ($rekap->sum('koreksi') < 0 ? 'text-red-600' : 'text-gray-500') }}">{{ $rekap->sum('koreksi') > 0 ? '+' : '' }}{{ number_format($rekap->sum('koreksi')) }}</td>
                         <td class="px-4 py-3 text-right text-yellow-600">{{ number_format($rekap->sum('terjual')) }}</td>
                         <td class="px-4 py-3 text-right text-gray-700">{{ number_format($rekap->sum('sisa')) }}</td>
                         <td></td>

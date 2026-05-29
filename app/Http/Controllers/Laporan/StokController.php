@@ -51,6 +51,15 @@ class StokController extends Controller
                     $q->where('wilayah_id', $wilayahId);
             })->where('produk_id', $produk->id)->sum('jumlah');
 
+            // Koreksi STO (jenis = 'koreksi')
+            $koreksi = \App\Models\StokMasukDetail::whereHas('stokMasuk', function ($q) use ($tahun, $bln, $wilayahId) {
+                $q->whereYear('tanggal', $tahun)
+                    ->whereMonth('tanggal', $bln)
+                    ->where('jenis', 'koreksi');
+                if ($wilayahId !== 'semua')
+                    $q->where('wilayah_id', $wilayahId);
+            })->where('produk_id', $produk->id)->sum('jumlah');
+
             // OUT ke gerobak
             $out = \App\Models\DistribusiDetail::whereHas('distribusi', function ($q) use ($tahun, $bln, $wilayahId) {
                 $q->whereYear('tanggal', $tahun)->whereMonth('tanggal', $bln);
@@ -67,7 +76,7 @@ class StokController extends Controller
             })->where('produk_id', $produk->id)->sum('jumlah');
 
             $terjual = $out + $keluarWilayah;
-            $sisa = ($stokAwal + $masuk) - $terjual;
+            $sisa = ($stokAwal + $masuk + $koreksi) - $terjual;
             $hpp = $produk->hpp;
             $nilaiSisa = max(0, $sisa) * $hpp;
 
@@ -75,12 +84,13 @@ class StokController extends Controller
                 'produk' => $produk,
                 'stok_awal' => $stokAwal,
                 'masuk' => $masuk,
+                'koreksi' => $koreksi,
                 'terjual' => $terjual,
                 'sisa' => $sisa,
                 'hpp' => $hpp,
                 'nilai_sisa' => $nilaiSisa,
             ];
-        })->filter(fn($r) => $r['stok_awal'] > 0 || $r['masuk'] > 0 || $r['terjual'] > 0);
+        })->filter(fn($r) => $r['stok_awal'] > 0 || $r['masuk'] > 0 || $r['koreksi'] != 0 || $r['terjual'] > 0);
 
         return view('laporan.stok', compact(
             'bulan',

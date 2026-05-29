@@ -30,6 +30,9 @@ class StokOpname extends Model implements HasMedia
 
         $this->addMediaCollection('berita_acara')
             ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/webp']);
+
+        $this->addMediaCollection('video')
+            ->acceptsMimeTypes(['video/mp4', 'video/quicktime', 'video/x-msvideo', 'video/webm']);
     }
 
     public function wilayah()

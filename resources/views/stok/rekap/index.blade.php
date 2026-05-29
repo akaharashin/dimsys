@@ -12,8 +12,8 @@
 
     <div class="mb-4 px-4 py-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-700">
         <i class="fa-solid fa-circle-info mr-1"></i>
-        Stok Freezer menampilkan posisi stok <strong>SAAT INI</strong> secara kumulatif
-        (semua transaksi dari awal hingga hari ini).
+        Stok perusahaan = <strong>Freezer + Gerobak</strong> (sisa belum terjual masih milik perusahaan).
+        Data <strong>SAAT INI</strong> kumulatif dari awal hingga hari ini.
     </div>
 
     {{-- Filter --}}
@@ -67,27 +67,33 @@
 
     {{-- Summary Cards --}}
     @if($rekap->count())
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
             <div class="bg-white rounded-xl p-4 shadow-sm">
                 <p class="text-xs text-gray-400 uppercase">Total Produk</p>
                 <p class="text-xl font-bold text-gray-700 mt-1">{{ $rekap->count() }}</p>
             </div>
-            <div class="bg-white rounded-xl p-4 shadow-sm">
-                <p class="text-xs text-gray-400 uppercase">Total Stok</p>
+            <div class="bg-white rounded-xl p-4 shadow-sm border-l-4 border-blue-400">
+                <p class="text-xs text-gray-400 uppercase">Stok Freezer</p>
+                <p class="text-xl font-bold text-blue-600 mt-1">
+                    {{ number_format($rekap->sum('stok_freezer')) }} pcs
+                </p>
+            </div>
+            <div class="bg-white rounded-xl p-4 shadow-sm border-l-4" style="border-color:#F5F028">
+                <p class="text-xs text-gray-400 uppercase">Stok Gerobak</p>
                 <p class="text-xl font-bold text-yellow-600 mt-1">
-                    {{ number_format($rekap->sum('stok_akhir')) }} pcs
+                    {{ number_format($rekap->sum('stok_gerobak')) }} pcs
+                </p>
+            </div>
+            <div class="bg-white rounded-xl p-4 shadow-sm border-l-4" style="border-color:#A51616">
+                <p class="text-xs text-gray-400 uppercase">Total Perusahaan</p>
+                <p class="text-xl font-bold mt-1" style="color:#A51616">
+                    {{ number_format($rekap->sum('stok_total')) }} pcs
                 </p>
             </div>
             <div class="bg-white rounded-xl p-4 shadow-sm">
                 <p class="text-xs text-gray-400 uppercase">Nilai Stok</p>
                 <p class="text-xl font-bold text-green-600 mt-1">
                     Rp {{ number_format($rekap->sum('nilai_stok')) }}
-                </p>
-            </div>
-            <div class="bg-white rounded-xl p-4 shadow-sm">
-                <p class="text-xs text-gray-400 uppercase">Stok Menipis</p>
-                <p class="text-xl font-bold text-red-500 mt-1">
-                    {{ $rekap->where('status', 'menipis')->count() + $rekap->where('status', 'habis')->count() }} produk
                 </p>
             </div>
         </div>
@@ -103,7 +109,9 @@
                     <th class="px-4 py-3 text-right">Total Masuk</th>
                     <th class="px-4 py-3 text-right">OUT Gerobak</th>
                     <th class="px-4 py-3 text-right">Keluar Wilayah</th>
-                    <th class="px-4 py-3 text-right">Stok Akhir</th>
+                    <th class="px-4 py-3 text-right text-blue-600">Stok Freezer</th>
+                    <th class="px-4 py-3 text-right text-yellow-600">Stok Gerobak</th>
+                    <th class="px-4 py-3 text-right" style="color:#A51616">Total</th>
                     <th class="px-4 py-3 text-right">HPP Rata-rata</th>
                     <th class="px-4 py-3 text-right">Nilai Stok</th>
                     <th class="px-4 py-3 text-center">Status</th>
@@ -126,9 +134,15 @@
                         <td class="px-4 py-3 text-right text-gray-600">
                             {{ number_format($r['keluar_wilayah']) }}
                         </td>
-                        <td
-                            class="px-4 py-3 text-right font-bold {{ $r['stok_akhir'] <= 0 ? 'text-red-600' : ($r['stok_akhir'] <= 50 ? 'text-yellow-600' : 'text-gray-700') }}">
-                            {{ number_format($r['stok_akhir']) }} pcs
+                        <td class="px-4 py-3 text-right font-medium {{ $r['stok_freezer'] <= 0 ? 'text-red-600' : 'text-blue-700' }}">
+                            {{ number_format($r['stok_freezer']) }}
+                        </td>
+                        <td class="px-4 py-3 text-right font-medium {{ $r['stok_gerobak'] < 0 ? 'text-red-600' : 'text-yellow-700' }}">
+                            {{ number_format($r['stok_gerobak']) }}
+                        </td>
+                        <td class="px-4 py-3 text-right font-bold {{ $r['stok_total'] <= 0 ? 'text-red-600' : ($r['stok_total'] <= 50 ? 'text-yellow-600' : '') }}"
+                            @if($r['stok_total'] > 50) style="color:#A51616" @endif>
+                            {{ number_format($r['stok_total']) }} pcs
                         </td>
                         <td class="px-4 py-3 text-right text-gray-500">
                             Rp {{ number_format($r['hpp_rata']) }}
@@ -148,7 +162,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="8" class="px-4 py-8 text-center text-gray-400">
+                        <td colspan="11" class="px-4 py-8 text-center text-gray-400">
                             Belum ada data stok untuk wilayah ini.
                         </td>
                     </tr>
@@ -161,7 +175,9 @@
                         <td class="px-4 py-3 text-right text-green-600">{{ number_format($rekap->sum('masuk')) }}</td>
                         <td class="px-4 py-3 text-right text-gray-700">{{ number_format($rekap->sum('out_gerobak')) }}</td>
                         <td class="px-4 py-3 text-right text-gray-700">{{ number_format($rekap->sum('keluar_wilayah')) }}</td>
-                        <td class="px-4 py-3 text-right text-gray-700">{{ number_format($rekap->sum('stok_akhir')) }} pcs</td>
+                        <td class="px-4 py-3 text-right text-blue-700">{{ number_format($rekap->sum('stok_freezer')) }}</td>
+                        <td class="px-4 py-3 text-right text-yellow-700">{{ number_format($rekap->sum('stok_gerobak')) }}</td>
+                        <td class="px-4 py-3 text-right" style="color:#A51616">{{ number_format($rekap->sum('stok_total')) }} pcs</td>
                         <td></td>
                         <td class="px-4 py-3 text-right text-gray-700">Rp {{ number_format($rekap->sum('nilai_stok')) }}</td>
                         <td></td>

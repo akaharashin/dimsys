@@ -6,7 +6,9 @@ use App\Traits\LogsActivity;
 use App\Models\Kas;
 use App\Models\Rekening;
 use App\Models\Outlet;
+use App\Models\LaporanHarian;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\Transaksi\KasExport;
 
@@ -166,6 +168,142 @@ class KasController extends Controller
                 ->with('success', 'Transaksi kas berhasil dicatat.');
         } catch (\Exception $e) {
             return back()->with('error', 'Gagal mencatat transaksi kas. Silakan coba lagi.')->withInput();
+        }
+    }
+
+    public function getSetoranOutlet(Request $request)
+    {
+        $outletId = $request->outlet_id;
+        $tanggal  = $request->tanggal;
+
+        if (!$outletId || !$tanggal) {
+            return response()->json([
+                'total_setor'  => 0,
+                'pesan'        => 'Outlet dan tanggal wajib diisi.',
+                'ada'          => false,
+                'sudah_disetor'=> false,
+            ]);
+        }
+
+        // Cek apakah sudah pernah dicatat sebagai setoran outlet di kas
+        $sudahDisetor = Kas::where('outlet_id', $outletId)
+            ->whereDate('tanggal', $tanggal)
+            ->where('tipe', 'debit')
+            ->where('kategori', 'Pembayaran')
+            ->where('keterangan', 'like', 'Setoran %')
+            ->exists();
+
+        $laporan = LaporanHarian::where('outlet_id', $outletId)
+            ->whereDate('tanggal', $tanggal)
+            ->first();
+
+        if (!$laporan) {
+            return response()->json([
+                'total_setor'  => 0,
+                'pesan'        => 'Belum ada laporan harian untuk outlet & tanggal ini.',
+                'ada'          => false,
+                'sudah_disetor'=> $sudahDisetor,
+                'pesan_disetor'=> $sudahDisetor ? 'Setoran outlet ini untuk tanggal tersebut sudah dicatat sebelumnya.' : null,
+            ]);
+        }
+
+        return response()->json([
+            'total_setor'  => (int) $laporan->total_setor,
+            'laporan_id'   => $laporan->id,
+            'ada'          => true,
+            'sudah_disetor'=> $sudahDisetor,
+            'pesan_disetor'=> $sudahDisetor ? 'Setoran outlet ini untuk tanggal tersebut sudah dicatat sebelumnya. Batalkan dulu yang lama jika ingin input ulang.' : null,
+        ]);
+    }
+
+    public function storeSetoran(Request $request)
+    {
+        $request->validate([
+            'rekening_id'             => 'required|exists:rekening,id',
+            'outlet_id'               => 'required|exists:outlet,id',
+            'tanggal'                 => 'required|date|date_equals:today',
+            'total_setor'             => 'required|numeric|min:0',
+            'pengeluaran'             => 'nullable|array',
+            'pengeluaran.*.keterangan' => 'required_with:pengeluaran|string|max:255',
+            'pengeluaran.*.jumlah'    => 'required_with:pengeluaran|numeric|min:1',
+        ], [
+            'rekening_id.required'   => 'Rekening wajib dipilih.',
+            'outlet_id.required'     => 'Outlet wajib dipilih.',
+            'tanggal.required'       => 'Tanggal wajib diisi.',
+            'tanggal.date_equals'    => 'Tanggal transaksi harus hari ini.',
+            'total_setor.required'   => 'Total setor wajib diisi (otomatis dari laporan harian).',
+            'pengeluaran.*.keterangan.required_with' => 'Keterangan pengeluaran wajib diisi.',
+            'pengeluaran.*.jumlah.required_with'     => 'Jumlah pengeluaran wajib diisi.',
+            'pengeluaran.*.jumlah.min'               => 'Jumlah pengeluaran minimal Rp 1.',
+        ]);
+
+        // Guard double-setoran: cek sebelum DB::transaction
+        $sudahAda = Kas::where('outlet_id', $request->outlet_id)
+            ->whereDate('tanggal', $request->tanggal)
+            ->where('tipe', 'debit')
+            ->where('kategori', 'Pembayaran')
+            ->where('keterangan', 'like', 'Setoran %')
+            ->exists();
+
+        if ($sudahAda) {
+            return back()
+                ->with('error', 'Setoran outlet ini untuk tanggal tersebut sudah dicatat. Batalkan dulu yang lama jika ingin input ulang.')
+                ->withInput();
+        }
+
+        $outlet = Outlet::find($request->outlet_id);
+        $tanggalLabel = \Carbon\Carbon::parse($request->tanggal)->locale('id')->isoFormat('D MMMM Y');
+
+        try {
+            DB::transaction(function () use ($request, $outlet, $tanggalLabel) {
+                // 1. Pemasukan: setoran outlet
+                if ($request->total_setor > 0) {
+                    Kas::create([
+                        'rekening_id'  => $request->rekening_id,
+                        'outlet_id'    => $request->outlet_id,
+                        'tanggal'      => $request->tanggal,
+                        'tipe'         => 'debit',
+                        'kategori'     => 'Pembayaran',
+                        'sub_kategori' => $outlet?->nama,
+                        'keterangan'   => 'Setoran ' . ($outlet?->nama ?? '-') . ' ' . $tanggalLabel,
+                        'jumlah'       => $request->total_setor,
+                        'saldo'        => 0,
+                        'created_by'   => auth()->id(),
+                    ]);
+                }
+
+                // 2. Pengeluaran operasional agen (per baris)
+                foreach ($request->pengeluaran ?? [] as $p) {
+                    if (empty($p['keterangan']) || empty($p['jumlah'])) continue;
+                    Kas::create([
+                        'rekening_id'  => $request->rekening_id,
+                        'outlet_id'    => $request->outlet_id,
+                        'tanggal'      => $request->tanggal,
+                        'tipe'         => 'kredit',
+                        'kategori'     => 'Operasional Agen',
+                        'sub_kategori' => $outlet?->nama,
+                        'keterangan'   => $p['keterangan'],
+                        'jumlah'       => $p['jumlah'],
+                        'saldo'        => 0,
+                        'created_by'   => auth()->id(),
+                    ]);
+                }
+            });
+
+            $this->logActivity(
+                'create', 'Kas Harian - Setoran', null,
+                after: [
+                    'outlet_id'   => $request->outlet_id,
+                    'tanggal'     => $request->tanggal,
+                    'total_setor' => $request->total_setor,
+                ],
+                label: 'Kas Setoran ' . ($outlet?->nama ?? '-') . ' - ' . $request->tanggal
+            );
+
+            return redirect()->route('transaksi.kas.index', ['rekening_id' => $request->rekening_id])
+                ->with('success', 'Setoran outlet & pengeluaran operasional berhasil dicatat.');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Gagal mencatat setoran. Silakan coba lagi.')->withInput();
         }
     }
 

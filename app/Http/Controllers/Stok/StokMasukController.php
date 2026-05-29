@@ -7,6 +7,7 @@ use App\Models\StokMasuk;
 use App\Models\StokMasukDetail;
 use App\Models\DistribusiDetail;
 use App\Models\PenjualanWilayahDetail;
+use App\Models\LaporanHarianDetail;
 use App\Models\Wilayah;
 use App\Models\Supplier;
 use App\Models\Produk;
@@ -373,7 +374,10 @@ class StokMasukController extends Controller
 
     private function hitungStokAkhirBulan(string $wilayahId, $produkList, int $tahun, int $bulan): array
     {
-        return $produkList->map(function ($produk) use ($wilayahId, $tahun, $bulan) {
+        // Akhir bulan untuk filter "snapshot gerobak per akhir bulan"
+        $akhirBulan = Carbon::create($tahun, $bulan)->endOfMonth()->format('Y-m-d');
+
+        return $produkList->map(function ($produk) use ($wilayahId, $tahun, $bulan, $akhirBulan) {
 
             $stokAwal = StokMasukDetail::whereHas('stokMasuk', function ($q) use ($tahun, $bulan, $wilayahId) {
                 $q->whereYear('tanggal', $tahun)
@@ -386,6 +390,13 @@ class StokMasukController extends Controller
                 $q->whereYear('tanggal', $tahun)
                   ->whereMonth('tanggal', $bulan)
                   ->where('jenis', 'masuk')
+                  ->where('wilayah_id', $wilayahId);
+            })->where('produk_id', $produk->id)->sum('jumlah');
+
+            $koreksi = StokMasukDetail::whereHas('stokMasuk', function ($q) use ($tahun, $bulan, $wilayahId) {
+                $q->whereYear('tanggal', $tahun)
+                  ->whereMonth('tanggal', $bulan)
+                  ->where('jenis', 'koreksi')
                   ->where('wilayah_id', $wilayahId);
             })->where('produk_id', $produk->id)->sum('jumlah');
 
@@ -402,17 +413,38 @@ class StokMasukController extends Controller
                   ->where('status', 'disetujui');
             })->where('produk_id', $produk->id)->sum('jumlah');
 
-            $stokAkhir = ($stokAwal + $masuk) - $out - $keluarWilayah;
+            // Stok Freezer akhir bulan (per-bulan, mengikuti rumus generate)
+            $stokFreezerAkhir = ($stokAwal + $masuk + $koreksi) - $out - $keluarWilayah;
+
+            // Stok GEROBAK per akhir bulan = SUM(distribusi_out s/d akhir bulan) - SUM(terjual s/d akhir bulan)
+            // (running balance kumulatif — gerobak otomatis carry tanpa di-reset)
+            $gerobakDistOut = DistribusiDetail::whereHas('distribusi', function ($q) use ($wilayahId, $akhirBulan) {
+                $q->whereDate('tanggal', '<=', $akhirBulan)
+                  ->whereHas('outlet', fn($o) => $o->where('wilayah_id', $wilayahId));
+            })->where('produk_id', $produk->id)->sum('jumlah_out');
+
+            $gerobakTerjual = LaporanHarianDetail::whereHas('laporan', function ($q) use ($wilayahId, $akhirBulan) {
+                $q->whereDate('tanggal', '<=', $akhirBulan)
+                  ->whereHas('outlet', fn($o) => $o->where('wilayah_id', $wilayahId));
+            })->where('produk_id', $produk->id)->sum('terjual');
+
+            $stokGerobakAkhir = $gerobakDistOut - $gerobakTerjual;
+
+            $stokTotalAkhir = $stokFreezerAkhir + $stokGerobakAkhir;
 
             return [
-                'produk_id'   => $produk->id,
-                'produk_nama' => $produk->nama,
-                'stok_awal'   => (int) $stokAwal,
-                'masuk'       => (int) $masuk,
-                'out'         => (int) ($out + $keluarWilayah),
-                'stok_akhir'  => (int) $stokAkhir,
-                'hpp'         => $produk->hpp,
+                'produk_id'    => $produk->id,
+                'produk_nama'  => $produk->nama,
+                'stok_awal'    => (int) $stokAwal,
+                'masuk'        => (int) $masuk,
+                'koreksi'      => (int) $koreksi,
+                'out'          => (int) ($out + $keluarWilayah),
+                'stok_akhir'   => (int) $stokFreezerAkhir,  // value yang akan jadi stok_awal bulan baru
+                'stok_freezer' => (int) $stokFreezerAkhir,
+                'stok_gerobak' => (int) $stokGerobakAkhir,
+                'stok_total'   => (int) $stokTotalAkhir,
+                'hpp'          => $produk->hpp,
             ];
-        })->filter(fn($r) => $r['stok_akhir'] > 0)->values()->toArray();
+        })->filter(fn($r) => $r['stok_freezer'] > 0 || $r['stok_gerobak'] != 0)->values()->toArray();
     }
 }

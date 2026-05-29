@@ -299,6 +299,31 @@
         </script>
     @endif
 
+    {{-- Flash dari sessionStorage (untuk redirect setelah AJAX/upload sukses) --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            try {
+                var msg = sessionStorage.getItem('flash_success');
+                if (msg) {
+                    sessionStorage.removeItem('flash_success');
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            icon: 'success', title: 'Berhasil!', text: msg,
+                            timer: 2500, timerProgressBar: true, showConfirmButton: false,
+                            toast: true, position: 'top-end',
+                        });
+                    } else {
+                        var box = document.createElement('div');
+                        box.className = 'mb-4 p-3 bg-green-100 border border-green-300 text-green-700 rounded-lg flex items-center gap-2 text-sm';
+                        box.innerHTML = '<span class="flex-1">✅ ' + msg + '</span>';
+                        var main = document.querySelector('main');
+                        if (main) main.insertBefore(box, main.firstChild);
+                    }
+                }
+            } catch (e) {}
+        });
+    </script>
+
     @if(session('error'))
         <script>
             document.addEventListener('DOMContentLoaded', function () {

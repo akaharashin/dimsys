@@ -157,6 +157,22 @@ class PenjualanWilayahController extends Controller
             return back()->with('error', 'Minimal satu produk harus memiliki jumlah lebih dari 0.')->withInput();
         }
 
+        // Idempotency guard: cegah double-submit dalam 30 detik terakhir.
+        $duplikat = PenjualanWilayah::where('tipe', $tipe)
+            ->where('wilayah_asal_id', $request->wilayah_asal_id)
+            ->where('wilayah_tujuan_id', $request->wilayah_tujuan_id)
+            ->whereDate('tanggal', $request->tanggal)
+            ->where('created_by', auth()->id())
+            ->where('created_at', '>=', now()->subSeconds(30))
+            ->exists();
+
+        if ($duplikat) {
+            $label = $tipe === 'transfer' ? 'Pindah stok' : 'Penjualan wilayah';
+            return back()
+                ->with('error', $label . ' untuk wilayah & tanggal ini baru saja disimpan. Cek daftar sebelum menyimpan ulang.')
+                ->withInput();
+        }
+
         // Validasi stok tersedia (hanya hitung yang sudah disetujui)
         foreach ($request->jumlah as $pid => $jumlah) {
             $jumlah = (int) $jumlah;
@@ -422,13 +438,14 @@ class PenjualanWilayahController extends Controller
             if ($pindahStok->getMedia('video')->count() >= 3) {
                 return response()->json(['error' => 'Maksimal 3 video per transaksi.'], 422);
             }
+            $namaUpload = $request->file('foto')?->getClientOriginalName() ?? 'video';
             $request->validate([
                 'foto' => 'required|file|mimes:mp4,mov,avi,webm|max:102400',
                 'tipe' => 'required|in:foto_real,berita_acara,video',
             ], [
                 'foto.required' => 'File video wajib dipilih.',
-                'foto.mimes' => 'Format tidak didukung. Gunakan MP4, MOV, AVI, atau WebM.',
-                'foto.max' => 'Ukuran video maksimal 100 MB.',
+                'foto.mimes'    => 'Format tidak didukung. Gunakan MP4, MOV, AVI, atau WebM.',
+                'foto.max'      => 'Ukuran video maksimal 100 MB. File "' . $namaUpload . '" terlalu besar.',
             ]);
         } else {
             $fotoCount = $pindahStok->getMedia('foto_real')->count()
@@ -450,15 +467,13 @@ class PenjualanWilayahController extends Controller
         $namaAsli = $file->getClientOriginalName();
 
         if ($tipe === 'video') {
-            $namaFile = 'video_' . uniqid() . '_' . time() . '.mp4';
-            ['ukuran' => $ukuranKb, 'durasi' => $durasi] = $this->prosesVideo($file, $namaFile);
+            // Simpan video langsung tanpa FFmpeg compress — pola identik dengan foto.
+            $ext      = strtolower($file->getClientOriginalExtension() ?: 'mp4');
+            $namaFile = 'video_' . uniqid() . '_' . time() . '.' . $ext;
 
-            $videoPath = storage_path('app/public/pindah-stok/videos/' . $namaFile);
-
-            $media = $pindahStok->addMedia($videoPath)
+            $media = $pindahStok->addMedia($file->getRealPath())
                 ->usingFileName($namaFile)
                 ->usingName($namaAsli)
-                ->withCustomProperties(['durasi' => $durasi])
                 ->toMediaCollection('video');
         } else {
             $namaFile = 'foto_' . uniqid() . '_' . time() . '.jpg';
@@ -519,74 +534,6 @@ class PenjualanWilayahController extends Controller
             'ukuran_kb' => (int) ceil($media->size / 1024),
             'nama_asli' => $media->file_name,
         ]);
-    }
-
-    private function prosesVideo($file, string $namaFile): array
-    {
-        $videoDir = storage_path('app/public/pindah-stok/videos');
-        if (!is_dir($videoDir)) {
-            @mkdir($videoDir, 0755, true);
-        }
-
-        $outputPath = $videoDir . DIRECTORY_SEPARATOR . $namaFile;
-        $durasiDetik = null;
-        $compressed = false;
-
-        // Cari FFmpeg
-        $ffmpegPath = null;
-        if (function_exists('shell_exec')) {
-            $checkCmd = PHP_OS_FAMILY === 'Windows' ? 'where ffmpeg 2>NUL' : 'which ffmpeg 2>/dev/null';
-            $check = @shell_exec($checkCmd);
-            if (!empty(trim($check ?? ''))) {
-                $lines = array_filter(array_map('trim', explode("\n", $check)));
-                $ffmpegPath = reset($lines);
-            }
-        }
-
-        if ($ffmpegPath) {
-            $inputPath = realpath($file->getRealPath());
-            $null = PHP_OS_FAMILY === 'Windows' ? 'NUL' : '/dev/null';
-
-            // Durasi via ffprobe
-            $ffprobePath = str_replace(
-                ['ffmpeg.exe', 'ffmpeg'],
-                ['ffprobe.exe', 'ffprobe'],
-                $ffmpegPath
-            );
-            if (file_exists($ffprobePath)) {
-                $dur = @shell_exec(sprintf(
-                    '"%s" -v quiet -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "%s" 2>%s',
-                    $ffprobePath,
-                    $inputPath,
-                    $null
-                ));
-                if (is_numeric(trim($dur ?? ''))) {
-                    $durasiDetik = (int) round((float) $dur);
-                }
-            }
-
-            // Compress: max 720p, H264, 1000kbps video, 128kbps audio
-            $cmd = sprintf(
-                '"%s" -i "%s" -vcodec libx264 -vf scale=-2:720 -b:v 1000k -b:a 128k -movflags +faststart -y "%s" 2>%s',
-                $ffmpegPath,
-                $inputPath,
-                $outputPath,
-                $null
-            );
-            @shell_exec($cmd);
-
-            if (file_exists($outputPath) && filesize($outputPath) > 0) {
-                $compressed = true;
-            }
-        }
-
-        if (!$compressed) {
-            $file->move($videoDir, $namaFile);
-        }
-
-        $ukuranKb = file_exists($outputPath) ? (int) ceil(filesize($outputPath) / 1024) : 0;
-
-        return ['ukuran' => $ukuranKb, 'durasi' => $durasiDetik];
     }
 
     public function hapusFoto($fotoId)
