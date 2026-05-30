@@ -10,11 +10,12 @@ use App\Models\Produk;
 use App\Models\Wilayah;
 use Illuminate\Http\Request;
 use App\Traits\LogsActivity;
+use App\Traits\ChecksWilayahAccess;
 use Maatwebsite\Excel\Facades\Excel;
 
 class DistribusiController extends Controller
 {
-    use LogsActivity;
+    use LogsActivity, ChecksWilayahAccess;
     public function index(Request $request)
     {
         $wilayahList = Wilayah::where('aktif', true)->orderBy('nama')->get();
@@ -190,11 +191,14 @@ class DistribusiController extends Controller
     public function show(Distribusi $distribusi)
     {
         $distribusi->load(['outlet.wilayah', 'details.produk']);
+        $this->otorisasiWilayah(optional($distribusi->outlet)->wilayah_id);
         return view('stok.distribusi.show', compact('distribusi'));
     }
 
     public function destroy(Distribusi $distribusi)
     {
+        $this->otorisasiWilayah(optional($distribusi->outlet)->wilayah_id);
+
         $this->logActivity(
             'delete', 'Distribusi', $distribusi,
             before: $distribusi->only(['id', 'outlet_id', 'tanggal', 'keterangan']),

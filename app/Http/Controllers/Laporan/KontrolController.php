@@ -78,6 +78,9 @@ class KontrolController extends Controller
     {
         $bulan = $request->input('bulan', now()->format('Y-m'));
         $wilayahId = $request->input('wilayah_id', 'semua');
+        if (auth()->user()->hasRole('koordinator')) {
+            $wilayahId = auth()->user()->wilayah_id;
+        }
         return Excel::download(new KontrolExport($bulan, $wilayahId), 'kontrol-penjualan-' . $bulan . '.xlsx');
     }
 }

@@ -28,6 +28,10 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
+    // Media bukti (foto/video STO & Pindah Stok) — wajib auth + cek wilayah di controller.
+    Route::get('media/{media}', [\App\Http\Controllers\MediaController::class, 'show'])
+        ->name('media.show');
+
     // Master — admin_pusat full access, owner read only (dikontrol di view)
     Route::middleware('role:admin_pusat|owner')->prefix('master')->name('master.')->group(function () {
         Route::get('wilayah/export', [WilayahController::class, 'export'])->name('wilayah.export');

@@ -209,7 +209,7 @@
         <div class="grid grid-cols-2 md:grid-cols-3 gap-3 mb-2">
             @foreach($fotoReal as $i => $foto)
             <div class="relative group rounded-lg border border-gray-100">
-                <img src="{{ asset('storage/' . $foto->id . '/' . $foto->file_name) }}" alt="{{ $foto->file_name }}"
+                <img src="{{ route('media.show', $foto->id) }}" alt="{{ $foto->file_name }}"
                     class="w-full h-36 object-cover rounded-t-lg cursor-pointer hover:opacity-90 transition"
                     onclick="openLightbox('foto_real', {{ $i }})">
                 <div class="px-2 py-1.5">
@@ -242,7 +242,7 @@
         <div class="grid grid-cols-2 md:grid-cols-3 gap-3 mb-2">
             @foreach($beritaAcara as $i => $foto)
             <div class="relative group rounded-lg border border-gray-100">
-                <img src="{{ asset('storage/' . $foto->id . '/' . $foto->file_name) }}" alt="{{ $foto->file_name }}"
+                <img src="{{ route('media.show', $foto->id) }}" alt="{{ $foto->file_name }}"
                     class="w-full h-36 object-cover rounded-t-lg cursor-pointer hover:opacity-90 transition"
                     onclick="openLightbox('berita_acara', {{ $i }})">
                 <div class="px-2 py-1.5">
@@ -278,7 +278,7 @@
             <div class="relative group rounded-lg border border-gray-100">
                 <div class="relative cursor-pointer" onclick="openLightbox('video', {{ $i }})">
                     <video class="w-full h-36 object-cover rounded-t-lg" preload="metadata" muted data-thumb>
-                        <source src="{{ asset('storage/' . $vid->id . '/' . $vid->file_name) }}" type="video/mp4">
+                        <source src="{{ route('media.show', $vid->id) }}" type="video/mp4">
                     </video>
                     {{-- Play button overlay --}}
                     <div class="absolute inset-0 flex items-center justify-center rounded-t-lg">
@@ -386,10 +386,10 @@
 <script>
 // ── Data dari server ──────────────────────────────────────────────────────────
 var fotosData  = {
-    foto_real:    @json($fotoReal->map(fn($f) => asset('storage/' . $f->id . '/' . $f->file_name))->values()),
-    berita_acara: @json($beritaAcara->map(fn($f) => asset('storage/' . $f->id . '/' . $f->file_name))->values()),
+    foto_real:    @json($fotoReal->map(fn($f) => route('media.show', $f->id))->values()),
+    berita_acara: @json($beritaAcara->map(fn($f) => route('media.show', $f->id))->values()),
 };
-var videosData = @json($videos->map(fn($v) => asset('storage/' . $v->id . '/' . $v->file_name))->values());
+var videosData = @json($videos->map(fn($v) => route('media.show', $v->id))->values());
 
 // ── State ─────────────────────────────────────────────────────────────────────
 var currentTab    = 'foto_real';

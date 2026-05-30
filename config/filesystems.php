@@ -47,6 +47,17 @@ return [
             'report' => false,
         ],
 
+        // Disk PRIVAT untuk media bukti (foto/video STO & Pindah Stok).
+        // TIDAK di-symlink ke public → hanya bisa diakses lewat route media.show
+        // yang sudah dicek auth + wilayah. Mencegah unduh via URL tebakan.
+        'media' => [
+            'driver' => 'local',
+            'root' => storage_path('app/media'),
+            'visibility' => 'private',
+            'throw' => false,
+            'report' => false,
+        ],
+
         's3' => [
             'driver' => 's3',
             'key' => env('AWS_ACCESS_KEY_ID'),

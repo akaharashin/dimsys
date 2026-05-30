@@ -3,6 +3,7 @@ namespace App\Http\Controllers\Stok;
 
 use App\Http\Controllers\Controller;
 use App\Traits\LogsActivity;
+use App\Traits\ChecksWilayahAccess;
 use App\Models\StokOpname;
 use App\Models\StokOpnameDetail;
 use App\Models\Wilayah;
@@ -21,7 +22,7 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class StokOpnameController extends Controller
 {
-    use LogsActivity;
+    use LogsActivity, ChecksWilayahAccess;
     public function index(Request $request)
     {
         $wilayahList = Wilayah::where('aktif', true)->orderBy('nama')->get();
@@ -71,6 +72,12 @@ class StokOpnameController extends Controller
     public function getStokSistem(Request $request)
     {
         $wilayahId = $request->wilayah_id;
+
+        // Koordinator hanya boleh hitung stok sistem wilayahnya sendiri.
+        if (!$this->bolehAksesWilayah($wilayahId)) {
+            return response()->json(['error' => 'Anda tidak memiliki akses ke data wilayah ini.'], 403);
+        }
+
         $tanggal   = $request->tanggal ?: Carbon::today()->format('Y-m-d');
         $produkList = Produk::where('aktif', true)->orderBy('nama')->get();
 
@@ -147,6 +154,11 @@ class StokOpnameController extends Controller
                 'ada_sto_belum_koreksi' => false,
                 'ada_sto_sudah_koreksi' => false,
             ]);
+        }
+
+        // Koordinator hanya boleh mengecek wilayahnya sendiri.
+        if (!$this->bolehAksesWilayah($wilayahId)) {
+            return response()->json(['error' => 'Anda tidak memiliki akses ke data wilayah ini.'], 403);
         }
 
         $adaSudahKoreksi = StokOpname::where('wilayah_id', $wilayahId)
@@ -280,12 +292,15 @@ class StokOpnameController extends Controller
 
     public function show(StokOpname $stokOpname)
     {
+        $this->otorisasiWilayah($stokOpname->wilayah_id);
         $stokOpname->load(['wilayah', 'details.produk', 'createdBy']);
         return view('stok.opname.show', compact('stokOpname'));
     }
 
     public function terapkanKoreksi(StokOpname $stokOpname)
     {
+        $this->otorisasiWilayah($stokOpname->wilayah_id);
+
         if ($stokOpname->sudahDikoreksi()) {
             return back()->with('error', 'Koreksi sudah pernah diterapkan untuk STO ini.');
         }
@@ -396,6 +411,8 @@ class StokOpnameController extends Controller
 
     public function destroy(StokOpname $stokOpname)
     {
+        $this->otorisasiWilayah($stokOpname->wilayah_id);
+
         $koreksi = StokMasuk::where('stok_opname_id', $stokOpname->id)->first();
         $adaKoreksi = (bool) $koreksi;
 
@@ -435,6 +452,11 @@ class StokOpnameController extends Controller
 
         if (!$user->hasRole('admin_pusat') && !$user->hasRole('koordinator')) {
             return response()->json(['error' => 'Anda tidak berhak mengupload foto.'], 403);
+        }
+
+        // Koordinator hanya boleh upload bukti STO wilayahnya sendiri.
+        if (!$this->bolehAksesWilayah($stokOpname->wilayah_id)) {
+            return response()->json(['error' => 'Anda tidak memiliki akses ke STO wilayah ini.'], 403);
         }
 
         $tipe = $request->input('tipe');
@@ -536,7 +558,7 @@ class StokOpnameController extends Controller
         return response()->json([
             'success'   => true,
             'id'        => $media->id,
-            'url'       => $media->getUrl(),
+            'url'       => route('media.show', $media->id),
             'ukuran_kb' => (int) ceil($media->size / 1024),
             'nama_asli' => $media->file_name,
         ]);
@@ -559,6 +581,11 @@ class StokOpnameController extends Controller
             return response()->json(['error' => 'Anda tidak berhak menghapus file ini.'], 403);
         }
 
+        // Koordinator hanya boleh menghapus bukti STO wilayahnya sendiri.
+        if (!$this->bolehAksesWilayah($stokOpname->wilayah_id)) {
+            return response()->json(['error' => 'Anda tidak memiliki akses ke STO wilayah ini.'], 403);
+        }
+
         $media->delete();
 
         return response()->json(['success' => true]);
@@ -567,8 +594,13 @@ class StokOpnameController extends Controller
     public function export(Request $request)
     {
         $query = StokOpname::with(['wilayah', 'details.produk'])->orderByDesc('tanggal');
-        if ($request->filled('wilayah_id'))
+
+        // Koordinator: paksa hanya wilayahnya sendiri.
+        if (auth()->user()->hasRole('koordinator')) {
+            $query->where('wilayah_id', auth()->user()->wilayah_id);
+        } elseif ($request->filled('wilayah_id')) {
             $query->where('wilayah_id', $request->wilayah_id);
+        }
         if ($request->filled('dari'))
             $query->whereDate('tanggal', '>=', $request->dari);
         if ($request->filled('sampai'))

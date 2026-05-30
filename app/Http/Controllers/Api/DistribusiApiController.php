@@ -4,11 +4,15 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Distribusi;
 use App\Models\LaporanHarian;
+use App\Models\Outlet;
+use App\Traits\ChecksWilayahAccess;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class DistribusiApiController extends Controller
 {
+    use ChecksWilayahAccess;
+
     public function getByOutletTanggal(Request $request)
     {
         $outletId = $request->outlet_id;
@@ -16,6 +20,12 @@ class DistribusiApiController extends Controller
 
         if (!$outletId || !$tanggal) {
             return response()->json([]);
+        }
+
+        // Koordinator hanya boleh akses outlet di wilayahnya sendiri.
+        $outlet = Outlet::find($outletId);
+        if (!$outlet || !$this->bolehAksesWilayah($outlet->wilayah_id)) {
+            return response()->json(['error' => 'Anda tidak memiliki akses ke outlet ini.'], 403);
         }
 
         $kemarin = Carbon::parse($tanggal)->subDay()->format('Y-m-d');

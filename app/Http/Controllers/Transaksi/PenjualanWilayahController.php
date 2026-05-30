@@ -3,6 +3,7 @@ namespace App\Http\Controllers\Transaksi;
 
 use App\Http\Controllers\Controller;
 use App\Traits\LogsActivity;
+use App\Traits\ChecksWilayahAccess;
 use App\Models\PenjualanWilayah;
 use App\Models\PenjualanWilayahDetail;
 use App\Models\StokMasuk;
@@ -17,7 +18,7 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class PenjualanWilayahController extends Controller
 {
-    use LogsActivity;
+    use LogsActivity, ChecksWilayahAccess;
     public function index(Request $request)
     {
         $wilayahList = Wilayah::where('aktif', true)->orderBy('nama')->get();
@@ -66,6 +67,16 @@ class PenjualanWilayahController extends Controller
 
         // Summary: financial totals only for penjualan type
         $summaryQuery = PenjualanWilayah::where('tipe', 'penjualan');
+
+        // Koordinator: summary hanya untuk wilayahnya (sebagai asal atau tujuan),
+        // bukan agregat semua wilayah.
+        if (auth()->user()->hasRole('koordinator')) {
+            $summaryQuery->where(function ($q) {
+                $q->where('wilayah_asal_id', auth()->user()->wilayah_id)
+                    ->orWhere('wilayah_tujuan_id', auth()->user()->wilayah_id);
+            });
+        }
+
         if ($request->filled('wilayah_asal_id'))
             $summaryQuery->where('wilayah_asal_id', $request->wilayah_asal_id);
         if ($request->filled('dari'))
@@ -90,6 +101,14 @@ class PenjualanWilayahController extends Controller
     {
         $query = PenjualanWilayah::with(['wilayahAsal', 'wilayahTujuan', 'details.produk'])
             ->orderByDesc('tanggal')->orderByDesc('created_at');
+
+        // Koordinator: hanya transaksi yang melibatkan wilayahnya (asal atau tujuan).
+        if (auth()->user()->hasRole('koordinator')) {
+            $query->where(function ($q) {
+                $q->where('wilayah_asal_id', auth()->user()->wilayah_id)
+                    ->orWhere('wilayah_tujuan_id', auth()->user()->wilayah_id);
+            });
+        }
 
         if ($request->filled('tipe'))
             $query->where('tipe', $request->tipe);
@@ -294,6 +313,10 @@ class PenjualanWilayahController extends Controller
 
     public function show(PenjualanWilayah $penjualanWilayah)
     {
+        $this->otorisasiWilayahSalahSatu([
+            $penjualanWilayah->wilayah_asal_id,
+            $penjualanWilayah->wilayah_tujuan_id,
+        ]);
         $penjualanWilayah->load(['wilayahAsal', 'wilayahTujuan', 'details.produk']);
         return view('transaksi.penjualan-wilayah.show', compact('penjualanWilayah'));
     }
@@ -530,7 +553,7 @@ class PenjualanWilayahController extends Controller
         return response()->json([
             'success' => true,
             'id' => $media->id,
-            'url' => $media->getUrl(),
+            'url' => route('media.show', $media->id),
             'ukuran_kb' => (int) ceil($media->size / 1024),
             'nama_asli' => $media->file_name,
         ]);
@@ -566,6 +589,11 @@ class PenjualanWilayahController extends Controller
 
     public function update(Request $request, PenjualanWilayah $penjualanWilayah)
     {
+        $this->otorisasiWilayahSalahSatu([
+            $penjualanWilayah->wilayah_asal_id,
+            $penjualanWilayah->wilayah_tujuan_id,
+        ]);
+
         if ($penjualanWilayah->tipe === 'transfer') {
             return back()->with('error', 'Transfer tidak memiliki status bayar.');
         }
@@ -594,6 +622,11 @@ class PenjualanWilayahController extends Controller
 
     public function destroy(PenjualanWilayah $penjualanWilayah)
     {
+        $this->otorisasiWilayahSalahSatu([
+            $penjualanWilayah->wilayah_asal_id,
+            $penjualanWilayah->wilayah_tujuan_id,
+        ]);
+
         if ($penjualanWilayah->status === 'disetujui') {
             return back()->with('error', 'Pindah stok yang sudah disetujui tidak dapat dibatalkan.');
         }

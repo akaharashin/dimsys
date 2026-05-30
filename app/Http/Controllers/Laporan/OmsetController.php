@@ -107,6 +107,9 @@ class OmsetController extends Controller
     {
         $bulan = $request->input('bulan', now()->format('Y-m'));
         $wilayahId = $request->input('wilayah_id', 'semua');
+        if (auth()->user()->hasRole('koordinator')) {
+            $wilayahId = auth()->user()->wilayah_id;
+        }
         $filename = 'rekap-omset-' . $bulan . '.xlsx';
         return Excel::download(new OmsetExport($bulan, $wilayahId), $filename);
     }

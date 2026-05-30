@@ -13,7 +13,9 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Spatie\Permission\Traits\HasRoles;
 
 
-#[Fillable(['name', 'username', 'email', 'no_hp', 'password', 'role', 'wilayah_id'])]
+// 'role' & 'wilayah_id' SENGAJA tidak fillable — cegah privilege escalation
+// via mass assignment. Keduanya di-set eksplisit di UserController.
+#[Fillable(['name', 'username', 'email', 'no_hp', 'password'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {

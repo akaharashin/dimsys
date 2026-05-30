@@ -3,6 +3,7 @@ namespace App\Http\Controllers\Transaksi;
 
 use App\Http\Controllers\Controller;
 use App\Traits\LogsActivity;
+use App\Traits\ChecksWilayahAccess;
 use App\Models\Kas;
 use App\Models\Rekening;
 use App\Models\Outlet;
@@ -14,7 +15,7 @@ use App\Exports\Transaksi\KasExport;
 
 class KasController extends Controller
 {
-    use LogsActivity;
+    use LogsActivity, ChecksWilayahAccess;
     public function index(Request $request)
     {
         $rekeningList = Rekening::where('aktif', true)->orderBy('nama')->get();
@@ -27,6 +28,13 @@ class KasController extends Controller
         }
 
         $selectedRekening = $request->input('rekening_id', $rekeningList->first()?->id);
+
+        // Koordinator tidak boleh memilih rekening di luar wilayahnya (IDOR via ?rekening_id=...)
+        if (auth()->user()->hasRole('koordinator') && $selectedRekening) {
+            if (!$rekeningList->contains('id', $selectedRekening)) {
+                $selectedRekening = $rekeningList->first()?->id;
+            }
+        }
 
         $query = Kas::with(['outlet', 'rekening'])
             ->where('rekening_id', $selectedRekening)
@@ -185,6 +193,12 @@ class KasController extends Controller
             ]);
         }
 
+        // Koordinator hanya boleh mengakses outlet di wilayahnya sendiri.
+        $outletCek = Outlet::find($outletId);
+        if (!$outletCek || !$this->bolehAksesWilayah($outletCek->wilayah_id)) {
+            return response()->json(['error' => 'Anda tidak memiliki akses ke outlet ini.'], 403);
+        }
+
         // Cek apakah sudah pernah dicatat sebagai setoran outlet di kas
         $sudahDisetor = Kas::where('outlet_id', $outletId)
             ->whereDate('tanggal', $tanggal)
@@ -309,6 +323,8 @@ class KasController extends Controller
 
     public function destroy(Kas $ka)
     {
+        $this->otorisasiWilayah(optional($ka->rekening)->wilayah_id);
+
         $this->logActivity(
             'delete', 'Kas Harian', $ka,
             before: $ka->only(['id', 'rekening_id', 'tipe', 'kategori', 'jumlah', 'tanggal']),
@@ -324,6 +340,9 @@ class KasController extends Controller
     {
         $selectedRekening = $request->rekening_id;
         $rekening = Rekening::find($selectedRekening);
+
+        // Koordinator hanya boleh export kas rekening wilayahnya sendiri.
+        $this->otorisasiWilayah(optional($rekening)->wilayah_id);
 
         $query = Kas::with(['outlet', 'rekening'])
             ->where('rekening_id', $selectedRekening)

@@ -3,6 +3,7 @@ namespace App\Http\Controllers\Transaksi;
 
 use App\Http\Controllers\Controller;
 use App\Traits\LogsActivity;
+use App\Traits\ChecksWilayahAccess;
 use App\Models\LaporanHarian;
 use App\Models\LaporanHarianDetail;
 use App\Models\Outlet;
@@ -12,7 +13,7 @@ use Illuminate\Http\Request;
 
 class LaporanHarianController extends Controller
 {
-    use LogsActivity;
+    use LogsActivity, ChecksWilayahAccess;
     public function index(Request $request)
     {
         $wilayahList = \App\Models\Wilayah::where('aktif', true)->orderBy('nama')->get();
@@ -234,11 +235,14 @@ class LaporanHarianController extends Controller
     public function show(LaporanHarian $laporanHarian)
     {
         $laporanHarian->load(['outlet.wilayah', 'details.produk']);
+        $this->otorisasiWilayah(optional($laporanHarian->outlet)->wilayah_id);
         return view('transaksi.laporan-harian.show', compact('laporanHarian'));
     }
 
     public function destroy(LaporanHarian $laporanHarian)
     {
+        $this->otorisasiWilayah(optional($laporanHarian->outlet)->wilayah_id);
+
         $this->logActivity(
             'delete', 'Laporan Harian', $laporanHarian,
             before: $laporanHarian->only(['id', 'outlet_id', 'tanggal', 'total_setor', 'status']),

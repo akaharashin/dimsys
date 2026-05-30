@@ -15,11 +15,12 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Traits\LogsActivity;
+use App\Traits\ChecksWilayahAccess;
 use Maatwebsite\Excel\Facades\Excel;
 
 class StokMasukController extends Controller
 {
-    use LogsActivity;
+    use LogsActivity, ChecksWilayahAccess;
     public function index(Request $request)
     {
         $wilayahList = Wilayah::where('aktif', true)->orderBy('nama')->get();
@@ -164,12 +165,15 @@ class StokMasukController extends Controller
 
     public function show(StokMasuk $masuk)
     {
+        $this->otorisasiWilayah($masuk->wilayah_id);
         $masuk->load(['wilayah', 'supplier', 'details.produk']);
         return view('stok.masuk.show', compact('masuk'));
     }
 
     public function destroy(StokMasuk $masuk)
     {
+        $this->otorisasiWilayah($masuk->wilayah_id);
+
         $this->logActivity(
             'delete', 'Stok Masuk', $masuk,
             before: $masuk->only(['id', 'wilayah_id', 'supplier_id', 'tanggal', 'jenis', 'keterangan']),

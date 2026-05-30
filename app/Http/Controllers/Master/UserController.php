@@ -85,9 +85,12 @@ class UserController extends Controller
                 'email'      => $request->email,
                 'no_hp'      => $request->no_hp,
                 'password'   => Hash::make($request->password),
-                'role'       => $request->role,
-                'wilayah_id' => $request->role === 'koordinator' ? $request->wilayah_id : null,
             ]);
+
+            // role & wilayah_id tidak fillable — set eksplisit (non mass-assign).
+            $user->role       = $request->role;
+            $user->wilayah_id = $request->role === 'koordinator' ? $request->wilayah_id : null;
+            $user->save();
 
             $user->assignRole($request->role);
 
@@ -138,8 +141,6 @@ class UserController extends Controller
                 'username'   => $request->username,
                 'email'      => $request->email,
                 'no_hp'      => $request->no_hp,
-                'role'       => $request->role,
-                'wilayah_id' => $request->role === 'koordinator' ? $request->wilayah_id : null,
             ];
 
             if ($request->filled('password')) {
@@ -147,6 +148,12 @@ class UserController extends Controller
             }
 
             $user->update($data);
+
+            // role & wilayah_id tidak fillable — set eksplisit (non mass-assign).
+            $user->role       = $request->role;
+            $user->wilayah_id = $request->role === 'koordinator' ? $request->wilayah_id : null;
+            $user->save();
+
             $user->syncRoles([$request->role]);
 
             $this->logActivity(
