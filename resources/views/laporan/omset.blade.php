@@ -28,14 +28,14 @@
                     </select>
                 </div>
             @endif
-            <div class="flex gap-2">
+            <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
                 <button type="submit"
-                    class="px-4 py-2 text-sm bg-red-700 hover:bg-red-800 text-white rounded-lg">Tampilkan</button>
+                    class="w-full sm:w-auto px-4 py-2 text-sm bg-red-700 hover:bg-red-800 text-white rounded-lg flex items-center justify-center gap-2 whitespace-nowrap">Tampilkan</button>
                 <a href="{{ route('laporan.omset.export', ['bulan' => $bulan, 'wilayah_id' => $wilayahId]) }}"
-                    class="px-4 py-2 text-sm bg-green-500 hover:bg-green-600 text-white rounded-lg"><i
-                        class="fa-solid fa-file-excel mr-1"></i> Export Excel</a>
+                    class="w-full sm:w-auto px-4 py-2 text-sm bg-green-500 hover:bg-green-600 text-white rounded-lg flex items-center justify-center gap-2 whitespace-nowrap">
+                    <i class="fa-solid fa-file-excel"></i> Export Excel</a>
                 <a href="{{ route('laporan.export-bulanan', ['bulan' => $bulan, 'wilayah_id' => $wilayahId]) }}"
-                    class="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center gap-2">
+                    class="w-full sm:w-auto px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center justify-center gap-2 whitespace-nowrap">
                     <i class="fa-solid fa-file-excel"></i> Export Rekap Bulanan
                 </a>
             </div>

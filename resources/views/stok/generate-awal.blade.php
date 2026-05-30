@@ -55,8 +55,8 @@
 
     <div class="mt-4 flex justify-end">
         <button type="button" onclick="loadPreview()"
-            class="px-5 py-2 bg-red-700 hover:bg-red-800 text-white rounded-lg text-sm font-medium">
-            <i class="fa-solid fa-eye mr-1"></i> Preview Stok
+            class="w-full sm:w-auto px-5 py-2 bg-red-700 hover:bg-red-800 text-white rounded-lg text-sm font-medium flex items-center justify-center gap-2 whitespace-nowrap">
+            <i class="fa-solid fa-eye"></i> Preview Stok
         </button>
     </div>
 </div>
@@ -126,8 +126,8 @@
         <input type="hidden" id="form-bulan" name="bulan" value="">
         <div class="flex justify-end">
             <button type="button" id="btn-generate" onclick="confirmGenerate()" style="display:none"
-                class="px-6 py-2.5 bg-red-700 hover:bg-red-800 text-white rounded-lg text-sm font-medium">
-                <i class="fa-solid fa-rotate mr-1"></i> Generate Stok Awal <span id="btn-bulan-label"></span>
+                class="w-full sm:w-auto px-6 py-2.5 bg-red-700 hover:bg-red-800 text-white rounded-lg text-sm font-medium flex items-center justify-center gap-2 whitespace-nowrap">
+                <i class="fa-solid fa-rotate"></i> Generate Stok Awal <span id="btn-bulan-label"></span>
             </button>
         </div>
     </form>
