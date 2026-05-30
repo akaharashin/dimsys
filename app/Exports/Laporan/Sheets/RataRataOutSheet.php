@@ -16,6 +16,7 @@ class RataRataOutSheet implements FromCollection, WithTitle, WithHeadings, WithS
 {
     protected $bulan;
     protected $wilayahId;
+    private ?array $built = null;
 
     public function __construct($bulan, $wilayahId)
     {
@@ -23,13 +24,18 @@ class RataRataOutSheet implements FromCollection, WithTitle, WithHeadings, WithS
         $this->wilayahId = $wilayahId;
     }
 
-    public function collection()
+    /**
+     * B-K2: hitung distribusi + matrix SEKALI lalu cache, agar collection(),
+     * headings(), dan columnFormats() tidak men-query ulang (sebelumnya 3×).
+     */
+    private function build(): array
     {
-        [$tahun, $bln] = explode('-', $this->bulan);
+        if ($this->built !== null) return $this->built;
+
+        [$awalBulan, $akhirBulan] = \App\Support\Periode::range($this->bulan);
 
         $distribusi = Distribusi::with(['outlet.wilayah', 'details.produk'])
-            ->whereYear('tanggal', $tahun)
-            ->whereMonth('tanggal', $bln)
+            ->whereBetween('tanggal', [$awalBulan, $akhirBulan])
             ->when($this->wilayahId, fn($q) =>
                 $q->whereHas('outlet', fn($o) => $o->where('wilayah_id', $this->wilayahId))
             )
@@ -39,7 +45,7 @@ class RataRataOutSheet implements FromCollection, WithTitle, WithHeadings, WithS
         $produkList = Produk::whereIn('id', $produkIds)->orderBy('nama')->get();
         $outletList = $distribusi->pluck('outlet')->unique('id')->sortBy('nama')->values();
 
-        // Build matrix — 'hari' = jumlah HARI UNIK (distinct tanggal), bukan jumlah record (A-R2).
+        // Matrix — 'hari' = jumlah HARI UNIK (distinct tanggal), bukan jumlah record (A-R2).
         $matrix = [];
         $hariUnik = [];
         foreach ($distribusi as $d) {
@@ -58,6 +64,13 @@ class RataRataOutSheet implements FromCollection, WithTitle, WithHeadings, WithS
                 $matrix[$outletId][$produkId]['hari'] = count($dates);
             }
         }
+
+        return $this->built = compact('produkList', 'outletList', 'matrix');
+    }
+
+    public function collection()
+    {
+        ['produkList' => $produkList, 'outletList' => $outletList, 'matrix' => $matrix] = $this->build();
 
         $rows = collect();
         $no   = 1;
@@ -85,36 +98,13 @@ class RataRataOutSheet implements FromCollection, WithTitle, WithHeadings, WithS
 
     public function headings(): array
     {
-        [$tahun, $bln] = explode('-', $this->bulan);
-
-        $distribusi = Distribusi::with('details.produk')
-            ->whereYear('tanggal', $tahun)
-            ->whereMonth('tanggal', $bln)
-            ->when($this->wilayahId, fn($q) =>
-                $q->whereHas('outlet', fn($o) => $o->where('wilayah_id', $this->wilayahId))
-            )
-            ->get();
-
-        $produkIds  = $distribusi->flatMap(fn($d) => $d->details->pluck('produk_id'))->unique();
-        $produkList = Produk::whereIn('id', $produkIds)->orderBy('nama')->pluck('nama')->toArray();
-
+        $produkList = $this->build()['produkList']->pluck('nama')->toArray();
         return array_merge(['No', 'Outlet', 'Wilayah'], $produkList, ['Total']);
     }
 
     public function columnFormats(): array
     {
-        [$tahun, $bln] = explode('-', $this->bulan);
-
-        $count = Distribusi::with('details')
-            ->whereYear('tanggal', $tahun)
-            ->whereMonth('tanggal', $bln)
-            ->when($this->wilayahId, fn($q) =>
-                $q->whereHas('outlet', fn($o) => $o->where('wilayah_id', $this->wilayahId))
-            )
-            ->get()
-            ->flatMap(fn($d) => $d->details->pluck('produk_id'))
-            ->unique()
-            ->count();
+        $count = $this->build()['produkList']->count();
 
         $formats = [];
         $col = 'D';

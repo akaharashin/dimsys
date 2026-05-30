@@ -17,45 +17,52 @@ class DashboardController extends Controller
     {
         Carbon::setLocale('id');
         $today = Carbon::today()->toDateString();
-        $thisMonth = Carbon::now()->format('Y-m');
+        [$awalBulan, $akhirBulan] = \App\Support\Periode::range(Carbon::now()->format('Y-m'));
 
         $user = auth()->user();
         $wilayahId = $user->hasRole('koordinator') ? $user->wilayah_id : null;
         $scopeOutlet = fn($q) => $q->where('wilayah_id', $wilayahId);
 
-        // Laporan hari ini
-        $laporanHariIni = LaporanHarian::with('details')
-            ->whereDate('tanggal', $today)
-            ->when($wilayahId, fn($q) => $q->whereHas('outlet', $scopeOutlet))
-            ->get();
+        // B-K4: agregasi di DB (SUM/COUNT), bukan memuat koleksi penuh lalu sum di PHP.
+        // Helper: agregat omset/modal/komisi dari laporan_harian_details pada rentang tanggal.
+        $aggDetail = function ($from, $to) use ($wilayahId) {
+            return \Illuminate\Support\Facades\DB::table('laporan_harian_details as lhd')
+                ->join('laporan_harian as lh', 'lh.id', '=', 'lhd.laporan_id')
+                ->join('outlet as o', 'o.id', '=', 'lh.outlet_id')
+                ->whereNull('lh.deleted_at')
+                ->whereBetween('lh.tanggal', [$from, $to])
+                ->when($wilayahId, fn($q) => $q->where('o.wilayah_id', $wilayahId))
+                ->selectRaw('COALESCE(SUM(lhd.omset),0) o, COALESCE(SUM(lhd.modal),0) m, COALESCE(SUM(lhd.komisi),0) k')
+                ->first();
+        };
 
-        $omsetHariIni = $laporanHariIni->sum(fn($l) => $l->details->sum('omset'));
-        $modalHariIni = $laporanHariIni->sum(fn($l) => $l->details->sum('modal'));
-        $komisiHariIni = $laporanHariIni->sum(fn($l) => $l->details->sum('komisi'));
-        $labaHariIni = $omsetHariIni - $modalHariIni - $komisiHariIni;
-        $setorHariIni = $laporanHariIni->sum('total_setor');
+        // ── Hari ini ──
+        $hi = $aggDetail($today, $today);
+        $omsetHariIni  = (float) $hi->o;
+        $modalHariIni  = (float) $hi->m;
+        $komisiHariIni = (float) $hi->k;
+        $labaHariIni   = $omsetHariIni - $modalHariIni - $komisiHariIni;
 
-        // Laporan bulan ini
-        $laporanBulanIni = LaporanHarian::with('details')
-            ->whereYear('tanggal', Carbon::now()->year)
-            ->whereMonth('tanggal', Carbon::now()->month)
-            ->when($wilayahId, fn($q) => $q->whereHas('outlet', $scopeOutlet))
-            ->get();
+        $lapHariIni = LaporanHarian::where('tanggal', $today)
+            ->when($wilayahId, fn($q) => $q->whereHas('outlet', $scopeOutlet));
+        $setorHariIni     = (float) (clone $lapHariIni)->sum('total_setor');
+        $outletSudahLapor = (clone $lapHariIni)->count();
 
-        $omsetBulanIni = $laporanBulanIni->sum(fn($l) => $l->details->sum('omset'));
-        $labaBulanIni = $laporanBulanIni->sum(
-            fn($l) =>
-            $l->details->sum('omset') - $l->details->sum('modal') - $l->details->sum('komisi')
-        );
+        // ── Bulan ini ──
+        $bi = $aggDetail($awalBulan, $akhirBulan);
+        $omsetBulanIni = (float) $bi->o;
+        $labaBulanIni  = (float) ($bi->o - $bi->m - $bi->k);
 
-        // Distribusi hari ini
-        $distribusiHariIni = Distribusi::with('details')
-            ->whereDate('tanggal', $today)
-            ->when($wilayahId, fn($q) => $q->whereHas('outlet', $scopeOutlet))
-            ->get();
-        $totalOutHariIni = $distribusiHariIni->sum(fn($d) => $d->details->sum('jumlah_out'));
+        // ── Distribusi OUT hari ini ──
+        $totalOutHariIni = (float) \Illuminate\Support\Facades\DB::table('distribusi_details as dd')
+            ->join('distribusi as d', 'd.id', '=', 'dd.distribusi_id')
+            ->join('outlet as o', 'o.id', '=', 'd.outlet_id')
+            ->whereNull('d.deleted_at')
+            ->where('d.tanggal', $today)
+            ->when($wilayahId, fn($q) => $q->where('o.wilayah_id', $wilayahId))
+            ->sum('dd.jumlah_out');
 
-        // Outlet aktif yang punya distribusi dalam 30 hari terakhir (lebih realistis)
+        // ── Outlet aktif (punya distribusi 30 hari terakhir) — sudah count query ──
         $batasOutletAktif = Carbon::now()->subDays(30)->format('Y-m-d');
         $totalOutlet = Outlet::where('aktif', true)
             ->when($wilayahId, fn($q) => $q->where('wilayah_id', $wilayahId))
@@ -64,10 +71,7 @@ class DashboardController extends Controller
             })
             ->count();
 
-        // Outlet yang sudah lapor hari ini
-        $outletSudahLapor = $laporanHariIni->count();
-
-        // Laporan harian terbaru
+        // Laporan harian terbaru (list 10 — tetap eager-load utk view)
         $laporanTerbaru = LaporanHarian::with(['outlet', 'details'])
             ->when($wilayahId, fn($q) => $q->whereHas('outlet', $scopeOutlet))
             ->orderByDesc('tanggal')
@@ -81,16 +85,19 @@ class DashboardController extends Controller
         }
         $pindahStokMenunggu = $pindahStokQuery->count();
 
-        // A-S5: tren memakai OMSET (details.omset), KONSISTEN dengan kartu omset di atas.
-        // Diturunkan dari koleksi $laporanBulanIni yang sudah dimuat (tanpa query baru).
-        $tren7Hari = $laporanBulanIni
-            ->groupBy('tanggal')
-            ->map(fn($rows, $tanggal) => (object) [
-                'tanggal' => $tanggal,
-                'omset'   => $rows->sum(fn($l) => $l->details->sum('omset')),
-            ])
-            ->sortKeys()
-            ->values();
+        // A-S5: tren memakai OMSET (details.omset), KONSISTEN dgn kartu omset.
+        // B-K4: di-groupBy DI DB (bukan koleksi penuh di PHP).
+        $tren7Hari = \Illuminate\Support\Facades\DB::table('laporan_harian_details as lhd')
+            ->join('laporan_harian as lh', 'lh.id', '=', 'lhd.laporan_id')
+            ->join('outlet as o', 'o.id', '=', 'lh.outlet_id')
+            ->whereNull('lh.deleted_at')
+            ->whereBetween('lh.tanggal', [$awalBulan, $akhirBulan])
+            ->when($wilayahId, fn($q) => $q->where('o.wilayah_id', $wilayahId))
+            ->groupBy('lh.tanggal')
+            ->orderBy('lh.tanggal')
+            ->selectRaw('lh.tanggal as tanggal, COALESCE(SUM(lhd.omset),0) as omset')
+            ->get()
+            ->map(fn($r) => (object) ['tanggal' => $r->tanggal, 'omset' => (float) $r->omset]);
 
         return view('dashboard', compact(
             'omsetHariIni',

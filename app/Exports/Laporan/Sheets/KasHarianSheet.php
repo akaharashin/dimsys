@@ -24,7 +24,7 @@ class KasHarianSheet implements FromCollection, WithTitle, WithHeadings, WithSty
 
     public function collection()
     {
-        [$tahun, $bln] = explode('-', $this->bulan);
+        [$awalBulan, $akhirBulan] = \App\Support\Periode::range($this->bulan);
 
         $rekeningIds = Rekening::when(
             $this->wilayahId,
@@ -34,8 +34,7 @@ class KasHarianSheet implements FromCollection, WithTitle, WithHeadings, WithSty
 
         $query = Kas::with('rekening')
             ->whereIn('rekening_id', $rekeningIds)
-            ->whereYear('tanggal', $tahun)
-            ->whereMonth('tanggal', $bln)
+            ->whereBetween('tanggal', [$awalBulan, $akhirBulan])
             ->orderBy('tanggal')
             ->orderBy('created_at');
 

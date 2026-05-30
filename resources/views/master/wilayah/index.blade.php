@@ -218,7 +218,7 @@
         function openEdit(id, nama, tipe) {
             document.getElementById('edit-nama').value = nama;
             document.getElementById('edit-tipe').value = tipe;
-            document.getElementById('form-edit').action = `/dimsys/public/master/wilayah/${id}`;
+            document.getElementById('form-edit').action = `{{ route('master.wilayah.index') }}/${id}`;
             document.getElementById('modal-edit').style.display = 'flex';
         }
     </script>

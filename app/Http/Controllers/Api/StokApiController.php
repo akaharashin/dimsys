@@ -40,8 +40,11 @@ class StokApiController extends Controller
         $sampai = \Carbon\Carbon::today()->toDateString();
         $cutoff = $svc->freezerCutoff($wilayahId, $sampai);
 
-        $result = $produkList->map(function ($produk) use ($wilayahId, $svc, $sampai, $cutoff) {
-            $stokTersedia = $svc->stokFreezer($wilayahId, $produk->id, $sampai, $cutoff);
+        // B-K1: batch — semua produk sekali jalan.
+        $freezerBatch = $svc->stokFreezerBatch($wilayahId, $sampai, $cutoff);
+
+        $result = $produkList->map(function ($produk) use ($freezerBatch) {
+            $stokTersedia = $freezerBatch[$produk->id] ?? 0;
 
             return [
                 'produk_id'      => $produk->id,

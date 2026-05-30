@@ -23,10 +23,10 @@ class RataRataOutExport implements FromArray, WithHeadings, WithTitle, WithStyle
 
     public function array(): array
     {
-        [$tahun, $bln] = explode('-', $this->bulan);
+        [$awalBulan, $akhirBulan] = \App\Support\Periode::range($this->bulan);
 
         $query = Distribusi::with(['outlet.wilayah', 'details.produk'])
-            ->whereYear('tanggal', $tahun)->whereMonth('tanggal', $bln);
+            ->whereBetween('tanggal', [$awalBulan, $akhirBulan]);
 
         if ($this->wilayahId !== 'semua') {
             $query->whereHas('outlet', fn($q) => $q->where('wilayah_id', $this->wilayahId));
@@ -37,11 +37,24 @@ class RataRataOutExport implements FromArray, WithHeadings, WithTitle, WithStyle
         $produkList = Produk::whereIn('id', $produkIds)->orderBy('nama')->get();
         $outletList = $distribusi->pluck('outlet')->unique('id')->sortBy('nama')->values();
 
-        $matrix = [];
+        // A-R2: 'hari' = jumlah HARI UNIK (distinct tanggal), bukan jumlah record.
+        // Identik dengan RataRataOutController agar angka export = angka tampilan.
+        $matrix   = [];
+        $hariUnik = [];
         foreach ($distribusi as $d) {
+            $tgl = \Carbon\Carbon::parse($d->tanggal)->toDateString();
             foreach ($d->details as $detail) {
-                $matrix[$d->outlet_id][$detail->produk_id]['total'] = ($matrix[$d->outlet_id][$detail->produk_id]['total'] ?? 0) + $detail->jumlah_out;
-                $matrix[$d->outlet_id][$detail->produk_id]['hari']  = ($matrix[$d->outlet_id][$detail->produk_id]['hari'] ?? 0) + 1;
+                if (!isset($matrix[$d->outlet_id][$detail->produk_id])) {
+                    $matrix[$d->outlet_id][$detail->produk_id] = ['total' => 0, 'hari' => 0];
+                    $hariUnik[$d->outlet_id][$detail->produk_id] = [];
+                }
+                $matrix[$d->outlet_id][$detail->produk_id]['total'] += $detail->jumlah_out;
+                $hariUnik[$d->outlet_id][$detail->produk_id][$tgl] = true;
+            }
+        }
+        foreach ($hariUnik as $outletId => $produkDates) {
+            foreach ($produkDates as $produkId => $dates) {
+                $matrix[$outletId][$produkId]['hari'] = count($dates);
             }
         }
 
@@ -50,7 +63,8 @@ class RataRataOutExport implements FromArray, WithHeadings, WithTitle, WithStyle
             $row = [$outlet->nama, $outlet->wilayah->nama];
             foreach ($produkList as $p) {
                 $data  = $matrix[$outlet->id][$p->id] ?? null;
-                $row[] = $data ? round($data['total'] / $data['hari'], 1) : 0;
+                // Pembulatan ke bilangan bulat, identik dengan tampilan RataRataOut.
+                $row[] = $data && $data['hari'] > 0 ? round($data['total'] / $data['hari']) : 0;
             }
             $rows[] = $row;
         }
@@ -60,8 +74,8 @@ class RataRataOutExport implements FromArray, WithHeadings, WithTitle, WithStyle
 
     public function headings(): array
     {
-        [$tahun, $bln] = explode('-', $this->bulan);
-        $produkIds  = Distribusi::whereYear('tanggal', $tahun)->whereMonth('tanggal', $bln)
+        [$awalBulan, $akhirBulan] = \App\Support\Periode::range($this->bulan);
+        $produkIds  = Distribusi::whereBetween('tanggal', [$awalBulan, $akhirBulan])
             ->with('details')->get()->flatMap(fn($d) => $d->details->pluck('produk_id'))->unique();
         $produkList = Produk::whereIn('id', $produkIds)->orderBy('nama')->pluck('nama')->toArray();
         return array_merge(['Outlet', 'Wilayah'], $produkList);
@@ -69,10 +83,9 @@ class RataRataOutExport implements FromArray, WithHeadings, WithTitle, WithStyle
 
     public function columnFormats(): array
     {
-        [$tahun, $bln] = explode('-', $this->bulan);
+        [$awalBulan, $akhirBulan] = \App\Support\Periode::range($this->bulan);
         $query = Distribusi::with('details')
-            ->whereYear('tanggal', $tahun)
-            ->whereMonth('tanggal', $bln);
+            ->whereBetween('tanggal', [$awalBulan, $akhirBulan]);
         if ($this->wilayahId !== 'semua') {
             $query->whereHas('outlet', fn($q) => $q->where('wilayah_id', $this->wilayahId));
         }

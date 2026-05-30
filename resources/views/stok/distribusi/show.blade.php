@@ -14,6 +14,9 @@
             <p class="text-gray-400 text-xs uppercase">Tanggal</p>
             <p class="font-medium text-gray-700 mt-1">{{ \Carbon\Carbon::parse($distribusi->tanggal)->format('d M Y') }}</p>
         </div>
+        <div class="col-span-2 md:col-span-4 order-last">
+            <p class="text-xs text-gray-400">Distribusi memindahkan stok ke gerobak (belum terjual). <span class="font-medium text-gray-500">Potensi Omset</span> hanyalah estimasi berdasarkan harga acuan (harga mitra) &mdash; bukan omset riil. Omset riil dicatat di Laporan Harian.</p>
+        </div>
         <div>
             <p class="text-gray-400 text-xs uppercase">Outlet</p>
             <p class="font-medium text-gray-700 mt-1">{{ $distribusi->outlet->nama }}</p>
@@ -35,7 +38,7 @@
             <tr>
                 <th class="px-4 py-3 text-left">Produk</th>
                 <th class="px-4 py-3 text-right">Jumlah OUT</th>
-                <th class="px-4 py-3 text-right">Harga Jual</th>
+                <th class="px-4 py-3 text-right">Harga Acuan</th>
                 <th class="px-4 py-3 text-right">Potensi Omset</th>
             </tr>
         </thead>
@@ -44,9 +47,9 @@
             <tr>
                 <td class="px-4 py-3 font-medium text-gray-700">{{ $d->produk->nama }}</td>
                 <td class="px-4 py-3 text-right text-gray-600">{{ number_format($d->jumlah_out) }} pcs</td>
-                <td class="px-4 py-3 text-right text-gray-600">Rp {{ number_format($d->produk->harga_jual) }}</td>
+                <td class="px-4 py-3 text-right text-gray-600">Rp {{ number_format($d->produk->harga_mitra) }}</td>
                 <td class="px-4 py-3 text-right font-medium text-gray-700">
-                    Rp {{ number_format($d->jumlah_out * $d->produk->harga_jual) }}
+                    Rp {{ number_format($d->jumlah_out * $d->produk->harga_mitra) }}
                 </td>
             </tr>
             @endforeach
@@ -55,7 +58,7 @@
             <tr>
                 <td colspan="3" class="px-4 py-3 text-right text-sm font-semibold text-gray-600">Total Potensi Omset</td>
                 <td class="px-4 py-3 text-right font-bold text-gray-700">
-                    Rp {{ number_format($distribusi->details->sum(fn($d) => $d->jumlah_out * $d->produk->harga_jual)) }}
+                    Rp {{ number_format($distribusi->details->sum(fn($d) => $d->jumlah_out * $d->produk->harga_mitra)) }}
                 </td>
             </tr>
         </tfoot>

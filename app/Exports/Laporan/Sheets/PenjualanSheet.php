@@ -23,11 +23,10 @@ class PenjualanSheet implements FromCollection, WithTitle, WithHeadings, WithSty
 
     public function collection()
     {
-        [$tahun, $bln] = explode('-', $this->bulan);
+        [$awalBulan, $akhirBulan] = \App\Support\Periode::range($this->bulan);
 
         $query = LaporanHarian::with(['outlet.wilayah', 'details.produk'])
-            ->whereYear('tanggal', $tahun)
-            ->whereMonth('tanggal', $bln)
+            ->whereBetween('tanggal', [$awalBulan, $akhirBulan])
             ->when(
                 $this->wilayahId,
                 fn($q) =>

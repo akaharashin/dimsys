@@ -24,11 +24,10 @@ class KontrolController extends Controller
             $wilayahList = Wilayah::where('aktif', true)->orderBy('nama')->get();
         }
 
-        [$tahun, $bln] = explode('-', $bulan);
+        [$awalBulan, $akhirBulan] = \App\Support\Periode::range($bulan);
 
         $query = LaporanHarian::with(['outlet.wilayah', 'details'])
-            ->whereYear('tanggal', $tahun)
-            ->whereMonth('tanggal', $bln);
+            ->whereBetween('tanggal', [$awalBulan, $akhirBulan]);
 
         if ($wilayahId !== 'semua') {
             $query->whereHas('outlet', fn($q) => $q->where('wilayah_id', $wilayahId));

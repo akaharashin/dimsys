@@ -435,8 +435,8 @@ html { scroll-behavior: smooth; }
 <nav class="sidenav">
   <div class="sidenav-logo">
     <h1>DIMSYS</h1>
-    <p>Dokumentasi Pengguna v1.1</p>
-    <p style="font-size:10px;color:#9ca3af;margin-top:1px">Update: 29 Mei 2026</p>
+    <p>Dokumentasi Pengguna v1.2</p>
+    <p style="font-size:10px;color:#9ca3af;margin-top:1px">Update: 30 Mei 2026</p>
   </div>
 
   <div class="sidenav-section">Pendahuluan</div>
@@ -446,6 +446,8 @@ html { scroll-behavior: smooth; }
   <a href="#istilah"><span class="dot"></span> Kamus Istilah</a>
   <a href="#alur"><span class="dot"></span> Alur Harian</a>
   <a href="#akses"><span class="dot"></span> Hak Akses</a>
+  <a href="#keamanan"><span class="dot"></span> Keamanan Data</a>
+  <a href="#multi-device"><span class="dot"></span> Akses Multi-Device</a>
 
   <div class="sidenav-section">Master Data</div>
   <a href="#wilayah"><span class="dot"></span> Wilayah</a>
@@ -489,7 +491,7 @@ html { scroll-behavior: smooth; }
   <div class="doc-header">
     <h1>📋 Dokumentasi DIMSYS</h1>
     <p>Panduan lengkap penggunaan Sistem Manajemen Distribusi Dimsum IN untuk admin dan koordinator wilayah.</p>
-    <span class="badge">PT. Wijaya Kuliner Indonesia · Versi 1.1 · Update 29 Mei 2026</span>
+    <span class="badge">PT. Wijaya Kuliner Indonesia · Versi 1.2 · Update 30 Mei 2026</span>
   </div>
 
   <!-- AKUN LOGIN -->
@@ -612,19 +614,21 @@ html { scroll-behavior: smooth; }
       <a href="#istilah" class="toc-item"><span class="toc-num">2</span> Kamus Istilah — Penjelasan istilah keuangan & operasional</a>
       <a href="#alur" class="toc-item"><span class="toc-num">3</span> Alur Kerja Harian — Urutan input data setiap hari</a>
       <a href="#akses" class="toc-item"><span class="toc-num">4</span> Hak Akses — Siapa bisa akses apa</a>
-      <a href="#user" class="toc-item"><span class="toc-num">5</span> Master User — Kelola akun pengguna</a>
-      <a href="#rekening" class="toc-item"><span class="toc-num">6</span> Master Rekening — Kelola rekening kas/bank</a>
-      <a href="#stok-masuk" class="toc-item"><span class="toc-num">7</span> Stok Masuk — Input stok dari supplier</a>
-      <a href="#distribusi" class="toc-item"><span class="toc-num">8</span> Distribusi — OUT stok ke gerobak</a>
-      <a href="#stok-freezer" class="toc-item"><span class="toc-num">9</span> Stok Freezer — Freezer + Gerobak + Total</a>
-      <a href="#stok-opname" class="toc-item"><span class="toc-num">10</span> Stok Opname — Hitung fisik + koreksi otomatis</a>
-      <a href="#generate-stok" class="toc-item"><span class="toc-num">11</span> Generate Stok Awal — Awal bulan baru</a>
-      <a href="#laporan-harian" class="toc-item"><span class="toc-num">12</span> Laporan Harian — Input sisa & hitung omset otomatis</a>
-      <a href="#kas-harian" class="toc-item"><span class="toc-num">13</span> Kas Harian — Catat uang + mode Setoran Outlet</a>
-      <a href="#pindah-stok" class="toc-item"><span class="toc-num">14</span> Pindah Stok — Transfer antar wilayah</a>
-      <a href="#upload-media" class="toc-item"><span class="toc-num">15</span> Upload Media — Batas foto/video</a>
-      <a href="#rekap-omset" class="toc-item"><span class="toc-num">16</span> Laporan & Export — Rekap bulanan & export Excel</a>
-      <a href="#faq" class="toc-item"><span class="toc-num">17</span> FAQ — Pertanyaan yang sering muncul</a>
+      <a href="#keamanan" class="toc-item"><span class="toc-num">5</span> Keamanan Data — Pembatasan wilayah & bukti</a>
+      <a href="#multi-device" class="toc-item"><span class="toc-num">6</span> Akses Multi-Device — HP, tablet, komputer</a>
+      <a href="#user" class="toc-item"><span class="toc-num">7</span> Master User — Kelola akun pengguna</a>
+      <a href="#rekening" class="toc-item"><span class="toc-num">8</span> Master Rekening — Kelola rekening kas/bank</a>
+      <a href="#stok-masuk" class="toc-item"><span class="toc-num">9</span> Stok Masuk — Input stok dari supplier</a>
+      <a href="#distribusi" class="toc-item"><span class="toc-num">10</span> Distribusi — OUT stok ke gerobak</a>
+      <a href="#stok-freezer" class="toc-item"><span class="toc-num">11</span> Stok Freezer — Freezer + Gerobak + Total</a>
+      <a href="#stok-opname" class="toc-item"><span class="toc-num">12</span> Stok Opname — Hitung fisik + koreksi otomatis</a>
+      <a href="#generate-stok" class="toc-item"><span class="toc-num">13</span> Generate Stok Awal — Awal bulan baru</a>
+      <a href="#laporan-harian" class="toc-item"><span class="toc-num">14</span> Laporan Harian — Input sisa & hitung omset otomatis</a>
+      <a href="#kas-harian" class="toc-item"><span class="toc-num">15</span> Kas Harian — Catat uang + mode Setoran Outlet</a>
+      <a href="#pindah-stok" class="toc-item"><span class="toc-num">16</span> Pindah Stok — Transfer antar wilayah + HPP</a>
+      <a href="#upload-media" class="toc-item"><span class="toc-num">17</span> Upload Media — Batas foto/video</a>
+      <a href="#rekap-omset" class="toc-item"><span class="toc-num">18</span> Laporan & Export — Rekap bulanan & export Excel</a>
+      <a href="#faq" class="toc-item"><span class="toc-num">19</span> FAQ — Pertanyaan yang sering muncul</a>
     </div>
 
     <div style="padding: 0 24px 24px">
@@ -848,6 +852,74 @@ html { scroll-behavior: smooth; }
           <div class="role-item can">✅ Edit outlet wilayahnya</div>
           <div class="role-item cant">❌ Hanya data wilayahnya sendiri</div>
           <div class="role-item cant">❌ Tidak bisa kelola master data</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- KEAMANAN & AKSES DATA -->
+  <div class="section" id="keamanan">
+    <div class="section-header">
+      <div class="section-icon" style="background:#FDF2F2">🔒</div>
+      <div>
+        <h2>Keamanan &amp; Akses Data</h2>
+        <p>Bagaimana sistem menjaga data tiap wilayah tetap aman</p>
+      </div>
+    </div>
+    <div class="section-body">
+      <p style="margin-bottom:16px;color:#374151">DIMSYS membatasi data yang bisa dilihat dan diubah setiap pengguna sesuai perannya. Aturan ini berlaku otomatis di seluruh sistem — tidak ada celah untuk melihat data wilayah lain lewat link atau halaman tertentu.</p>
+
+      <div class="note note-danger" style="margin-bottom:12px">
+        <span class="note-icon">🛡️</span>
+        <div class="note-body">
+          <strong>Koordinator Hanya Bisa Akses Wilayahnya Sendiri</strong>
+          Setiap koordinator hanya bisa <strong>melihat, menambah, mengubah, menghapus, dan meng-export</strong> data wilayahnya sendiri. Mencoba membuka data outlet, laporan, distribusi, atau stok wilayah lain — termasuk lewat link langsung — akan otomatis ditolak sistem. Owner dan Admin Pusat tetap bisa melihat semua wilayah.
+        </div>
+      </div>
+
+      <div class="note note-info" style="margin-top:8px">
+        <span class="note-icon">📷</span>
+        <div class="note-body">
+          <strong>Foto &amp; Video Bukti Hanya untuk yang Berhak</strong>
+          Semua foto dan video bukti (Stok Opname &amp; Pindah Stok) hanya bisa dibuka oleh pengguna yang sudah login dan berhak atas wilayah terkait. File bukti tidak bisa diunduh sembarangan lewat link langsung oleh orang luar yang tidak punya akses.
+        </div>
+      </div>
+
+      <div class="note note-success" style="margin-top:8px">
+        <span class="note-icon">✅</span>
+        <div class="note-body">
+          <strong>Aman Secara Otomatis</strong>
+          Pembatasan ini bekerja di belakang layar di semua menu — kamu tidak perlu mengatur apa pun. Cukup login dengan akun masing-masing, dan sistem memastikan setiap orang hanya melihat data yang menjadi haknya.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- AKSES MULTI-DEVICE -->
+  <div class="section" id="multi-device">
+    <div class="section-header">
+      <div class="section-icon" style="background:#eff6ff">📱</div>
+      <div>
+        <h2>Akses Multi-Device</h2>
+        <p>Pakai DIMSYS dari HP, tablet, atau komputer</p>
+      </div>
+    </div>
+    <div class="section-body">
+      <p style="margin-bottom:16px;color:#374151">DIMSYS bisa diakses dari <strong>HP, tablet, dan komputer</strong> lewat browser. Tampilan otomatis menyesuaikan ukuran layar sehingga tetap nyaman dipakai koordinator di lapangan maupun admin di kantor.</p>
+
+      <div class="note note-info" style="margin-bottom:8px">
+        <span class="note-icon">☰</span>
+        <div class="note-body">
+          <strong>Menu di HP / Tablet: Tombol Garis Tiga (Hamburger)</strong>
+          Di layar kecil (HP/tablet), menu samping disembunyikan agar layar lega. Ketuk tombol <strong>garis tiga (☰)</strong> di <strong>pojok kiri atas</strong> untuk membuka menu, lalu ketuk di luar menu untuk menutupnya. Di komputer, menu samping selalu tampil.
+        </div>
+      </div>
+
+      <div class="note note-success" style="margin-top:8px">
+        <span class="note-icon">📐</span>
+        <div class="note-body">
+          <strong>Tabel &amp; Form Ikut Menyesuaikan</strong>
+          Tabel panjang bisa digeser ke samping di layar HP, kartu ringkasan tersusun ke bawah, dan tombol aksi dirapikan agar mudah ditekan dengan jari. Semua fitur tetap lengkap di semua perangkat.
         </div>
       </div>
     </div>
@@ -1163,7 +1235,7 @@ html { scroll-behavior: smooth; }
           <div class="step-num"></div>
           <div class="step-content">
             <h4>Upload bukti media (WAJIB minimal 1)</h4>
-            <p>Wajib upload minimal 1 file — foto atau video — sebelum bisa Simpan. Lihat detail batas di bagian Upload Media.</p>
+            <p>Wajib upload minimal 1 file — foto atau video (<strong>maks video 100 MB</strong>) — sebelum bisa Simpan. Lihat detail batas di bagian Upload Media.</p>
           </div>
         </div>
         <div class="step">
@@ -1356,6 +1428,14 @@ html { scroll-behavior: smooth; }
           Kamu tidak perlu hitung manual. Cukup isi sisa — semua kalkulasi keuangan (omset, komisi, laba, setor) dihitung otomatis dengan formula yang sudah diaudit dan diverifikasi.
         </div>
       </div>
+
+      <div class="note note-warning" style="margin-top:8px">
+        <span class="note-icon">💸</span>
+        <div class="note-body">
+          <strong>Talangan: Saat Pengeluaran Melebihi (Omset − Komisi)</strong>
+          Kalau pengeluaran outlet lebih besar daripada (Omset − Komisi), maka <strong>Setor = Rp 0</strong> (tidak pernah minus), dan selisih kekurangannya dicatat sebagai <strong>"Perlu Ditalangi"</strong> — yaitu dana yang ditalangi perusahaan. Angka talangan ini muncul di <strong>form input, detail laporan, dan daftar Laporan Harian</strong>, lengkap dengan <strong>total talangan</strong> sesuai filter wilayah/tanggal yang dipilih. Tujuannya: kekurangan tidak "hilang" begitu saja dan tetap terlacak.
+        </div>
+      </div>
     </div>
   </div>
 
@@ -1470,6 +1550,14 @@ html { scroll-behavior: smooth; }
         <div class="note-body">
           <strong>Wajib Upload Foto Sebelum Konfirmasi</strong>
           Koordinator tujuan WAJIB upload minimal 1 foto bukti sebelum bisa klik "Konfirmasi Terima". Tombol konfirmasi akan disabled jika belum ada foto.
+        </div>
+      </div>
+
+      <div class="note note-success" style="margin-top:8px">
+        <span class="note-icon">💲</span>
+        <div class="note-body">
+          <strong>Nilai HPP Ikut Berpindah</strong>
+          Stok yang diterima dari pindah antar-wilayah <strong>membawa nilai HPP</strong> (modal)-nya, tidak lagi dihitung Rp 0. Dengan begitu nilai aset stok di wilayah tujuan tetap <strong>akurat</strong> — perhitungan modal dan laba di wilayah penerima tidak melenceng.
         </div>
       </div>
 
@@ -1790,7 +1878,7 @@ html { scroll-behavior: smooth; }
   </div>
 
   <p style="text-align:center;color:#9ca3af;font-size:12px;margin-top:32px;padding-bottom:20px">
-    DIMSYS v1.1 · Update 29 Mei 2026 · PT. Wijaya Kuliner Indonesia · Dokumentasi ini dibuat untuk keperluan internal
+    DIMSYS v1.2 · Update 30 Mei 2026 · PT. Wijaya Kuliner Indonesia · Dokumentasi ini dibuat untuk keperluan internal
   </p>
 
 </main>

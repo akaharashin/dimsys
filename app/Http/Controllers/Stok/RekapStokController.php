@@ -75,14 +75,19 @@ class RekapStokController extends Controller
         // distribusi/pindah-stok, StokApi, dan getStokSistem (tidak lagi divergen).
         // Posisi "saat ini" = sampai hari ini; cutoff freezer juga dibatasi <= hari ini
         // supaya stok_awal bulan depan (yang boleh di-generate lebih awal) tidak ikut.
+        // B-K1: hitung SEKALI untuk SEMUA produk (batch groupBy), bukan 4-6 query/produk.
         $svc    = new StokService();
         $sampai = Carbon::today()->toDateString();
         $cutoff = $svc->freezerCutoff($wilayahId, $sampai);
 
-        return $produkList->map(function ($produk) use ($wilayahId, $svc, $sampai, $cutoff) {
+        $freezerBatch = $svc->freezerBreakdownBatch($wilayahId, $sampai, $cutoff);
+        $gerobakBatch = $svc->gerobakBreakdownBatch($wilayahId, $sampai);
+        $nilaiBatch   = $svc->nilaiMasukBatch($wilayahId, $sampai, $cutoff);
 
-            $fz = $svc->freezerBreakdown($wilayahId, $produk->id, $sampai, $cutoff);
-            $gb = $svc->gerobakBreakdown($wilayahId, $produk->id, $sampai);
+        return $produkList->map(function ($produk) use ($freezerBatch, $gerobakBatch, $nilaiBatch) {
+
+            $fz = $freezerBatch[$produk->id] ?? ['masuk' => 0, 'out' => 0, 'keluar' => 0, 'freezer' => 0];
+            $gb = $gerobakBatch[$produk->id] ?? ['out_all' => 0, 'terjual' => 0, 'gerobak' => 0];
 
             $masuk          = $fz['masuk'];
             $outFreezer     = $fz['out'];
@@ -93,15 +98,10 @@ class RekapStokController extends Controller
             $stokTotal      = $stokFreezer + $stokGerobak;
 
             // Nilai stok (HPP rata-rata dari stok masuk pada window yang SAMA: cutoff..sampai)
-            $totalHpp = StokMasukDetail::whereHas('stokMasuk', function ($q) use ($wilayahId, $sampai, $cutoff) {
-                $q->where('wilayah_id', $wilayahId)->whereDate('tanggal', '<=', $sampai);
-                if ($cutoff) $q->whereDate('tanggal', '>=', $cutoff);
-            })->where('produk_id', $produk->id)
-                ->selectRaw('SUM(jumlah * hpp) as total_nilai, SUM(jumlah) as total_qty')
-                ->first();
+            $nilai = $nilaiBatch[$produk->id] ?? ['total_nilai' => 0, 'total_qty' => 0];
 
-            $hppRata = ($totalHpp->total_qty > 0)
-                ? $totalHpp->total_nilai / $totalHpp->total_qty
+            $hppRata = ($nilai['total_qty'] > 0)
+                ? $nilai['total_nilai'] / $nilai['total_qty']
                 : $produk->hpp;
 
             return [

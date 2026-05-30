@@ -23,11 +23,10 @@ class DistribusiSheet implements FromCollection, WithTitle, WithHeadings, WithSt
 
     public function collection()
     {
-        [$tahun, $bln] = explode('-', $this->bulan);
+        [$awalBulan, $akhirBulan] = \App\Support\Periode::range($this->bulan);
 
         $query = Distribusi::with(['outlet.wilayah', 'details.produk'])
-            ->whereYear('tanggal', $tahun)
-            ->whereMonth('tanggal', $bln)
+            ->whereBetween('tanggal', [$awalBulan, $akhirBulan])
             ->when(
                 $this->wilayahId,
                 fn($q) =>

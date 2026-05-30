@@ -246,7 +246,7 @@
             ['hpp', 'harga_mitra', 'harga_jual', 'harga_umum', 'harga_agen', 'komisi'].forEach(f => {
                 document.getElementById('edit-' + f).value = data[f];
             });
-            document.getElementById('form-edit').action = `/dimsys/public/master/produk/${data.id}`;
+            document.getElementById('form-edit').action = `{{ route('master.produk.index') }}/${data.id}`;
             document.getElementById('modal-edit').style.display = 'flex';
         }
     </script>

@@ -27,53 +27,55 @@ class StokController extends Controller
             $wilayahList = Wilayah::where('aktif', true)->orderBy('nama')->get();
         }
 
-        [$tahun, $bln] = explode('-', $bulan);
+        [$awalBulan, $akhirBulan] = \App\Support\Periode::range($bulan);
 
         $produkList = Produk::where('aktif', true)->orderBy('nama')->get();
 
-        $rekap = $produkList->map(function ($produk) use ($tahun, $bln, $wilayahId) {
+        // B-K1: batch — hitung SEKALI untuk SEMUA produk (groupBy), bukan 5 query/produk.
+        // Formula Laporan Stok = mutasi FREEZER per-bulan (split jenis awal/masuk/koreksi),
+        // BERBEDA dari StokService (cutoff). keluarWilayah SENGAJA tanpa filter status
+        // (mengikuti perilaku lama). Wilayah hanya difilter bila bukan 'semua'.
+        $useWilayah = $wilayahId !== 'semua';
 
-            // Stok Awal (jenis = 'awal' di bulan tersebut)
-            $stokAwal = \App\Models\StokMasukDetail::whereHas('stokMasuk', function ($q) use ($tahun, $bln, $wilayahId) {
-                $q->whereYear('tanggal', $tahun)
-                    ->whereMonth('tanggal', $bln)
-                    ->where('jenis', 'awal');
-                if ($wilayahId !== 'semua')
-                    $q->where('wilayah_id', $wilayahId);
-            })->where('produk_id', $produk->id)->sum('jumlah');
+        $masukRows = \Illuminate\Support\Facades\DB::table('stok_masuk_details as smd')
+            ->join('stok_masuk as sm', 'sm.id', '=', 'smd.stok_masuk_id')
+            ->whereNull('sm.deleted_at')
+            ->whereBetween('sm.tanggal', [$awalBulan, $akhirBulan])
+            ->when($useWilayah, fn($q) => $q->where('sm.wilayah_id', $wilayahId))
+            ->groupBy('smd.produk_id', 'sm.jenis')
+            ->selectRaw('smd.produk_id as pid, sm.jenis as jenis, SUM(smd.jumlah) as total')
+            ->get();
+        $masukMap = []; // [pid][jenis] => total
+        foreach ($masukRows as $r) {
+            $masukMap[$r->pid][$r->jenis] = (int) $r->total;
+        }
 
-            // Stok Masuk dari supplier (jenis = 'masuk')
-            $masuk = \App\Models\StokMasukDetail::whereHas('stokMasuk', function ($q) use ($tahun, $bln, $wilayahId) {
-                $q->whereYear('tanggal', $tahun)
-                    ->whereMonth('tanggal', $bln)
-                    ->where('jenis', 'masuk');
-                if ($wilayahId !== 'semua')
-                    $q->where('wilayah_id', $wilayahId);
-            })->where('produk_id', $produk->id)->sum('jumlah');
+        $outMap = \Illuminate\Support\Facades\DB::table('distribusi_details as dd')
+            ->join('distribusi as d', 'd.id', '=', 'dd.distribusi_id')
+            ->join('outlet as o', 'o.id', '=', 'd.outlet_id')
+            ->whereNull('d.deleted_at')
+            ->whereBetween('d.tanggal', [$awalBulan, $akhirBulan])
+            ->when($useWilayah, fn($q) => $q->where('o.wilayah_id', $wilayahId))
+            ->groupBy('dd.produk_id')
+            ->selectRaw('dd.produk_id as pid, SUM(dd.jumlah_out) as total')
+            ->pluck('total', 'pid');
 
-            // Koreksi STO (jenis = 'koreksi')
-            $koreksi = \App\Models\StokMasukDetail::whereHas('stokMasuk', function ($q) use ($tahun, $bln, $wilayahId) {
-                $q->whereYear('tanggal', $tahun)
-                    ->whereMonth('tanggal', $bln)
-                    ->where('jenis', 'koreksi');
-                if ($wilayahId !== 'semua')
-                    $q->where('wilayah_id', $wilayahId);
-            })->where('produk_id', $produk->id)->sum('jumlah');
+        $keluarMap = \Illuminate\Support\Facades\DB::table('penjualan_wilayah_details as pwd')
+            ->join('penjualan_wilayah as pw', 'pw.id', '=', 'pwd.penjualan_id')
+            ->whereNull('pw.deleted_at')
+            ->whereBetween('pw.tanggal', [$awalBulan, $akhirBulan])
+            ->when($useWilayah, fn($q) => $q->where('pw.wilayah_asal_id', $wilayahId))
+            ->groupBy('pwd.produk_id')
+            ->selectRaw('pwd.produk_id as pid, SUM(pwd.jumlah) as total')
+            ->pluck('total', 'pid');
 
-            // OUT ke gerobak
-            $out = \App\Models\DistribusiDetail::whereHas('distribusi', function ($q) use ($tahun, $bln, $wilayahId) {
-                $q->whereYear('tanggal', $tahun)->whereMonth('tanggal', $bln);
-                if ($wilayahId !== 'semua') {
-                    $q->whereHas('outlet', fn($o) => $o->where('wilayah_id', $wilayahId));
-                }
-            })->where('produk_id', $produk->id)->sum('jumlah_out');
+        $rekap = $produkList->map(function ($produk) use ($masukMap, $outMap, $keluarMap) {
 
-            // Keluar ke wilayah lain
-            $keluarWilayah = \App\Models\PenjualanWilayahDetail::whereHas('penjualan', function ($q) use ($tahun, $bln, $wilayahId) {
-                $q->whereYear('tanggal', $tahun)->whereMonth('tanggal', $bln);
-                if ($wilayahId !== 'semua')
-                    $q->where('wilayah_asal_id', $wilayahId);
-            })->where('produk_id', $produk->id)->sum('jumlah');
+            $stokAwal      = $masukMap[$produk->id]['awal'] ?? 0;
+            $masuk         = $masukMap[$produk->id]['masuk'] ?? 0;
+            $koreksi       = $masukMap[$produk->id]['koreksi'] ?? 0;
+            $out           = (int) ($outMap[$produk->id] ?? 0);
+            $keluarWilayah = (int) ($keluarMap[$produk->id] ?? 0);
 
             $terjual = $out + $keluarWilayah;
             $sisa = ($stokAwal + $masuk + $koreksi) - $terjual;

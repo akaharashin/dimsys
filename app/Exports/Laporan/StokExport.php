@@ -25,21 +25,21 @@ class StokExport implements FromCollection, WithHeadings, WithTitle, WithStyles,
 
     public function collection()
     {
-        [$tahun, $bln] = explode('-', $this->bulan);
+        [$awalBulan, $akhirBulan] = \App\Support\Periode::range($this->bulan);
 
         $produkList = Produk::where('aktif', true)->orderBy('nama')->get();
 
-        return $produkList->map(function ($produk) use ($tahun, $bln) {
-            $masuk = StokMasukDetail::whereHas('stokMasuk', function ($q) use ($tahun, $bln) {
-                $q->whereYear('tanggal', $tahun)->whereMonth('tanggal', $bln);
+        return $produkList->map(function ($produk) use ($awalBulan, $akhirBulan) {
+            $masuk = StokMasukDetail::whereHas('stokMasuk', function ($q) use ($awalBulan, $akhirBulan) {
+                $q->whereBetween('tanggal', [$awalBulan, $akhirBulan]);
             })->where('produk_id', $produk->id)->sum('jumlah');
 
-            $out = DistribusiDetail::whereHas('distribusi', function ($q) use ($tahun, $bln) {
-                $q->whereYear('tanggal', $tahun)->whereMonth('tanggal', $bln);
+            $out = DistribusiDetail::whereHas('distribusi', function ($q) use ($awalBulan, $akhirBulan) {
+                $q->whereBetween('tanggal', [$awalBulan, $akhirBulan]);
             })->where('produk_id', $produk->id)->sum('jumlah_out');
 
-            $keluarWilayah = PenjualanWilayahDetail::whereHas('penjualan', function ($q) use ($tahun, $bln) {
-                $q->whereYear('tanggal', $tahun)->whereMonth('tanggal', $bln);
+            $keluarWilayah = PenjualanWilayahDetail::whereHas('penjualan', function ($q) use ($awalBulan, $akhirBulan) {
+                $q->whereBetween('tanggal', [$awalBulan, $akhirBulan]);
             })->where('produk_id', $produk->id)->sum('jumlah');
 
             $totalKeluar = $out + $keluarWilayah;

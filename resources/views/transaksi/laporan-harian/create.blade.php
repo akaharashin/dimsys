@@ -131,7 +131,7 @@
 
             container.innerHTML = '<p class="text-sm text-gray-400">Memuat data...</p>';
 
-            fetch(`/dimsys/public/api/distribusi?outlet_id=${outletId}&tanggal=${tanggal}`)
+            fetch(`{{ route('api.distribusi') }}?outlet_id=${outletId}&tanggal=${tanggal}`)
                 .then(res => res.json())
                 .then(data => {
                     distribusiData = data;

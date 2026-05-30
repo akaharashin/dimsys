@@ -336,7 +336,7 @@
                 if (tipeLabel)    tipeLabel.textContent    = data.tipe.charAt(0).toUpperCase() + data.tipe.slice(1);
             }
 
-            document.getElementById('form-edit').action = `/dimsys/public/master/outlet/${data.id}`;
+            document.getElementById('form-edit').action = `{{ route('master.outlet.index') }}/${data.id}`;
             document.getElementById('modal-edit').style.display = 'flex';
         }
     </script>

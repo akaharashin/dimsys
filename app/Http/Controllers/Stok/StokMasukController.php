@@ -221,8 +221,7 @@ class StokMasukController extends Controller
 
         $alreadyExists = StokMasuk::where('jenis', 'awal')
             ->where('wilayah_id', $wilayahId)
-            ->whereYear('tanggal', $nextMonth->year)
-            ->whereMonth('tanggal', $nextMonth->month)
+            ->whereBetween('tanggal', [$nextMonth->copy()->startOfMonth()->toDateString(), $nextMonth->copy()->endOfMonth()->toDateString()])
             ->exists();
 
         $produkList = Produk::where('aktif', true)->orderBy('nama')->get();
@@ -307,8 +306,7 @@ class StokMasukController extends Controller
         // Cek apakah stok awal bulan tujuan sudah ada
         $alreadyExists = StokMasuk::where('jenis', 'awal')
             ->where('wilayah_id', $wilayahId)
-            ->whereYear('tanggal', $nextMonth->year)
-            ->whereMonth('tanggal', $nextMonth->month)
+            ->whereBetween('tanggal', [$nextMonth->copy()->startOfMonth()->toDateString(), $nextMonth->copy()->endOfMonth()->toDateString()])
             ->exists();
 
         if ($alreadyExists) {
@@ -329,8 +327,7 @@ class StokMasukController extends Controller
                 // Double-check dalam transaction dengan lock untuk cegah race condition
                 $alreadyExistsLocked = StokMasuk::where('jenis', 'awal')
                     ->where('wilayah_id', $wilayahId)
-                    ->whereYear('tanggal', $nextMonth->year)
-                    ->whereMonth('tanggal', $nextMonth->month)
+                    ->whereBetween('tanggal', [$nextMonth->copy()->startOfMonth()->toDateString(), $nextMonth->copy()->endOfMonth()->toDateString()])
                     ->lockForUpdate()
                     ->first();
 
@@ -378,41 +375,37 @@ class StokMasukController extends Controller
 
     private function hitungStokAkhirBulan(string $wilayahId, $produkList, int $tahun, int $bulan): array
     {
-        // Akhir bulan untuk filter "snapshot gerobak per akhir bulan"
+        // Batas bulan (sargable). Akhir bulan juga dipakai snapshot gerobak.
         $akhirBulan = Carbon::create($tahun, $bulan)->endOfMonth()->format('Y-m-d');
+        $awalBulan  = Carbon::create($tahun, $bulan)->startOfMonth()->format('Y-m-d');
 
-        return $produkList->map(function ($produk) use ($wilayahId, $tahun, $bulan, $akhirBulan) {
+        return $produkList->map(function ($produk) use ($wilayahId, $awalBulan, $akhirBulan) {
 
-            $stokAwal = StokMasukDetail::whereHas('stokMasuk', function ($q) use ($tahun, $bulan, $wilayahId) {
-                $q->whereYear('tanggal', $tahun)
-                  ->whereMonth('tanggal', $bulan)
+            $stokAwal = StokMasukDetail::whereHas('stokMasuk', function ($q) use ($awalBulan, $akhirBulan, $wilayahId) {
+                $q->whereBetween('tanggal', [$awalBulan, $akhirBulan])
                   ->where('jenis', 'awal')
                   ->where('wilayah_id', $wilayahId);
             })->where('produk_id', $produk->id)->sum('jumlah');
 
-            $masuk = StokMasukDetail::whereHas('stokMasuk', function ($q) use ($tahun, $bulan, $wilayahId) {
-                $q->whereYear('tanggal', $tahun)
-                  ->whereMonth('tanggal', $bulan)
+            $masuk = StokMasukDetail::whereHas('stokMasuk', function ($q) use ($awalBulan, $akhirBulan, $wilayahId) {
+                $q->whereBetween('tanggal', [$awalBulan, $akhirBulan])
                   ->where('jenis', 'masuk')
                   ->where('wilayah_id', $wilayahId);
             })->where('produk_id', $produk->id)->sum('jumlah');
 
-            $koreksi = StokMasukDetail::whereHas('stokMasuk', function ($q) use ($tahun, $bulan, $wilayahId) {
-                $q->whereYear('tanggal', $tahun)
-                  ->whereMonth('tanggal', $bulan)
+            $koreksi = StokMasukDetail::whereHas('stokMasuk', function ($q) use ($awalBulan, $akhirBulan, $wilayahId) {
+                $q->whereBetween('tanggal', [$awalBulan, $akhirBulan])
                   ->where('jenis', 'koreksi')
                   ->where('wilayah_id', $wilayahId);
             })->where('produk_id', $produk->id)->sum('jumlah');
 
-            $out = DistribusiDetail::whereHas('distribusi', function ($q) use ($tahun, $bulan, $wilayahId) {
-                $q->whereYear('tanggal', $tahun)
-                  ->whereMonth('tanggal', $bulan)
+            $out = DistribusiDetail::whereHas('distribusi', function ($q) use ($awalBulan, $akhirBulan, $wilayahId) {
+                $q->whereBetween('tanggal', [$awalBulan, $akhirBulan])
                   ->whereHas('outlet', fn($o) => $o->where('wilayah_id', $wilayahId));
             })->where('produk_id', $produk->id)->sum('jumlah_out');
 
-            $keluarWilayah = PenjualanWilayahDetail::whereHas('penjualan', function ($q) use ($tahun, $bulan, $wilayahId) {
-                $q->whereYear('tanggal', $tahun)
-                  ->whereMonth('tanggal', $bulan)
+            $keluarWilayah = PenjualanWilayahDetail::whereHas('penjualan', function ($q) use ($awalBulan, $akhirBulan, $wilayahId) {
+                $q->whereBetween('tanggal', [$awalBulan, $akhirBulan])
                   ->where('wilayah_asal_id', $wilayahId)
                   ->where('status', 'disetujui');
             })->where('produk_id', $produk->id)->sum('jumlah');

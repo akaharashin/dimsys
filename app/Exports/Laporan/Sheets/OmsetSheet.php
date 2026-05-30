@@ -24,7 +24,7 @@ class OmsetSheet implements FromCollection, WithTitle, WithHeadings, WithStyles,
 
     public function collection()
     {
-        [$tahun, $bln] = explode('-', $this->bulan);
+        [$awalBulan, $akhirBulan] = \App\Support\Periode::range($this->bulan);
 
         $outletQuery = Outlet::where('aktif', true)
             ->when($this->wilayahId, fn($q) => $q->where('wilayah_id', $this->wilayahId))
@@ -36,8 +36,7 @@ class OmsetSheet implements FromCollection, WithTitle, WithHeadings, WithStyles,
         foreach ($outletQuery->get() as $outlet) {
             $laporan = LaporanHarian::with('details')
                 ->where('outlet_id', $outlet->id)
-                ->whereYear('tanggal', $tahun)
-                ->whereMonth('tanggal', $bln)
+                ->whereBetween('tanggal', [$awalBulan, $akhirBulan])
                 ->get();
 
             if ($laporan->isEmpty())

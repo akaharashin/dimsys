@@ -7,6 +7,7 @@ use App\Models\Distribusi;
 use App\Models\DistribusiDetail;
 use App\Models\Outlet;
 use App\Models\Produk;
+use App\Models\StokMasuk;
 use App\Models\Wilayah;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;

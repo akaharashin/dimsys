@@ -23,11 +23,10 @@ class OmsetExport implements FromCollection, WithHeadings, WithTitle, WithStyles
 
     public function collection()
     {
-        [$tahun, $bln] = explode('-', $this->bulan);
+        [$awalBulan, $akhirBulan] = \App\Support\Periode::range($this->bulan);
 
         $query = LaporanHarian::with(['outlet.wilayah', 'details'])
-            ->whereYear('tanggal', $tahun)
-            ->whereMonth('tanggal', $bln);
+            ->whereBetween('tanggal', [$awalBulan, $akhirBulan]);
 
         if ($this->wilayahId !== 'semua') {
             $query->whereHas('outlet', fn($q) => $q->where('wilayah_id', $this->wilayahId));

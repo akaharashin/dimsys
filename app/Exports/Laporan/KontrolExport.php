@@ -23,10 +23,10 @@ class KontrolExport implements FromArray, WithHeadings, WithTitle, WithStyles, W
 
     public function array(): array
     {
-        [$tahun, $bln] = explode('-', $this->bulan);
+        [$awalBulan, $akhirBulan] = \App\Support\Periode::range($this->bulan);
 
         $query = LaporanHarian::with(['outlet.wilayah', 'details'])
-            ->whereYear('tanggal', $tahun)->whereMonth('tanggal', $bln);
+            ->whereBetween('tanggal', [$awalBulan, $akhirBulan]);
 
         if ($this->wilayahId !== 'semua') {
             $query->whereHas('outlet', fn($q) => $q->where('wilayah_id', $this->wilayahId));
@@ -77,10 +77,9 @@ class KontrolExport implements FromArray, WithHeadings, WithTitle, WithStyles, W
 
     public function headings(): array
     {
-        [$tahun, $bln] = explode('-', $this->bulan);
+        [$awalBulan, $akhirBulan] = \App\Support\Periode::range($this->bulan);
 
-        $tanggalList = LaporanHarian::whereYear('tanggal', $tahun)
-            ->whereMonth('tanggal', $bln)
+        $tanggalList = LaporanHarian::whereBetween('tanggal', [$awalBulan, $akhirBulan])
             ->pluck('tanggal')->unique()->sort()->values()
             ->map(fn($t) => \Carbon\Carbon::parse($t)->format('d'))->toArray();
 
@@ -89,9 +88,8 @@ class KontrolExport implements FromArray, WithHeadings, WithTitle, WithStyles, W
 
     public function columnFormats(): array
     {
-        [$tahun, $bln] = explode('-', $this->bulan);
-        $count = LaporanHarian::whereYear('tanggal', $tahun)
-            ->whereMonth('tanggal', $bln)
+        [$awalBulan, $akhirBulan] = \App\Support\Periode::range($this->bulan);
+        $count = LaporanHarian::whereBetween('tanggal', [$awalBulan, $akhirBulan])
             ->pluck('tanggal')->unique()->count();
 
         $formats = [];

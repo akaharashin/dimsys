@@ -200,7 +200,7 @@
         function openEdit(data) {
             document.getElementById('edit-nama').value = data.nama;
             document.getElementById('edit-keterangan').value = data.keterangan ?? '';
-            document.getElementById('form-edit').action = `/dimsys/public/master/supplier/${data.id}`;
+            document.getElementById('form-edit').action = `{{ route('master.supplier.index') }}/${data.id}`;
             document.getElementById('modal-edit').style.display = 'flex';
         }
     </script>

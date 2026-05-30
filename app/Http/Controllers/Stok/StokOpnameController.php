@@ -86,9 +86,13 @@ class StokOpnameController extends Controller
         $svc    = new \App\Services\StokService();
         $cutoff = $svc->freezerCutoff($wilayahId, $tanggal);
 
-        $stokSistem = $produkList->map(function ($produk) use ($wilayahId, $tanggal, $cutoff, $svc) {
-            $stokFreezer     = $svc->stokFreezer($wilayahId, $produk->id, $tanggal, $cutoff);
-            $stokGerobak     = $svc->stokGerobak($wilayahId, $produk->id, $tanggal);
+        // B-K1: batch — semua produk sekali jalan, bukan 4 query/produk.
+        $freezerBatch = $svc->stokFreezerBatch($wilayahId, $tanggal, $cutoff);
+        $gerobakBatch = $svc->stokGerobakBatch($wilayahId, $tanggal);
+
+        $stokSistem = $produkList->map(function ($produk) use ($freezerBatch, $gerobakBatch) {
+            $stokFreezer     = $freezerBatch[$produk->id] ?? 0;
+            $stokGerobak     = $gerobakBatch[$produk->id] ?? 0;
             $stokSistemTotal = $stokFreezer + $stokGerobak;
 
             return [

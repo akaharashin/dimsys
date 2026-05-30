@@ -156,7 +156,7 @@
                     </tr>
                 @endforelse
             </tbody>
-            @if($kasWithSaldo->count())
+            @if($paginated->total())
                 <tfoot class="bg-gray-50 font-semibold">
                     <tr>
                         <td colspan="7" class="px-4 py-3 text-gray-600">Total</td>

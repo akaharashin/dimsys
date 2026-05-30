@@ -26,10 +26,10 @@ class OmsetController extends Controller
         }
 
         [$tahun, $bln] = explode('-', $bulan);
+        [$awalBulan, $akhirBulan] = \App\Support\Periode::range($bulan);
 
         $query = LaporanHarian::with(['outlet.wilayah', 'details.produk'])
-            ->whereYear('tanggal', $tahun)
-            ->whereMonth('tanggal', $bln);
+            ->whereBetween('tanggal', [$awalBulan, $akhirBulan]);
 
         if ($wilayahId !== 'semua') {
             $query->whereHas('outlet', fn($q) => $q->where('wilayah_id', $wilayahId));
@@ -75,8 +75,8 @@ class OmsetController extends Controller
 
         // Rekap per produk terlaris
         $produkTerlaris = \App\Models\LaporanHarianDetail::with('produk')
-            ->whereHas('laporan', function ($q) use ($tahun, $bln, $wilayahId) {
-                $q->whereYear('tanggal', $tahun)->whereMonth('tanggal', $bln);
+            ->whereHas('laporan', function ($q) use ($awalBulan, $akhirBulan, $wilayahId) {
+                $q->whereBetween('tanggal', [$awalBulan, $akhirBulan]);
                 if ($wilayahId !== 'semua') {
                     $q->whereHas('outlet', fn($o) => $o->where('wilayah_id', $wilayahId));
                 }

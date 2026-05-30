@@ -23,11 +23,10 @@ class StokMasukSheet implements FromCollection, WithTitle, WithHeadings, WithSty
 
     public function collection()
     {
-        [$tahun, $bln] = explode('-', $this->bulan);
+        [$awalBulan, $akhirBulan] = \App\Support\Periode::range($this->bulan);
 
         $query = StokMasuk::with(['wilayah', 'supplier', 'details.produk'])
-            ->whereYear('tanggal', $tahun)
-            ->whereMonth('tanggal', $bln)
+            ->whereBetween('tanggal', [$awalBulan, $akhirBulan])
             ->when($this->wilayahId, fn($q) => $q->where('wilayah_id', $this->wilayahId))
             ->orderBy('tanggal');
 

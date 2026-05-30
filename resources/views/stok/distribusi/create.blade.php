@@ -77,7 +77,7 @@
 
             container.innerHTML = '<p class="text-sm text-gray-400">Memuat stok...</p>';
 
-            fetch(`/dimsys/public/api/stok-tersedia?outlet_id=${outletId}`)
+            fetch(`{{ route('api.stok-tersedia') }}?outlet_id=${outletId}`)
                 .then(res => res.json())
                 .then(data => {
                     if (!data.length) {

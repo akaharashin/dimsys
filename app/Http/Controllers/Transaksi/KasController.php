@@ -36,57 +36,58 @@ class KasController extends Controller
             }
         }
 
-        $query = Kas::with(['outlet', 'rekening'])
-            ->where('rekening_id', $selectedRekening)
-            ->orderBy('tanggal')
-            ->orderBy('created_at');
+        // B-K3: query dasar + filter. TIDAK lagi load semua baris ke memori.
+        $base = Kas::where('rekening_id', $selectedRekening);
 
         if ($request->filled('kategori')) {
-            $query->where('kategori', $request->kategori);
+            $base->where('kategori', $request->kategori);
         }
         if ($request->filled('dari')) {
-            $query->whereDate('tanggal', '>=', $request->dari);
+            $base->where('tanggal', '>=', $request->dari);
         }
         if ($request->filled('sampai')) {
-            $query->whereDate('tanggal', '<=', $request->sampai);
+            $base->where('tanggal', '<=', $request->sampai);
         }
         if ($request->filled('search')) {
-            $query->where(function ($q) use ($request) {
+            $base->where(function ($q) use ($request) {
                 $q->where('keterangan', 'like', "%{$request->search}%")
                     ->orWhere('sub_kategori', 'like', "%{$request->search}%")
                     ->orWhere('penerima', 'like', "%{$request->search}%");
             });
         }
 
-        // Hitung saldo berjalan (ASC order supaya akumulasi benar)
-        $allKas = $query->get();
-        $saldo = Rekening::find($selectedRekening)?->saldo_awal ?? 0;
+        $saldoAwal = (float) (optional(Rekening::find($selectedRekening))->saldo_awal ?? 0);
 
-        $kasWithSaldo = $allKas->map(function ($k) use (&$saldo) {
-            if ($k->tipe === 'debit') {
-                $saldo += $k->jumlah;
-            } else {
-                $saldo -= $k->jumlah;
-            }
-            $k->saldo_berjalan = $saldo;
-            return $k;
-        });
+        // Summary via AGREGAT (1 query masing-masing) — tidak menarik semua baris.
+        // (float) menyamai tipe lama (Collection::sum) agar number_format konsisten.
+        $totalDebit  = (float) (clone $base)->where('tipe', 'debit')->sum('jumlah');
+        $totalKredit = (float) (clone $base)->where('tipe', 'kredit')->sum('jumlah');
+        $total       = (clone $base)->count();
+        // saldoAkhir = saldo_awal + Σdebit − Σkredit (identik dgn baris terakhir lama).
+        $saldoAkhir  = $total > 0 ? ($saldoAwal + $totalDebit - $totalKredit) : 0;
 
-        // Summary dihitung sebelum reverse
-        $totalDebit = $kasWithSaldo->where('tipe', 'debit')->sum('jumlah');
-        $totalKredit = $kasWithSaldo->where('tipe', 'kredit')->sum('jumlah');
-        $saldoAkhir = $kasWithSaldo->last()?->saldo_berjalan ?? 0;
-
-        // Balik urutan untuk tampilkan terbaru di atas
-        $kasWithSaldo = $kasWithSaldo->reverse()->values();
-
-        // Paginate manual
         $perPage = in_array($request->per_page, [10, 25, 50, 100]) ? $request->per_page : 25;
-        $page = $request->input('page', 1);
-        $items = $kasWithSaldo->forPage($page, $perPage);
+        $page = (int) $request->input('page', 1);
+        if ($page < 1) $page = 1;
+
+        // Saldo berjalan dihitung di DB (window function) — HANYA baris halaman ini
+        // yang ditarik ke PHP. Urutan (tanggal, created_at, id) = identik perilaku lama.
+        $signed = "CASE WHEN kas.tipe = 'debit' THEN kas.jumlah ELSE -kas.jumlah END";
+        $items = (clone $base)
+            ->with(['outlet', 'rekening'])
+            ->select('kas.*')
+            ->selectRaw(
+                "(? + SUM($signed) OVER (ORDER BY kas.tanggal, kas.created_at, kas.id "
+                . "ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)) as saldo_berjalan",
+                [$saldoAwal]
+            )
+            ->orderByDesc('tanggal')->orderByDesc('created_at')->orderByDesc('id')
+            ->forPage($page, $perPage)
+            ->get();
+
         $paginated = new \Illuminate\Pagination\LengthAwarePaginator(
             $items,
-            $kasWithSaldo->count(),
+            $total,
             $perPage,
             $page,
             ['path' => $request->url(), 'query' => $request->query()]
@@ -96,7 +97,6 @@ class KasController extends Controller
             'rekeningList',
             'selectedRekening',
             'paginated',
-            'kasWithSaldo',
             'totalDebit',
             'totalKredit',
             'saldoAkhir'

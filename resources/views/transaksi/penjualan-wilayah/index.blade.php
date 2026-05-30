@@ -292,7 +292,7 @@
     <script>
         function openUpdateStatus(id, status) {
             document.getElementById('edit-status').value = status;
-            document.getElementById('form-status').action = `/dimsys/public/transaksi/penjualan-wilayah/${id}`;
+            document.getElementById('form-status').action = `{{ route('transaksi.penjualan-wilayah.index') }}/${id}`;
             document.getElementById('modal-status').style.display = 'flex';
         }
     </script>
