@@ -97,13 +97,25 @@ class LaporanHarianController extends Controller
             'pengeluaran_jml.*.min' => 'Jumlah pengeluaran tidak boleh bernilai negatif.',
         ]);
 
-        // Cek laporan sudah ada belum
+        // Cek laporan sudah ada belum (whereDate andal, tidak tergantung format jam)
         $existing = LaporanHarian::where('outlet_id', $request->outlet_id)
-            ->where('tanggal', $request->tanggal)
-            ->first();
+            ->whereDate('tanggal', $request->tanggal)
+            ->exists();
 
         if ($existing) {
             return back()->withErrors(['laporan' => 'Laporan untuk outlet dan tanggal ini sudah ada. Silakan pilih outlet atau tanggal yang berbeda.'])->withInput();
+        }
+
+        // Idempotency guard: cegah double-submit dalam 30 detik terakhir
+        // (mis. klik ganda saat koneksi lambat) → laporan duplikat menggandakan omset.
+        $duplikat = LaporanHarian::where('outlet_id', $request->outlet_id)
+            ->whereDate('tanggal', $request->tanggal)
+            ->where('created_by', auth()->id())
+            ->where('created_at', '>=', now()->subSeconds(30))
+            ->exists();
+
+        if ($duplikat) {
+            return back()->withErrors(['laporan' => 'Laporan untuk outlet & tanggal ini baru saja disimpan. Cek daftar laporan sebelum menyimpan ulang.'])->withInput();
         }
 
         // Bangun stok per produk: sisa kemarin + distribusi hari ini
@@ -185,14 +197,20 @@ class LaporanHarianController extends Controller
             return back()->with('error', 'Tidak ada produk yang terjual. Laporan tidak dapat disimpan.')->withInput();
         }
 
-        $totalSetor = $totalOmset - $totalKomisi - $totalPengeluaran;
+        // A-S3: jika pengeluaran > (omset - komisi), selisihnya TIDAK hilang.
+        // total_setor tetap >= 0 (kas tidak terganggu); kekurangan dicatat di 'talangan'
+        // (uang yang harus ditalangi perusahaan) agar bisa direkonsiliasi.
+        $totalSetorRaw = $totalOmset - $totalKomisi - $totalPengeluaran;
+        $totalSetor    = max(0, $totalSetorRaw);
+        $talangan      = max(0, -$totalSetorRaw);
 
         try {
             $laporan = LaporanHarian::create([
                 'outlet_id' => $request->outlet_id,
                 'tanggal' => $request->tanggal,
-                'total_setor' => max(0, $totalSetor),
+                'total_setor' => $totalSetor,
                 'total_pengeluaran' => $totalPengeluaran,
+                'talangan' => $talangan,
                 'status' => 'final',
                 'created_by' => auth()->id(),
             ]);

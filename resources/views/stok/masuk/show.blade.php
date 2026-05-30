@@ -61,7 +61,7 @@
                 <tr>
                     <td colspan="3" class="px-4 py-3 text-right text-sm font-semibold text-gray-600">Total</td>
                     <td class="px-4 py-3 text-right font-bold text-gray-700">
-                        Rp {{ number_format($masuk->details->sum(fn($d) => $d->jumlah * $d->produk->hpp)) }}
+                        Rp {{ number_format($masuk->details->sum(fn($d) => $d->jumlah * $d->hpp)) }}
                     </td>
                 </tr>
             </tfoot>

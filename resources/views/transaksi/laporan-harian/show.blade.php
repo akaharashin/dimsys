@@ -101,6 +101,19 @@
                 </p>
             </div>
         </div>
+
+        @if(($laporanHarian->talangan ?? 0) > 0)
+            <div class="mt-4 p-4 bg-amber-50 border border-amber-200 rounded-lg flex items-center gap-3">
+                <i class="fa-solid fa-triangle-exclamation text-amber-500"></i>
+                <div>
+                    <p class="text-xs text-amber-600 uppercase font-semibold">Perlu Ditalangi</p>
+                    <p class="text-xl font-bold text-amber-600 mt-0.5">Rp {{ number_format($laporanHarian->talangan) }}</p>
+                    <p class="text-xs text-amber-600/80 mt-1">
+                        Pengeluaran outlet melebihi (omset − komisi). Setoran = Rp 0; selisih ini perlu ditalangi perusahaan.
+                    </p>
+                </div>
+            </div>
+        @endif
     </div>
 
     {{-- Pengeluaran --}}

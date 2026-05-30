@@ -40,14 +40,25 @@ class RataRataOutController extends Controller
         $produkList = Produk::whereIn('id', $produkIds)->orderBy('nama')->get();
         $outletList = $distribusi->pluck('outlet')->unique('id')->sortBy('nama')->values();
 
+        // A-R2: 'hari' = jumlah HARI UNIK (distinct tanggal), bukan jumlah record.
+        // Bila satu outlet menerima >1 distribusi produk yang sama di hari yang sama,
+        // tetap dihitung 1 hari agar rata-rata OUT/hari tidak terdistorsi.
         $matrix = [];
+        $hariUnik = [];
         foreach ($distribusi as $d) {
+            $tgl = \Carbon\Carbon::parse($d->tanggal)->toDateString();
             foreach ($d->details as $detail) {
                 if (!isset($matrix[$d->outlet_id][$detail->produk_id])) {
                     $matrix[$d->outlet_id][$detail->produk_id] = ['total' => 0, 'hari' => 0];
+                    $hariUnik[$d->outlet_id][$detail->produk_id] = [];
                 }
                 $matrix[$d->outlet_id][$detail->produk_id]['total'] += $detail->jumlah_out;
-                $matrix[$d->outlet_id][$detail->produk_id]['hari']++;
+                $hariUnik[$d->outlet_id][$detail->produk_id][$tgl] = true;
+            }
+        }
+        foreach ($hariUnik as $outletId => $produkDates) {
+            foreach ($produkDates as $produkId => $dates) {
+                $matrix[$outletId][$produkId]['hari'] = count($dates);
             }
         }
 

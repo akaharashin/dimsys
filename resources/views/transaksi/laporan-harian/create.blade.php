@@ -95,13 +95,18 @@
                 <input type="hidden" name="total_setor" id="input-setor" value="0">
                 <input type="hidden" name="total_pengeluaran" id="input-pengeluaran" value="0">
             </div>
+            <div class="mt-3 p-4 bg-amber-50 border border-amber-200 rounded-lg hidden" id="box-talangan">
+                <p class="text-xs text-amber-600 uppercase font-semibold">Perlu Ditalangi</p>
+                <p class="text-xl font-bold text-amber-600 mt-0.5" id="display-talangan">Rp 0</p>
+                <p class="text-xs text-amber-600/80 mt-1">Pengeluaran melebihi (omset − komisi). Setoran = Rp 0; selisih ditalangi perusahaan.</p>
+            </div>
         </div>
 
         <div class="flex justify-end gap-3">
             <a href="{{ route('transaksi.laporan-harian.index') }}"
                 class="px-5 py-2 text-sm text-gray-500 hover:bg-gray-100 rounded-lg">Batal</a>
-            <button type="submit"
-                class="px-5 py-2 text-sm bg-red-700 hover:bg-red-800 text-white rounded-lg font-medium">
+            <button type="submit" id="btn-simpan"
+                class="px-5 py-2 text-sm bg-red-700 hover:bg-red-800 text-white rounded-lg font-medium disabled:opacity-60 disabled:cursor-not-allowed">
                 Simpan Laporan
             </button>
         </div>
@@ -210,13 +215,24 @@
                 totalPengeluaran += parseFloat(input.value) || 0;
             });
 
-            const totalSetor = Math.max(0, totalOmset - totalKomisi - totalPengeluaran);
+            const totalSetorRaw = totalOmset - totalKomisi - totalPengeluaran;
+            const totalSetor = Math.max(0, totalSetorRaw);
+            const talangan = Math.max(0, -totalSetorRaw);
 
             // Update display
             document.getElementById('display-omset').textContent = 'Rp ' + totalOmset.toLocaleString('id-ID');
             document.getElementById('display-komisi').textContent = 'Rp ' + totalKomisi.toLocaleString('id-ID');
             document.getElementById('display-pengeluaran').textContent = 'Rp ' + totalPengeluaran.toLocaleString('id-ID');
             document.getElementById('display-setor').textContent = 'Rp ' + totalSetor.toLocaleString('id-ID');
+
+            // Tampilkan box talangan bila pengeluaran melebihi (omset - komisi)
+            const boxTalangan = document.getElementById('box-talangan');
+            if (talangan > 0) {
+                document.getElementById('display-talangan').textContent = 'Rp ' + talangan.toLocaleString('id-ID');
+                boxTalangan.classList.remove('hidden');
+            } else {
+                boxTalangan.classList.add('hidden');
+            }
 
             // Update hidden input
             document.getElementById('input-setor').value = totalSetor;
@@ -270,7 +286,15 @@
                     errors.push('Outlet wajib dipilih.');
                 if (!document.getElementById('tanggal').value)
                     errors.push('Tanggal wajib diisi.');
-                if (errors.length === 0) return;
+                if (errors.length === 0) {
+                    // Cegah double-submit: nonaktifkan tombol + ubah teks jadi loading.
+                    var btn = document.getElementById('btn-simpan');
+                    if (btn) {
+                        btn.disabled = true;
+                        btn.textContent = 'Menyimpan...';
+                    }
+                    return;
+                }
                 e.preventDefault();
                 var html = '<ul style="text-align:left;padding-left:20px;margin:0">' +
                     errors.map(function (err) { return '<li>' + err + '</li>'; }).join('') + '</ul>';

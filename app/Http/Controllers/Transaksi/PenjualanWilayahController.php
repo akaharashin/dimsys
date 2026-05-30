@@ -12,6 +12,9 @@ use App\Models\Wilayah;
 use App\Models\Produk;
 use App\Models\DistribusiDetail;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use App\Services\StokService;
+use App\Exceptions\StokTidakCukupException;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\Transaksi\PenjualanWilayahExport;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
@@ -192,76 +195,60 @@ class PenjualanWilayahController extends Controller
                 ->withInput();
         }
 
-        // Validasi stok tersedia (hanya hitung yang sudah disetujui)
-        foreach ($request->jumlah as $pid => $jumlah) {
-            $jumlah = (int) $jumlah;
-            if ($jumlah <= 0)
-                continue;
-
-            $masuk = StokMasukDetail::whereHas(
-                'stokMasuk',
-                fn($q) =>
-                $q->where('wilayah_id', $request->wilayah_asal_id)
-            )->where('produk_id', $pid)->sum('jumlah');
-
-            $sudahOut = DistribusiDetail::whereHas(
-                'distribusi',
-                fn($q) =>
-                $q->whereHas('outlet', fn($o) => $o->where('wilayah_id', $request->wilayah_asal_id))
-            )->where('produk_id', $pid)->sum('jumlah_out');
-
-            $keluarWilayah = PenjualanWilayahDetail::whereHas(
-                'penjualan',
-                fn($q) =>
-                $q->where('wilayah_asal_id', $request->wilayah_asal_id)->where('status', 'disetujui')
-            )->where('produk_id', $pid)->sum('jumlah');
-
-            $stokTersedia = max(0, $masuk - $sudahOut - $keluarWilayah);
-            $produkObj = Produk::find($pid);
-
-            if ($jumlah > $stokTersedia) {
-                return back()
-                    ->with('error', "Stok {$produkObj->nama} tidak cukup. Tersedia: {$stokTersedia} pcs, diminta: {$jumlah} pcs.")
-                    ->withInput();
-            }
-        }
-
+        // A-S1: validasi stok + simpan dijalankan ATOMIK + lockForUpdate pada sumber
+        // stok wilayah asal (serialize submit paralel). A-K1: formula freezer via
+        // StokService (identik dengan RekapStok/StokApi/getStokSistem).
         try {
-            if ($tipe === 'transfer') {
-                $penjualan = PenjualanWilayah::create([
-                    'tipe' => 'transfer',
-                    'wilayah_asal_id' => $request->wilayah_asal_id,
-                    'wilayah_tujuan_id' => $request->wilayah_tujuan_id,
-                    'tanggal' => $request->tanggal,
-                    'total' => 0,
-                    'status_bayar' => null,
-                    'keterangan' => $request->keterangan,
-                    'status' => 'menunggu',
-                    'created_by' => auth()->id(),
-                ]);
+            $penjualan = DB::transaction(function () use ($request, $tipe) {
+                // Kunci baris sumber stok wilayah asal.
+                StokMasuk::where('wilayah_id', $request->wilayah_asal_id)->lockForUpdate()->pluck('id');
+
+                $svc    = new StokService();
+                $cutoff = $svc->freezerCutoff($request->wilayah_asal_id, $request->tanggal);
 
                 foreach ($request->jumlah as $pid => $jumlah) {
                     $jumlah = (int) $jumlah;
-                    if ($jumlah > 0) {
-                        PenjualanWilayahDetail::create([
-                            'penjualan_id' => $penjualan->id,
-                            'produk_id' => $pid,
-                            'jumlah' => $jumlah,
-                            'harga_agen' => 0,
-                            'subtotal' => 0,
-                        ]);
+                    if ($jumlah <= 0) continue;
+
+                    $stokTersedia = max(0, $svc->stokFreezer($request->wilayah_asal_id, $pid, $request->tanggal, $cutoff));
+                    if ($jumlah > $stokTersedia) {
+                        $produkObj = Produk::find($pid);
+                        throw new StokTidakCukupException(
+                            "Stok {$produkObj->nama} tidak cukup. Tersedia: {$stokTersedia} pcs, diminta: {$jumlah} pcs."
+                        );
                     }
                 }
 
-                $this->logActivity(
-                    'create', 'Pindah Stok', $penjualan,
-                    after: $penjualan->only(['id', 'tipe', 'wilayah_asal_id', 'wilayah_tujuan_id', 'tanggal', 'status']),
-                    label: 'Pindah Stok ' . optional($penjualan->wilayahAsal)->nama . ' → ' . optional($penjualan->wilayahTujuan)->nama . ' - ' . $penjualan->tanggal
-                );
+                if ($tipe === 'transfer') {
+                    $penjualan = PenjualanWilayah::create([
+                        'tipe' => 'transfer',
+                        'wilayah_asal_id' => $request->wilayah_asal_id,
+                        'wilayah_tujuan_id' => $request->wilayah_tujuan_id,
+                        'tanggal' => $request->tanggal,
+                        'total' => 0,
+                        'status_bayar' => null,
+                        'keterangan' => $request->keterangan,
+                        'status' => 'menunggu',
+                        'created_by' => auth()->id(),
+                    ]);
 
-                return redirect()->route('transaksi.penjualan-wilayah.index')
-                    ->with('success', 'Pindah stok berhasil dicatat. Menunggu persetujuan koordinator wilayah tujuan.');
-            } else {
+                    foreach ($request->jumlah as $pid => $jumlah) {
+                        $jumlah = (int) $jumlah;
+                        if ($jumlah > 0) {
+                            PenjualanWilayahDetail::create([
+                                'penjualan_id' => $penjualan->id,
+                                'produk_id' => $pid,
+                                'jumlah' => $jumlah,
+                                'harga_agen' => 0,
+                                'subtotal' => 0,
+                            ]);
+                        }
+                    }
+
+                    return $penjualan;
+                }
+
+                // tipe === 'penjualan'
                 $total = 0;
                 foreach ($request->jumlah as $pid => $jumlah) {
                     $jumlah = (int) $jumlah;
@@ -297,18 +284,34 @@ class PenjualanWilayahController extends Controller
                     }
                 }
 
-                $this->logActivity(
-                    'create', 'Penjualan Wilayah', $penjualan,
-                    after: $penjualan->only(['id', 'tipe', 'wilayah_asal_id', 'wilayah_tujuan_id', 'tanggal', 'total', 'status_bayar']),
-                    label: 'Penjualan ' . optional($penjualan->wilayahAsal)->nama . ' → ' . optional($penjualan->wilayahTujuan)->nama . ' - ' . $penjualan->tanggal
-                );
-
-                return redirect()->route('transaksi.penjualan-wilayah.index')
-                    ->with('success', 'Penjualan wilayah berhasil dicatat.');
-            }
-        } catch (\Exception $e) {
+                return $penjualan;
+            });
+        } catch (StokTidakCukupException $e) {
+            return back()->with('error', $e->getMessage())->withInput();
+        } catch (\Throwable $e) {
             return back()->with('error', 'Gagal menyimpan data. Silakan coba lagi.')->withInput();
         }
+
+        // Logging + redirect (di luar transaksi)
+        if ($penjualan->tipe === 'transfer') {
+            $this->logActivity(
+                'create', 'Pindah Stok', $penjualan,
+                after: $penjualan->only(['id', 'tipe', 'wilayah_asal_id', 'wilayah_tujuan_id', 'tanggal', 'status']),
+                label: 'Pindah Stok ' . optional($penjualan->wilayahAsal)->nama . ' → ' . optional($penjualan->wilayahTujuan)->nama . ' - ' . $penjualan->tanggal
+            );
+
+            return redirect()->route('transaksi.penjualan-wilayah.index')
+                ->with('success', 'Pindah stok berhasil dicatat. Menunggu persetujuan koordinator wilayah tujuan.');
+        }
+
+        $this->logActivity(
+            'create', 'Penjualan Wilayah', $penjualan,
+            after: $penjualan->only(['id', 'tipe', 'wilayah_asal_id', 'wilayah_tujuan_id', 'tanggal', 'total', 'status_bayar']),
+            label: 'Penjualan ' . optional($penjualan->wilayahAsal)->nama . ' → ' . optional($penjualan->wilayahTujuan)->nama . ' - ' . $penjualan->tanggal
+        );
+
+        return redirect()->route('transaksi.penjualan-wilayah.index')
+            ->with('success', 'Penjualan wilayah berhasil dicatat.');
     }
 
     public function show(PenjualanWilayah $penjualanWilayah)
@@ -342,76 +345,68 @@ class PenjualanWilayahController extends Controller
             return back()->with('error', 'Wajib upload minimal 1 foto bukti sebelum konfirmasi terima.');
         }
 
-        // Validasi ulang stok sebelum approve
-        $penjualanWilayah->load('details');
-        foreach ($penjualanWilayah->details as $detail) {
-            $masuk = StokMasukDetail::whereHas(
-                'stokMasuk',
-                fn($q) =>
-                $q->where('wilayah_id', $penjualanWilayah->wilayah_asal_id)
-            )->where('produk_id', $detail->produk_id)->sum('jumlah');
-
-            $sudahOut = DistribusiDetail::whereHas(
-                'distribusi',
-                fn($q) =>
-                $q->whereHas('outlet', fn($o) => $o->where('wilayah_id', $penjualanWilayah->wilayah_asal_id))
-            )->where('produk_id', $detail->produk_id)->sum('jumlah_out');
-
-            $keluarWilayah = PenjualanWilayahDetail::whereHas(
-                'penjualan',
-                fn($q) =>
-                $q->where('wilayah_asal_id', $penjualanWilayah->wilayah_asal_id)
-                    ->where('status', 'disetujui')
-            )->where('produk_id', $detail->produk_id)->sum('jumlah');
-
-            $stokTersedia = max(0, $masuk - $sudahOut - $keluarWilayah);
-            $produk = \App\Models\Produk::find($detail->produk_id);
-
-            if ($detail->jumlah > $stokTersedia) {
-                return back()->with(
-                    'error',
-                    "Stok {$produk->nama} di wilayah asal tidak mencukupi. Tersedia: {$stokTersedia} pcs, dibutuhkan: {$detail->jumlah} pcs."
-                );
-            }
-        }
-
+        // A-S1: validasi ulang stok + buat stok masuk tujuan dijalankan ATOMIK +
+        // lockForUpdate pada sumber stok wilayah asal. A-K1: formula freezer via
+        // StokService. A-R3: HPP stok hasil transfer diisi dari HPP MASTER produk.
         try {
-            $wilayahAsal = Wilayah::find($penjualanWilayah->wilayah_asal_id);
+            DB::transaction(function () use ($penjualanWilayah) {
+                StokMasuk::where('wilayah_id', $penjualanWilayah->wilayah_asal_id)->lockForUpdate()->pluck('id');
 
-            $stokMasuk = StokMasuk::create([
-                'wilayah_id' => $penjualanWilayah->wilayah_tujuan_id,
-                'supplier_id' => null,
-                'tanggal' => $penjualanWilayah->tanggal,
-                'jenis' => 'masuk',
-                'keterangan' => 'Pindah stok dari ' . $wilayahAsal->nama,
-                'created_by' => auth()->id(),
-            ]);
+                $svc    = new StokService();
+                $sampai = \Carbon\Carbon::today()->toDateString();
+                $cutoff = $svc->freezerCutoff($penjualanWilayah->wilayah_asal_id, $sampai);
 
-            foreach ($penjualanWilayah->details as $detail) {
-                StokMasukDetail::create([
-                    'stok_masuk_id' => $stokMasuk->id,
-                    'produk_id' => $detail->produk_id,
-                    'jumlah' => $detail->jumlah,
-                    'hpp' => 0,
+                $penjualanWilayah->load('details');
+                foreach ($penjualanWilayah->details as $detail) {
+                    $stokTersedia = max(0, $svc->stokFreezer($penjualanWilayah->wilayah_asal_id, $detail->produk_id, $sampai, $cutoff));
+                    if ($detail->jumlah > $stokTersedia) {
+                        $produk = Produk::find($detail->produk_id);
+                        throw new StokTidakCukupException(
+                            "Stok {$produk->nama} di wilayah asal tidak mencukupi. Tersedia: {$stokTersedia} pcs, dibutuhkan: {$detail->jumlah} pcs."
+                        );
+                    }
+                }
+
+                $wilayahAsal = Wilayah::find($penjualanWilayah->wilayah_asal_id);
+
+                $stokMasuk = StokMasuk::create([
+                    'wilayah_id' => $penjualanWilayah->wilayah_tujuan_id,
+                    'supplier_id' => null,
+                    'tanggal' => $penjualanWilayah->tanggal,
+                    'jenis' => 'masuk',
+                    'keterangan' => 'Pindah stok dari ' . $wilayahAsal->nama,
+                    'created_by' => auth()->id(),
                 ]);
-            }
 
-            $penjualanWilayah->update([
-                'status'                 => 'disetujui',
-                'updated_by'             => auth()->id(),
-                'transfer_stok_masuk_id' => $stokMasuk->id,
-            ]);
+                foreach ($penjualanWilayah->details as $detail) {
+                    $produk = Produk::find($detail->produk_id);
+                    StokMasukDetail::create([
+                        'stok_masuk_id' => $stokMasuk->id,
+                        'produk_id' => $detail->produk_id,
+                        'jumlah' => $detail->jumlah,
+                        'hpp' => $produk->hpp ?? 0,  // A-R3: HPP dari master, bukan 0
+                    ]);
+                }
 
-            $this->logActivity(
-                'approve', 'Pindah Stok', $penjualanWilayah,
-                label: 'Pindah Stok ' . optional($penjualanWilayah->wilayahAsal)->nama . ' → ' . optional($penjualanWilayah->wilayahTujuan)->nama . ' - ' . $penjualanWilayah->tanggal
-            );
-
-            return redirect()->route('transaksi.penjualan-wilayah.index')
-                ->with('success', 'Pindah stok disetujui. Stok masuk di wilayah tujuan berhasil dibuat.');
-        } catch (\Exception $e) {
+                $penjualanWilayah->update([
+                    'status'                 => 'disetujui',
+                    'updated_by'             => auth()->id(),
+                    'transfer_stok_masuk_id' => $stokMasuk->id,
+                ]);
+            });
+        } catch (StokTidakCukupException $e) {
+            return back()->with('error', $e->getMessage());
+        } catch (\Throwable $e) {
             return back()->with('error', 'Gagal menyetujui pindah stok. Silakan coba lagi.');
         }
+
+        $this->logActivity(
+            'approve', 'Pindah Stok', $penjualanWilayah,
+            label: 'Pindah Stok ' . optional($penjualanWilayah->wilayahAsal)->nama . ' → ' . optional($penjualanWilayah->wilayahTujuan)->nama . ' - ' . $penjualanWilayah->tanggal
+        );
+
+        return redirect()->route('transaksi.penjualan-wilayah.index')
+            ->with('success', 'Pindah stok disetujui. Stok masuk di wilayah tujuan berhasil dibuat.');
     }
 
     public function reject(PenjualanWilayah $penjualanWilayah)

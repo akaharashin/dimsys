@@ -81,13 +81,16 @@ class DashboardController extends Controller
         }
         $pindahStokMenunggu = $pindahStokQuery->count();
 
-        $tren7Hari = LaporanHarian::selectRaw('tanggal, SUM(total_setor) as omset')
-            ->whereYear('tanggal', Carbon::now()->year)
-            ->whereMonth('tanggal', Carbon::now()->month)
-            ->when($wilayahId, fn($q) => $q->whereHas('outlet', $scopeOutlet))
+        // A-S5: tren memakai OMSET (details.omset), KONSISTEN dengan kartu omset di atas.
+        // Diturunkan dari koleksi $laporanBulanIni yang sudah dimuat (tanpa query baru).
+        $tren7Hari = $laporanBulanIni
             ->groupBy('tanggal')
-            ->orderBy('tanggal')
-            ->get();
+            ->map(fn($rows, $tanggal) => (object) [
+                'tanggal' => $tanggal,
+                'omset'   => $rows->sum(fn($l) => $l->details->sum('omset')),
+            ])
+            ->sortKeys()
+            ->values();
 
         return view('dashboard', compact(
             'omsetHariIni',

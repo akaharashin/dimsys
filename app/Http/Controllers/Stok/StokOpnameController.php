@@ -81,54 +81,14 @@ class StokOpnameController extends Controller
         $tanggal   = $request->tanggal ?: Carbon::today()->format('Y-m-d');
         $produkList = Produk::where('aktif', true)->orderBy('nama')->get();
 
-        // Cutoff freezer: stok_awal terakhir di wilayah ini yang tanggal <= tgl STO.
-        // Mencegah double-count saat sudah pernah generate stok awal multi-bulan.
-        // Gerobak tetap ALL-TIME (running balance).
-        $cutoff = StokMasuk::where('wilayah_id', $wilayahId)
-            ->where('jenis', 'awal')
-            ->whereDate('tanggal', '<=', $tanggal)
-            ->orderByDesc('tanggal')
-            ->value('tanggal');
+        // Formula stok dipusatkan di StokService (identik dengan RekapStok, StokApi,
+        // dan validasi distribusi/pindah-stok). $tanggal STO dipakai sebagai batas atas.
+        $svc    = new \App\Services\StokService();
+        $cutoff = $svc->freezerCutoff($wilayahId, $tanggal);
 
-        $stokSistem = $produkList->map(function ($produk) use ($wilayahId, $tanggal, $cutoff) {
-            // Stok masuk ke freezer wilayah sejak cutoff (semua jenis: awal/masuk/koreksi)
-            $masuk = StokMasukDetail::whereHas('stokMasuk', function ($q) use ($wilayahId, $tanggal, $cutoff) {
-                $q->where('wilayah_id', $wilayahId)
-                  ->whereDate('tanggal', '<=', $tanggal);
-                if ($cutoff) $q->whereDate('tanggal', '>=', $cutoff);
-            })->where('produk_id', $produk->id)->sum('jumlah');
-
-            // Distribusi keluar dari freezer ke gerobak sejak cutoff
-            $distribusiOutFreezer = DistribusiDetail::whereHas('distribusi', function ($q) use ($wilayahId, $tanggal, $cutoff) {
-                $q->whereHas('outlet', fn($o) => $o->where('wilayah_id', $wilayahId))
-                  ->whereDate('tanggal', '<=', $tanggal);
-                if ($cutoff) $q->whereDate('tanggal', '>=', $cutoff);
-            })->where('produk_id', $produk->id)->sum('jumlah_out');
-
-            // Transfer ke wilayah lain sejak cutoff
-            $keluarWilayah = PenjualanWilayahDetail::whereHas('penjualan', function ($q) use ($wilayahId, $tanggal, $cutoff) {
-                $q->where('wilayah_asal_id', $wilayahId)
-                  ->where('status', 'disetujui')
-                  ->whereDate('tanggal', '<=', $tanggal);
-                if ($cutoff) $q->whereDate('tanggal', '>=', $cutoff);
-            })->where('produk_id', $produk->id)->sum('jumlah');
-
-            // Gerobak: ALL-TIME sampai tanggal STO (running balance)
-            $distribusiOutAll = DistribusiDetail::whereHas('distribusi', fn($q) =>
-                $q->whereHas('outlet', fn($o) => $o->where('wilayah_id', $wilayahId))
-                  ->whereDate('tanggal', '<=', $tanggal)
-            )->where('produk_id', $produk->id)->sum('jumlah_out');
-
-            $terjualGerobak = LaporanHarianDetail::whereHas('laporan', fn($q) =>
-                $q->whereHas('outlet', fn($o) => $o->where('wilayah_id', $wilayahId))
-                  ->whereDate('tanggal', '<=', $tanggal)
-            )->where('produk_id', $produk->id)->sum('terjual');
-
-            // Stok freezer wilayah sejak cutoff
-            $stokFreezer = $masuk - $distribusiOutFreezer - $keluarWilayah;
-            // Sisa gerobak (ALL-TIME running balance)
-            $stokGerobak = $distribusiOutAll - $terjualGerobak;
-
+        $stokSistem = $produkList->map(function ($produk) use ($wilayahId, $tanggal, $cutoff, $svc) {
+            $stokFreezer     = $svc->stokFreezer($wilayahId, $produk->id, $tanggal, $cutoff);
+            $stokGerobak     = $svc->stokGerobak($wilayahId, $produk->id, $tanggal);
             $stokSistemTotal = $stokFreezer + $stokGerobak;
 
             return [

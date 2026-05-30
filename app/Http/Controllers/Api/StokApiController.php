@@ -35,29 +35,13 @@ class StokApiController extends Controller
 
         $produkList = Produk::where('aktif', true)->orderBy('nama')->get();
 
-        // Cutoff freezer (lihat catatan di RekapStokController)
-        $cutoff = StokMasuk::where('wilayah_id', $wilayahId)
-            ->where('jenis', 'awal')
-            ->orderByDesc('tanggal')
-            ->value('tanggal');
+        // Formula freezer dipusatkan di StokService (identik dengan validasi & RekapStok).
+        $svc    = new \App\Services\StokService();
+        $sampai = \Carbon\Carbon::today()->toDateString();
+        $cutoff = $svc->freezerCutoff($wilayahId, $sampai);
 
-        $result = $produkList->map(function ($produk) use ($wilayahId, $cutoff) {
-            $masuk = StokMasukDetail::whereHas('stokMasuk', function ($q) use ($wilayahId, $cutoff) {
-                $q->where('wilayah_id', $wilayahId);
-                if ($cutoff) $q->whereDate('tanggal', '>=', $cutoff);
-            })->where('produk_id', $produk->id)->sum('jumlah');
-
-            $sudahOut = DistribusiDetail::whereHas('distribusi', function ($q) use ($wilayahId, $cutoff) {
-                $q->whereHas('outlet', fn($o) => $o->where('wilayah_id', $wilayahId));
-                if ($cutoff) $q->whereDate('tanggal', '>=', $cutoff);
-            })->where('produk_id', $produk->id)->sum('jumlah_out');
-
-            $keluarWilayah = PenjualanWilayahDetail::whereHas('penjualan', function ($q) use ($wilayahId, $cutoff) {
-                $q->where('wilayah_asal_id', $wilayahId)->where('status', 'disetujui');
-                if ($cutoff) $q->whereDate('tanggal', '>=', $cutoff);
-            })->where('produk_id', $produk->id)->sum('jumlah');
-
-            $stokTersedia = $masuk - $sudahOut - $keluarWilayah;
+        $result = $produkList->map(function ($produk) use ($wilayahId, $svc, $sampai, $cutoff) {
+            $stokTersedia = $svc->stokFreezer($wilayahId, $produk->id, $sampai, $cutoff);
 
             return [
                 'produk_id'      => $produk->id,

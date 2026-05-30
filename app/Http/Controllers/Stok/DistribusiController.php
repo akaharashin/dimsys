@@ -9,8 +9,11 @@ use App\Models\Outlet;
 use App\Models\Produk;
 use App\Models\Wilayah;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use App\Traits\LogsActivity;
 use App\Traits\ChecksWilayahAccess;
+use App\Services\StokService;
+use App\Exceptions\StokTidakCukupException;
 use Maatwebsite\Excel\Facades\Excel;
 
 class DistribusiController extends Controller
@@ -113,79 +116,78 @@ class DistribusiController extends Controller
         // Ambil wilayah dari outlet
         $outlet = \App\Models\Outlet::find($request->outlet_id);
         $wilayahId = $outlet->wilayah_id;
+        $tanggal   = $request->tanggal;
 
-        // Validasi stok per produk
-        $stokErrors = [];
-        $adaProduk = false;
-        foreach ($request->jumlah_out as $pid => $jumlah) {
-            $jumlah = (int) $jumlah;
-            if ($jumlah <= 0) continue;
-            $adaProduk = true;
-
-            $produk = \App\Models\Produk::find($pid);
-            if (!$produk) {
-                $stokErrors[] = "Produk tidak ditemukan (ID: {$pid}).";
-                continue;
-            }
-
-            $masuk = \App\Models\StokMasukDetail::whereHas(
-                'stokMasuk',
-                fn($q) => $q->where('wilayah_id', $wilayahId)
-            )->where('produk_id', $pid)->sum('jumlah');
-
-            $sudahOut = \App\Models\DistribusiDetail::whereHas(
-                'distribusi',
-                fn($q) => $q->whereHas('outlet', fn($o) => $o->where('wilayah_id', $wilayahId))
-            )->where('produk_id', $pid)->sum('jumlah_out');
-
-            $keluarWilayah = \App\Models\PenjualanWilayahDetail::whereHas(
-                'penjualan',
-                fn($q) => $q->where('wilayah_asal_id', $wilayahId)->where('status', 'disetujui')
-            )->where('produk_id', $pid)->sum('jumlah');
-
-            $stokTersedia = $masuk - $sudahOut - $keluarWilayah;
-
-            if ($jumlah > $stokTersedia) {
-                $stokErrors[] = "Stok {$produk->nama} tidak cukup. Tersedia: {$stokTersedia} pcs, diminta: {$jumlah} pcs.";
-            }
-        }
-
-        if (!empty($stokErrors)) {
-            return back()->withErrors(['stok' => implode(' | ', $stokErrors)])->withInput();
-        }
-
+        // Pastikan minimal ada satu produk dengan jumlah > 0 (tidak menyentuh stok)
+        $adaProduk = collect($request->jumlah_out ?? [])->filter(fn($j) => (int) $j > 0)->isNotEmpty();
         if (!$adaProduk) {
             return back()->with('error', 'Minimal satu produk harus memiliki jumlah OUT lebih dari 0.')->withInput();
         }
 
         try {
-            $distribusi = Distribusi::create([
-                'outlet_id'  => $request->outlet_id,
-                'tanggal'    => $request->tanggal,
-                'keterangan' => $request->keterangan,
-                'created_by' => auth()->id(),
-            ]);
+            // A-S1: cek-stok + simpan dijalankan ATOMIK + lockForUpdate pada sumber stok
+            // wilayah ini, agar dua submit paralel tidak bisa over-issue (serialized).
+            // A-K1: validasi pakai StokService (formula freezer IDENTIK dengan display).
+            $distribusi = DB::transaction(function () use ($request, $wilayahId, $tanggal) {
+                // Kunci baris sumber stok wilayah ini → serialize transaksi paralel.
+                StokMasuk::where('wilayah_id', $wilayahId)->lockForUpdate()->pluck('id');
 
-            foreach ($request->jumlah_out as $pid => $jumlah) {
-                $jumlah = (int) $jumlah;
-                if ($jumlah <= 0) continue;
-                DistribusiDetail::create([
-                    'distribusi_id' => $distribusi->id,
-                    'produk_id'     => $pid,
-                    'jumlah_out'    => $jumlah,
+                $svc    = new StokService();
+                $cutoff = $svc->freezerCutoff($wilayahId, $tanggal);
+
+                $stokErrors = [];
+                foreach ($request->jumlah_out as $pid => $jumlah) {
+                    $jumlah = (int) $jumlah;
+                    if ($jumlah <= 0) continue;
+
+                    $produk = Produk::find($pid);
+                    if (!$produk) {
+                        $stokErrors[] = "Produk tidak ditemukan (ID: {$pid}).";
+                        continue;
+                    }
+
+                    $stokTersedia = $svc->stokFreezer($wilayahId, $pid, $tanggal, $cutoff);
+                    if ($jumlah > $stokTersedia) {
+                        $stokErrors[] = "Stok {$produk->nama} tidak cukup. Tersedia: {$stokTersedia} pcs, diminta: {$jumlah} pcs.";
+                    }
+                }
+
+                if (!empty($stokErrors)) {
+                    throw new StokTidakCukupException(implode(' | ', $stokErrors));
+                }
+
+                $distribusi = Distribusi::create([
+                    'outlet_id'  => $request->outlet_id,
+                    'tanggal'    => $tanggal,
+                    'keterangan' => $request->keterangan,
+                    'created_by' => auth()->id(),
                 ]);
-            }
 
-            $this->logActivity(
-                'create', 'Distribusi', $distribusi,
-                after: $distribusi->only(['id', 'outlet_id', 'tanggal', 'keterangan']),
-                label: 'Distribusi ' . optional($distribusi->outlet)->nama . ' - ' . $distribusi->tanggal
-            );
+                foreach ($request->jumlah_out as $pid => $jumlah) {
+                    $jumlah = (int) $jumlah;
+                    if ($jumlah <= 0) continue;
+                    DistribusiDetail::create([
+                        'distribusi_id' => $distribusi->id,
+                        'produk_id'     => $pid,
+                        'jumlah_out'    => $jumlah,
+                    ]);
+                }
 
-            return redirect()->route('stok.distribusi.index')->with('success', 'Distribusi berhasil dicatat.');
-        } catch (\Exception $e) {
+                return $distribusi;
+            });
+        } catch (StokTidakCukupException $e) {
+            return back()->withErrors(['stok' => $e->getMessage()])->withInput();
+        } catch (\Throwable $e) {
             return back()->with('error', 'Gagal mencatat distribusi. Silakan coba lagi.')->withInput();
         }
+
+        $this->logActivity(
+            'create', 'Distribusi', $distribusi,
+            after: $distribusi->only(['id', 'outlet_id', 'tanggal', 'keterangan']),
+            label: 'Distribusi ' . optional($distribusi->outlet)->nama . ' - ' . $distribusi->tanggal
+        );
+
+        return redirect()->route('stok.distribusi.index')->with('success', 'Distribusi berhasil dicatat.');
     }
 
     public function show(Distribusi $distribusi)

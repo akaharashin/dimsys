@@ -9,7 +9,9 @@
 
     <div class="mb-4 px-4 py-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-700">
         <i class="fa-solid fa-circle-info mr-1"></i>
-        Rekap Stok menampilkan <strong>mutasi stok dalam periode bulan yang dipilih</strong>.
+        Rekap ini menampilkan <strong>mutasi STOK FREEZER dalam periode bulan yang dipilih</strong>
+        (stok gerobak TIDAK termasuk). Untuk posisi total perusahaan (freezer + gerobak) saat ini,
+        gunakan menu <a href="{{ route('stok.rekap') }}" class="underline font-semibold">Stok Freezer</a>.
     </div>
 
     @php
@@ -66,11 +68,11 @@
             <p class="text-xl font-bold text-yellow-600 mt-1">{{ number_format($rekap->sum('terjual')) }} pcs</p>
         </div>
         <div class="bg-white rounded-xl p-4 shadow-sm border-l-4 border-blue-400">
-            <p class="text-xs text-gray-400 uppercase">Sisa Stok</p>
+            <p class="text-xs text-gray-400 uppercase">Estimasi Sisa Freezer</p>
             <p class="text-xl font-bold text-blue-500 mt-1">{{ number_format($rekap->sum('sisa')) }} pcs</p>
         </div>
         <div class="bg-white rounded-xl p-4 shadow-sm border-l-4 border-purple-400">
-            <p class="text-xs text-gray-400 uppercase">Nilai Stok Sisa</p>
+            <p class="text-xs text-gray-400 uppercase">Nilai Sisa Freezer</p>
             <p class="text-xl font-bold text-purple-500 mt-1">Rp {{ number_format($rekap->sum('nilai_sisa')) }}</p>
         </div>
     </div>
@@ -92,7 +94,7 @@
                     <th class="px-4 py-3 text-right">Masuk Bulan Ini</th>
                     <th class="px-4 py-3 text-right">Koreksi STO</th>
                     <th class="px-4 py-3 text-right">Terjual Bulan Ini</th>
-                    <th class="px-4 py-3 text-right">Estimasi Sisa Akhir Bulan</th>
+                    <th class="px-4 py-3 text-right">Estimasi Sisa Freezer Akhir Bulan</th>
                     <th class="px-4 py-3 text-right">HPP</th>
                     <th class="px-4 py-3 text-right">Nilai Sisa</th>
                 </tr>
