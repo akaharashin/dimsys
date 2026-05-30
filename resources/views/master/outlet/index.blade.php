@@ -5,7 +5,7 @@
 
     <div class="flex items-center justify-between mb-6">
         <h2 class="text-2xl font-bold text-gray-700">Master Outlet</h2>
-        @if(auth()->user()->hasRole('admin_pusat'))
+        @if(auth()->user()->hasRole('admin_pusat') || auth()->user()->hasRole('koordinator'))
         <button onclick="document.getElementById('modal-tambah').style.display='flex'"
             class="bg-red-700 hover:bg-red-800 text-white text-sm px-4 py-2 rounded-lg">
             + Tambah Outlet
@@ -159,7 +159,7 @@
                                     <button onclick="openEdit({{ $o->toJson() }})"
                                         class="inline-flex items-center gap-1 text-xs px-2.5 py-1.5 bg-amber-50 hover:bg-amber-100 rounded-md text-amber-700 font-medium"><i class="fa-solid fa-pencil text-xs"></i> Edit</button>
                                 @endif
-                                @if(auth()->user()->hasRole('admin_pusat'))
+                                @if($bolehEdit)
                                     @if($o->aktif)
                                         <form method="POST" action="{{ route('master.outlet.destroy', $o) }}"
                                             data-confirm="Yakin ingin menonaktifkan outlet {{ $o->nama }}?">
@@ -197,7 +197,7 @@
         </div>
     @endif
 
-    @if(auth()->user()->hasRole('admin_pusat'))
+    @if(auth()->user()->hasRole('admin_pusat') || auth()->user()->hasRole('koordinator'))
     {{-- Modal Tambah --}}
     <div id="modal-tambah"
         style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);align-items:center;justify-content:center;z-index:9999;">
@@ -213,13 +213,22 @@
                 </div>
                 <div class="mb-3">
                     <label class="block text-sm text-gray-600 mb-1">Wilayah</label>
-                    <select name="wilayah_id" required
-                        class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300">
-                        <option value="">-- Pilih Wilayah --</option>
-                        @foreach($wilayah as $w)
-                            <option value="{{ $w->id }}">{{ $w->nama }}</option>
-                        @endforeach
-                    </select>
+                    @if(auth()->user()->hasRole('koordinator'))
+                        {{-- Koordinator: wilayah TERKUNCI ke wilayahnya sendiri --}}
+                        @php $myWil = $wilayah->first(); @endphp
+                        <input type="hidden" name="wilayah_id" value="{{ $myWil->id ?? '' }}">
+                        <p class="px-3 py-2 text-sm text-gray-500 bg-gray-50 border border-gray-200 rounded-lg">
+                            {{ $myWil->nama ?? '-' }}
+                        </p>
+                    @else
+                        <select name="wilayah_id" required
+                            class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300">
+                            <option value="">-- Pilih Wilayah --</option>
+                            @foreach($wilayah as $w)
+                                <option value="{{ $w->id }}">{{ $w->nama }}</option>
+                            @endforeach
+                        </select>
+                    @endif
                 </div>
                 <div class="mb-3">
                     <label class="block text-sm text-gray-600 mb-1">Tipe</label>

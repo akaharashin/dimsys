@@ -3,6 +3,7 @@ namespace App\Http\Controllers\Master;
 
 use App\Http\Controllers\Controller;
 use App\Traits\LogsActivity;
+use App\Traits\ChecksWilayahAccess;
 use App\Models\Outlet;
 use App\Models\Wilayah;
 use Illuminate\Http\Request;
@@ -11,7 +12,7 @@ use App\Exports\Master\OutletExport;
 
 class OutletController extends Controller
 {
-    use LogsActivity;
+    use LogsActivity, ChecksWilayahAccess;
     public function index(Request $request)
     {
         $user = auth()->user();
@@ -52,6 +53,8 @@ class OutletController extends Controller
 
     public function store(Request $request)
     {
+        $user = auth()->user();
+
         $request->validate([
             'nama'       => 'required|string|max:100',
             'wilayah_id' => 'required|exists:wilayah,id',
@@ -65,8 +68,17 @@ class OutletController extends Controller
             'tipe.in'             => 'Tipe outlet harus berupa agen, mitra, atau umum.',
         ]);
 
+        // Koordinator: PAKSA wilayah_id ke wilayahnya sendiri (anti-bypass —
+        // abaikan wilayah_id apa pun yang dikirim dari request). admin_pusat
+        // memakai wilayah_id dari request seperti biasa.
+        $wilayahId = $user->hasRole('koordinator') ? $user->wilayah_id : $request->wilayah_id;
+
         try {
-            $outlet = Outlet::create($request->only('nama', 'wilayah_id', 'tipe'));
+            $outlet = Outlet::create([
+                'nama'       => $request->nama,
+                'wilayah_id' => $wilayahId,
+                'tipe'       => $request->tipe,
+            ]);
             $this->logActivity('create', 'Outlet', $outlet, after: $outlet->only(['id', 'nama', 'wilayah_id', 'tipe']), label: $outlet->nama);
             return back()->with('success', 'Outlet berhasil ditambahkan.');
         } catch (\Exception $e) {
@@ -78,11 +90,10 @@ class OutletController extends Controller
     {
         $user = auth()->user();
 
-        // Aktifkan kembali outlet (tombol Aktifkan) — hanya admin_pusat
+        // Aktifkan kembali outlet (tombol Aktifkan) — admin_pusat semua,
+        // koordinator hanya outlet wilayahnya (selain itu 403).
         if ($request->input('aktif') == '1' && !$request->has('nama')) {
-            if (!$user->hasRole('admin_pusat')) {
-                return back()->with('error', 'Hanya admin pusat yang dapat mengaktifkan outlet.');
-            }
+            $this->otorisasiWilayah($outlet->wilayah_id);
             $before = $outlet->only(['id', 'nama', 'wilayah_id', 'tipe', 'aktif']);
             $outlet->update(['aktif' => true]);
             $this->logActivity('update', 'Outlet', $outlet, before: $before, after: $outlet->fresh()->only(['id', 'nama', 'wilayah_id', 'tipe', 'aktif']), label: 'Aktifkan - ' . $outlet->nama);
@@ -90,9 +101,11 @@ class OutletController extends Controller
         }
 
         if ($user->hasRole('koordinator')) {
-            if ($outlet->wilayah_id !== $user->wilayah_id) {
-                return back()->with('error', 'Anda tidak berhak mengubah outlet ini.');
-            }
+            // Guard server-side: koordinator hanya boleh ubah outlet wilayahnya
+            // → 403 bila mencoba outlet wilayah lain (mis. ganti ID di URL).
+            // Catatan: wilayah_id TIDAK pernah diambil dari request di sini,
+            // sehingga outlet tetap terkunci di wilayah koordinator.
+            $this->otorisasiWilayah($outlet->wilayah_id);
 
             $request->validate([
                 'nama'           => 'required|string|max:100',
@@ -151,6 +164,9 @@ class OutletController extends Controller
 
     public function destroy(Outlet $outlet)
     {
+        // Koordinator hanya boleh menonaktifkan outlet wilayahnya → selain itu 403.
+        $this->otorisasiWilayah($outlet->wilayah_id);
+
         $before = $outlet->only(['id', 'nama', 'wilayah_id', 'tipe', 'aktif']);
         $outlet->update(['aktif' => false]);
         $this->logActivity('update', 'Outlet', $outlet, before: $before, after: $outlet->fresh()->only(['id', 'nama', 'wilayah_id', 'tipe', 'aktif']), label: 'Nonaktifkan - ' . $outlet->nama);

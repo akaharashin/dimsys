@@ -39,8 +39,6 @@ Route::middleware(['auth'])->group(function () {
         Route::get('produk/export', [ProdukController::class, 'export'])->name('produk.export');
         Route::resource('produk', ProdukController::class);
         Route::get('outlet/export', [OutletController::class, 'export'])->name('outlet.export');
-        Route::post('outlet', [OutletController::class, 'store'])->name('outlet.store');
-        Route::delete('outlet/{outlet}', [OutletController::class, 'destroy'])->name('outlet.destroy');
         Route::get('supplier/export', [SupplierController::class, 'export'])->name('supplier.export');
         Route::resource('supplier', SupplierController::class);
     });
@@ -78,9 +76,12 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware('role:admin_pusat|owner|koordinator')->prefix('master')->name('master.')->group(function () {
         Route::get('outlet', [OutletController::class, 'index'])->name('outlet.index');
     });
+    // Outlet tulis (tambah/ubah/hapus) — admin_pusat | koordinator (owner read-only)
     Route::middleware('role:admin_pusat|koordinator')->prefix('master')->name('master.')->group(function () {
+        Route::post('outlet', [OutletController::class, 'store'])->name('outlet.store');
         Route::put('outlet/{outlet}', [OutletController::class, 'update'])->name('outlet.update');
         Route::patch('outlet/{outlet}', [OutletController::class, 'update']);
+        Route::delete('outlet/{outlet}', [OutletController::class, 'destroy'])->name('outlet.destroy');
     });
 
     // Transaksi — admin_pusat + koordinator full, owner read only (dikontrol di view)

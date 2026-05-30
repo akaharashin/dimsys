@@ -46,7 +46,7 @@
                     <i class="fa-solid fa-house w-4 text-center"></i> Dashboard
                 </a>
 
-                @if(auth()->user()->hasRole(['admin_pusat', 'owner']))
+                @if(auth()->user()->hasRole(['admin_pusat', 'owner', 'koordinator']))
                     {{-- MASTER DATA --}}
                     <button class="sidebar-section-toggle w-full flex items-center justify-between px-3 pt-4 pb-1.5 text-xs text-gray-400 uppercase tracking-widest font-semibold hover:text-gray-600 transition-colors"
                         data-section="master-data">
@@ -55,6 +55,8 @@
                     </button>
                     <div class="sidebar-section-content" data-section-content="master-data" style="overflow:hidden;">
                         <div class="space-y-0.5 pb-0.5">
+                            {{-- Wilayah/Produk/Supplier hanya admin_pusat & owner (koordinator hanya Outlet) --}}
+                            @unless(auth()->user()->hasRole('koordinator'))
                             <a href="{{ route('master.wilayah.index') }}"
                                 class="flex items-center gap-3 pl-5 pr-2 py-2.5 rounded-lg transition-all
                                        {{ request()->routeIs('master.wilayah.*') ? 'text-white shadow-sm font-medium' : 'text-gray-600 hover:bg-red-50 hover:text-red-700' }}"
@@ -67,18 +69,21 @@
                                 @if(request()->routeIs('master.produk.*')) style="background-color:#A51616" @endif>
                                 <i class="fa-solid fa-box-open w-4 text-center"></i> Produk
                             </a>
+                            @endunless
                             <a href="{{ route('master.outlet.index') }}"
                                 class="flex items-center gap-3 pl-5 pr-2 py-2.5 rounded-lg transition-all
                                        {{ request()->routeIs('master.outlet.*') ? 'text-white shadow-sm font-medium' : 'text-gray-600 hover:bg-red-50 hover:text-red-700' }}"
                                 @if(request()->routeIs('master.outlet.*')) style="background-color:#A51616" @endif>
                                 <i class="fa-solid fa-store w-4 text-center"></i> Outlet
                             </a>
+                            @unless(auth()->user()->hasRole('koordinator'))
                             <a href="{{ route('master.supplier.index') }}"
                                 class="flex items-center gap-3 pl-5 pr-2 py-2.5 rounded-lg transition-all
                                        {{ request()->routeIs('master.supplier.*') ? 'text-white shadow-sm font-medium' : 'text-gray-600 hover:bg-red-50 hover:text-red-700' }}"
                                 @if(request()->routeIs('master.supplier.*')) style="background-color:#A51616" @endif>
                                 <i class="fa-solid fa-truck w-4 text-center"></i> Supplier
                             </a>
+                            @endunless
                             @if(auth()->user()->hasRole('admin_pusat'))
                                 <a href="{{ route('master.rekening.index') }}"
                                     class="flex items-center gap-3 pl-5 pr-2 py-2.5 rounded-lg transition-all
