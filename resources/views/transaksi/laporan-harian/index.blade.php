@@ -81,6 +81,18 @@
         </form>
     </div>
 
+    {{-- Ringkasan talangan (muncul hanya bila ada kekurangan setor pada hasil filter) --}}
+    @if(($totalTalangan ?? 0) > 0)
+        <div class="mb-4 px-4 py-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-700 flex items-center gap-2">
+            <i class="fa-solid fa-triangle-exclamation text-amber-500"></i>
+            <span>
+                Total Perlu Ditalangi (sesuai filter aktif):
+                <strong>Rp {{ number_format($totalTalangan) }}</strong>
+                — ada outlet yang pengeluarannya melebihi (omset − komisi).
+            </span>
+        </div>
+    @endif
+
     {{-- Info --}}
     <div class="flex items-center justify-between mb-3 text-sm text-gray-500">
         <span>Menampilkan {{ $laporan->firstItem() ?? 0 }}-{{ $laporan->lastItem() ?? 0 }} dari {{ $laporan->total() }}
@@ -139,7 +151,14 @@
                             Rp
                             {{ number_format($l->details->sum('omset') - $l->details->sum('modal') - $l->details->sum('komisi')) }}
                         </td>
-                        <td class="px-4 py-3 text-right font-medium text-blue-600">Rp {{ number_format($l->total_setor) }}</td>
+                        <td class="px-4 py-3 text-right font-medium text-blue-600">
+                            Rp {{ number_format($l->total_setor) }}
+                            @if(($l->talangan ?? 0) > 0)
+                                <span class="block mt-1 ml-auto w-fit px-2 py-0.5 rounded text-xs bg-amber-100 text-amber-700 font-medium">
+                                    Talangan: Rp {{ number_format($l->talangan) }}
+                                </span>
+                            @endif
+                        </td>
                         <td class="px-4 py-3">
                             <span
                                 class="px-2 py-1 rounded-full text-xs {{ $l->status === 'final' ? 'bg-green-100 text-green-600' : 'bg-yellow-100 text-yellow-600' }}">

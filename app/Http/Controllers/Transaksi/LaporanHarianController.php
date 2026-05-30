@@ -56,13 +56,18 @@ class LaporanHarianController extends Controller
             $query->where('status', $request->status);
         }
 
+        // Total talangan untuk SELURUH hasil filter (bukan cuma halaman ini),
+        // agar admin cepat tahu total kekurangan yang perlu ditalangi perusahaan.
+        $totalTalangan = (clone $query)->sum('talangan');
+
         $perPage = in_array($request->per_page, [10, 25, 50, 100]) ? $request->per_page : 25;
         $laporan = $query->paginate($perPage)->withQueryString();
 
         return view('transaksi.laporan-harian.index', compact(
             'laporan',
             'wilayahList',
-            'outletList'
+            'outletList',
+            'totalTalangan'
         ));
     }
 
