@@ -61,28 +61,22 @@ class UserSeeder extends Seeder
             $user = User::withTrashed()
                 ->where('email', $u['email'])
                 ->orWhere('username', $u['username'])
-                ->first();
+                ->first() ?? new User();
 
-            if ($user) {
-                $user->update([
-                    'username'   => $u['username'],
-                    'name'       => $u['name'],
-                    'email'      => $u['email'],
-                    'password'   => Hash::make($u['password']),
-                    'role'       => $u['role'],
-                    'wilayah_id' => $u['wilayah_id'],
-                    'deleted_at' => null,
-                ]);
-            } else {
-                $user = User::create([
-                    'username'   => $u['username'],
-                    'name'       => $u['name'],
-                    'email'      => $u['email'],
-                    'password'   => Hash::make($u['password']),
-                    'role'       => $u['role'],
-                    'wilayah_id' => $u['wilayah_id'],
-                ]);
+            // Field fillable lewat fill(); 'role' & 'wilayah_id' SENGAJA tidak fillable
+            // (proteksi mass-assignment Batch 1) → di-set eksplisit via property.
+            $user->fill([
+                'username' => $u['username'],
+                'name'     => $u['name'],
+                'email'    => $u['email'],
+                'password' => Hash::make($u['password']),
+            ]);
+            $user->role       = $u['role'];
+            $user->wilayah_id = $u['wilayah_id'];
+            if ($user->trashed()) {
+                $user->deleted_at = null; // aktifkan kembali bila sebelumnya non-aktif
             }
+            $user->save();
 
             $user->syncRoles([$u['role']]);
         }
