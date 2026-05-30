@@ -36,7 +36,7 @@
         </div>
     </div>
 
-    <div class="bg-white rounded-xl shadow-sm overflow-hidden mb-4">
+    <div class="bg-white rounded-xl shadow-sm overflow-x-auto mb-4">
         <table class="w-full text-sm">
             <thead class="bg-gray-50 text-gray-500 uppercase text-xs">
                 <tr>
@@ -118,7 +118,7 @@
 
     {{-- Pengeluaran --}}
     @if($laporanHarian->pengeluaran->count())
-        <div class="bg-white rounded-xl shadow-sm overflow-hidden mb-4">
+        <div class="bg-white rounded-xl shadow-sm overflow-x-auto mb-4">
             <div class="px-5 py-4 border-b border-gray-100">
                 <h3 class="text-sm font-semibold text-gray-600">Detail Pengeluaran</h3>
             </div>

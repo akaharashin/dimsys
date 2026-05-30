@@ -73,7 +73,7 @@
     </div>
 
     {{-- Summary --}}
-    <div class="grid grid-cols-3 gap-4 mb-4">
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
         <div class="bg-white rounded-xl p-4 shadow-sm border-l-4 border-green-400">
             <p class="text-xs text-gray-400 uppercase">Total Debit (Masuk)</p>
             <p class="text-xl font-bold text-green-600 mt-1">Rp {{ number_format($totalDebit) }}</p>

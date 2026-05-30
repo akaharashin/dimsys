@@ -11,18 +11,27 @@
 
 <body class="bg-gray-100 min-h-screen">
 
-    {{-- Sidebar --}}
-    <div class="flex min-h-screen overflow-hidden">
-        <aside class="w-64 bg-white flex flex-col fixed top-0 left-0 h-screen overflow-y-auto border-r border-gray-100">
+    {{-- Overlay gelap (mobile/tablet, di bawah lg) --}}
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-40 hidden lg:hidden"></div>
+
+    {{-- Sidebar: drawer di mobile/tablet, fixed normal di desktop --}}
+    <aside id="sidebar"
+        class="w-64 bg-white flex flex-col fixed top-0 left-0 h-screen overflow-y-auto border-r border-gray-100
+               z-50 transform transition-transform duration-300 -translate-x-full lg:translate-x-0">
 
             {{-- Logo --}}
             <div class="px-6 py-4 border-b border-gray-100 flex-shrink-0">
                 <div class="flex items-center gap-3">
                     <img src="{{ asset('dimsumin.png') }}" alt="Logo" class="h-14 w-14 object-contain rounded-full">
-                    <div class="leading-tight">
+                    <div class="leading-tight flex-1 min-w-0">
                         <h1 class="text-xl font-bold tracking-tight" style="color:#A51616">DIMSYS</h1>
                         <p class="text-xs text-gray-400">Dimsum In Management System</p>
                     </div>
+                    {{-- Tombol tutup (hanya mobile/tablet) --}}
+                    <button type="button" id="sidebar-close" aria-label="Tutup menu"
+                        class="lg:hidden text-gray-400 hover:text-gray-600 p-1 flex-shrink-0">
+                        <i class="fa-solid fa-xmark text-lg"></i>
+                    </button>
                 </div>
             </div>
 
@@ -243,8 +252,21 @@
 
         </aside>
 
-        {{-- Main Content --}}
-        <main class="flex-1 p-6 overflow-y-auto ml-64">
+        {{-- Pembungkus konten: full-width di mobile, beri ruang sidebar di desktop --}}
+        <div class="lg:ml-64 min-h-screen flex flex-col">
+
+            {{-- Topbar mobile/tablet (hamburger) --}}
+            <header class="lg:hidden sticky top-0 z-30 bg-white border-b border-gray-100 flex items-center gap-3 px-4 h-14">
+                <button type="button" id="sidebar-open" aria-label="Buka menu"
+                    class="text-gray-700 hover:text-red-700 -ml-1 p-2">
+                    <i class="fa-solid fa-bars text-xl"></i>
+                </button>
+                <img src="{{ asset('dimsumin.png') }}" alt="Logo" class="h-8 w-8 object-contain rounded-full">
+                <span class="font-bold tracking-tight" style="color:#A51616">DIMSYS</span>
+            </header>
+
+            {{-- Main Content --}}
+            <main class="flex-1 p-4 sm:p-6 overflow-y-auto">
             {{-- Fallback banners: selalu tampil, akan diganti SweetAlert kalau Swal berhasil load --}}
             @if(session('success'))
                 <div id="html-flash-success"
@@ -487,6 +509,53 @@
                 s[key] = !nowCollapsed; // true = expanded
                 saveState(s);
             });
+        });
+    });
+    </script>
+
+    {{-- Drawer sidebar (mobile/tablet) --}}
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var sidebar = document.getElementById('sidebar');
+        var overlay = document.getElementById('sidebar-overlay');
+        var btnOpen = document.getElementById('sidebar-open');
+        var btnClose = document.getElementById('sidebar-close');
+        if (!sidebar || !overlay) return;
+
+        function openSidebar() {
+            sidebar.classList.remove('-translate-x-full');
+            overlay.classList.remove('hidden');
+            document.body.classList.add('overflow-hidden');
+        }
+        function closeSidebar() {
+            sidebar.classList.add('-translate-x-full');
+            overlay.classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+        }
+
+        if (btnOpen) btnOpen.addEventListener('click', openSidebar);
+        if (btnClose) btnClose.addEventListener('click', closeSidebar);
+        overlay.addEventListener('click', closeSidebar);
+
+        // Tutup otomatis saat memilih menu (mobile/tablet) agar tidak menutupi konten.
+        sidebar.querySelectorAll('nav a').forEach(function (link) {
+            link.addEventListener('click', function () {
+                if (window.innerWidth < 1024) closeSidebar();
+            });
+        });
+
+        // Tutup dengan tombol Escape.
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') closeSidebar();
+        });
+
+        // Saat layar membesar ke desktop, pastikan overlay & lock scroll bersih.
+        window.addEventListener('resize', function () {
+            if (window.innerWidth >= 1024) {
+                overlay.classList.add('hidden');
+                document.body.classList.remove('overflow-hidden');
+                sidebar.classList.add('-translate-x-full'); // desktop tetap tampil via lg:translate-x-0
+            }
         });
     });
     </script>

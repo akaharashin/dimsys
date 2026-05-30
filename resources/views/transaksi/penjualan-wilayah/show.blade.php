@@ -104,7 +104,7 @@
 </div>
 
 {{-- Tabel produk --}}
-<div class="bg-white rounded-xl shadow-sm overflow-hidden mb-4">
+<div class="bg-white rounded-xl shadow-sm overflow-x-auto mb-4">
     <table class="w-full text-sm">
         <thead class="bg-gray-50 text-gray-500 uppercase text-xs">
             <tr>

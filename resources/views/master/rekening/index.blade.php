@@ -181,7 +181,7 @@
                         <input type="text" name="nama" required maxlength="100"
                             class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300">
                     </div>
-                    <div class="grid grid-cols-2 gap-3">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
                             <label class="block text-sm text-gray-600 mb-1">Tipe</label>
                             <select name="tipe" required
@@ -230,7 +230,7 @@
                         <input type="text" id="edit-nama" name="nama" required maxlength="100"
                             class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300">
                     </div>
-                    <div class="grid grid-cols-2 gap-3">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
                             <label class="block text-sm text-gray-600 mb-1">Tipe</label>
                             <select id="edit-tipe" name="tipe" required

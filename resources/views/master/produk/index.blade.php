@@ -189,7 +189,7 @@
                     <input type="text" name="nama" required
                         class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300">
                 </div>
-                <div class="grid grid-cols-2 gap-3 mb-3">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
                     @foreach(['hpp' => 'HPP', 'harga_mitra' => 'Harga Mitra', 'harga_jual' => 'Harga Jual', 'harga_umum' => 'Harga Umum', 'harga_agen' => 'Harga Agen', 'komisi' => 'Komisi'] as $field => $label)
                         <div>
                             <label class="block text-sm text-gray-600 mb-1">{{ $label }}</label>
@@ -221,7 +221,7 @@
                     <input type="text" id="edit-nama" name="nama" required
                         class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300">
                 </div>
-                <div class="grid grid-cols-2 gap-3 mb-3">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
                     @foreach(['hpp' => 'HPP', 'harga_mitra' => 'Harga Mitra', 'harga_jual' => 'Harga Jual', 'harga_umum' => 'Harga Umum', 'harga_agen' => 'Harga Agen', 'komisi' => 'Komisi'] as $field => $label)
                         <div>
                             <label class="block text-sm text-gray-600 mb-1">{{ $label }}</label>
